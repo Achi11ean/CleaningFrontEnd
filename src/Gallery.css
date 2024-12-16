@@ -1,0 +1,73 @@
+@keyframes curtain-open-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  @keyframes curtain-open-right {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  .curtain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(
+      to right,
+      #8b0000,
+      #b22222,
+      #8b0000
+    ); /* Deep red gradient */
+    background-size: 200% 100%;
+    background-position: left;
+    box-shadow: inset -10px 0 15px rgba(0, 0, 0, 0.5); /* Inner shadow for folds */
+    z-index: 20;
+    border-top: 5px solid #6d0000; /* Optional top border for curtain detail */
+    border-bottom: 5px solid #6d0000;
+  }
+  
+  .curtain.left {
+    left: 0;
+    animation: curtain-open-left 2.5s ease forwards;
+  }
+  
+  .curtain.right {
+    right: 0;
+    animation: curtain-open-right 2.5s ease forwards;
+  }
+  
+  .curtain::before,
+  .curtain::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10%;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .curtain::before {
+    left: 0;
+  }
+  
+  .curtain::after {
+    right: 0;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+  }
+  
