@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { FaInstagram, FaFacebook } from "react-icons/fa"; // Import social media icons
+import '../public/assets/Aspire.ttf';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth(); // Access auth context
@@ -39,23 +40,25 @@ const Navbar = () => {
         
         
         <div className="text-center my-">
-        <Link
-  to="/signin"
-  className="
-    text-4xl font-extrabold bg-clip-text 
-    bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 
-    drop-shadow-lg hover:drop-shadow-2xl 
-    transition duration-500 ease-in-out transform hover:scale-105
-  "
-  style={{ fontFamily: "'Playfair Display', serif" }}
->
-  <span className="block sm:hidden bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">A.K. Photos</span> {/* Small screens */}
-  <span className="hidden sm:block bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+  <Link
+    to="/signin"
+    className="
+      text-6xl font-extrabold bg-clip-text 
+      bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 
+      drop-shadow-lg hover:drop-shadow-2xl 
+      transition duration-500 ease-in-out transform hover:scale-105
+    "
+    style={{ fontFamily: "'Aspire', serif" }}
+  >
+    <span className="block sm:hidden bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+      A.K. Photos
+    </span> 
+    <span className="hidden sm:block bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
       Arif K. Photography
     </span>
-    </Link>
-
+  </Link>
 </div>
+
 
 
         {/* Navigation Links */}

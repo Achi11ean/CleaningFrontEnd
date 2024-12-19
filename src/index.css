@@ -124,3 +124,9 @@ button:focus-visible {
   }
 }
 
+@font-face {
+  font-family: 'Aspire';
+  src: url('/public/assets/Aspire.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

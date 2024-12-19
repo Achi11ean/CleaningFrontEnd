@@ -60,8 +60,17 @@ const Reset = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300">
-      <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
+<div
+  className="min-h-screen flex items-center justify-center"
+  style={{
+    background: `
+      linear-gradient(to bottom right, rgba(243, 244, 246, 0.7), rgba(209, 213, 219, 0.7)), 
+      url('reset.webp')`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+>  <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
           Reset Password
         </h2>

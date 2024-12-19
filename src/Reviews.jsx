@@ -86,11 +86,13 @@ const handlePreviousPage = () => {
       <div className="relative max-w-3xl w-full p-4 bg-white rounded-lg shadow-lg animate-fade-in">
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold z-10"
-        >
-          &times;
-        </button>
+  onClick={onClose} // Use the passed 'onClose' function
+  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 shadow-md"
+  aria-label="Close Modal"
+>
+  &times;
+</button>
+
   
         {/* Image Section */}
         <div className="flex justify-center items-center max-h-[80vh] overflow-hidden">
@@ -150,10 +152,14 @@ const handlePreviousPage = () => {
   }}
 >    {/* Section Title */}
 <h1
-  className="relative text-5xl font-semibold text-center mb-8 text-white 
+  className="relative text-5xl font-semibold text-center mb-8 text-red-700 
              tracking-widest uppercase transition-all duration-300 ease-in-out 
-             hover:scale-105"
-             style={{ fontFamily: "'Cinzel Decorative', cursive" }}
+             hover:scale-105 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] 
+             hover:drop-shadow-[0_0_20px_rgba(255,255,255,1)]"
+  style={{
+    fontFamily: "'Aspire', serif",
+    textShadow: "0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 1)",
+  }}
 >
   <span className="inline-block underline relative">
     Customer Reviews
@@ -165,6 +171,7 @@ const handlePreviousPage = () => {
     ></span>
   </span>
 </h1>
+
 
       {/* Review Form */}
 
@@ -188,17 +195,20 @@ const handlePreviousPage = () => {
 
             {/* Hover Overlay */}
             <div
-  className="absolute top-1/2 left-0 right-0 bottom-0 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 
-  flex flex-col justify-center items-center p-2 transition-opacity duration-300"
+  className="absolute bottom-0 left-0 right-0 top-2/3 bg-black bg-opacity-70 
+             opacity-0 group-hover:opacity-100 
+             flex flex-col justify-center items-center p-2 transition-opacity duration-300"
   style={{ pointerEvents: "none" }} // Prevents the overlay from blocking image clicks
 >
 
+
+
               {/* Stars */}
-              <div className="flex mb-2">
+              <div className="flex ">
                 {[...Array(5)].map((_, index) => (
                   <span
                     key={index}
-                    className={`text-xl mt-10 ${
+                    className={`text-xl  ${
                       index < review.rating ? "text-yellow-400" : "text-gray-500"
                     }`}
                   >
@@ -212,12 +222,12 @@ const handlePreviousPage = () => {
               </p>
               {/* Comment */}
               <div className="relative">
-  <p
+  {/* <p
     className="text-gray-300 text-sm px-4 text-center overflow-y-auto max-h-32 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200"
     style={{ wordWrap: "break-word" }}
   >
     {review.comment || "No comment provided"}
-  </p>
+  </p> */}
   {/* Gradient Fade */}
   <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
 </div>
@@ -248,24 +258,24 @@ const handlePreviousPage = () => {
   <button
     onClick={handlePreviousPage}
     disabled={currentPage === 1}
-    className={`px-4 py-2 rounded ${
-      currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-white"
+    className={`px-4 text-black py-2 rounded ${
+      currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600 text-black"
     }`}
   >
     Previous
   </button>
 
-  <span className="text-white">
+  <span className="text-black">
     Page {currentPage} of {totalPages}
   </span>
 
   <button
     onClick={handleNextPage}
     disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded ${
+    className={`px-4 text-black py-2 rounded ${
       currentPage === totalPages
         ? "bg-gray-300 cursor-not-allowed"
-        : "bg-blue-500 hover:bg-blue-600 text-white"
+        : "bg-blue-500 hover:bg-blue-600 text-black"
     }`}
   >
     Next
@@ -300,7 +310,9 @@ const handlePreviousPage = () => {
   ></div>
 <h2
   onClick={() => setShowReviewForm(!showReviewForm)} // Toggle the form visibility
-  className="text-5xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-300 to-yellow-400 drop-shadow-md cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
+  className="text-7xl font-bold  text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-300 to-yellow-400 drop-shadow-md cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
+  style={{ fontFamily: "'Aspire', serif" }} // Apply Aspire font
+
 >
   {showReviewForm ? "Close Review Form" : "Share Your Experience"}
 </h2>

@@ -110,28 +110,30 @@ const Gallery = () => {
   // Handle upload form submission
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return alert("Please select a file to upload.");
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("caption", caption);
-    formData.append("category", category);
-    formData.append("photo_type", photoType);
-
+    if (!file) return alert("Please provide an image URL.");
+  
+    const payload = {
+      image_url: file, // Use the URL input
+      caption,
+      category,
+      photo_type: photoType,
+    };
+  
     try {
       const response = await fetch("http://127.0.0.1:5000/api/gallery/upload", {
         method: "POST",
-        body: formData,
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
         },
+        body: JSON.stringify(payload),
       });
-
+  
       const data = await response.json();
       if (response.ok) {
         setPhotos([...photos, data.photo]);
         setMessage("Photo uploaded successfully!");
-        setFile(null);
+        setFile("");
         setCaption("");
         setCategory("Uncategorized");
         setPhotoType("");
@@ -143,7 +145,7 @@ const Gallery = () => {
       setMessage("An error occurred while uploading.");
     }
   };
-
+  
   return (
     <div className="relative min-h-screen bg-gradient-to-r from-black via-red-900 to-black overflow-hidden">
       <div className="absolute inset-0 bg-gradient-radial from-transparent via-yellow-600 to-transparent opacity-30"></div>
@@ -154,14 +156,16 @@ const Gallery = () => {
 
       {/* Main Content */}
       <div className="relative z-10 p-6">
-        <h1
-          className="text-5xl font-extrabold text-center mb-8 
+      <h1
+  className="text-7xl mt-4 font-extrabold text-center mb-8 
              bg-clip-text text-transparent 
              bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 
              drop-shadow-lg animate-fade-in"
-        >
-          ✨ Photo Gallery ✨
-        </h1>
+  style={{ fontFamily: "'Aspire', serif" }} // Apply the Aspire font
+>
+  ✨ Photo Gallery ✨
+</h1>
+
         <div className="flex flex-wrap justify-center gap-4 mb-6">
   <input
     type="text"
@@ -206,8 +210,8 @@ const Gallery = () => {
 
   {/* Image */}
   <img
-    src={`http://127.0.0.1:5000/${photo.image_url}`}
-    alt={photo.caption || "Gallery Image"}
+  src={photo.image_url} // Use the full image URL directly
+  alt={photo.caption || "Gallery Image"}
     className="w-full h-48 object-cover"
     onError={(e) => {
       e.target.onerror = null;
@@ -269,25 +273,26 @@ const Gallery = () => {
 
 {selectedPhoto && (
   <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 px-4">
-    <div className="relative max-w-3xl w-full mx-auto bg-gray-900 rounded-lg shadow-lg p-4 md:p-6">
+    <div className="relative max-w-3xl w-full mx-auto bg-gray-600 rounded-lg shadow-lg p-4 md:p-6">
       {/* Close Button */}
       <button
-        onClick={closeModal}
-        className="absolute top-4 right-4 text-gray-300 hover:text-white text-3xl leading-none transition transform hover:scale-110"
-        aria-label="Close Modal"
-      >
-        &times;
-      </button>
+  onClick={closeModal}
+  className="absolute top-2 right-2 z-10 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 shadow-md"
+  aria-label="Close Modal"
+>
+  &times;
+</button>
 
       {/* Image Container */}
       <div className="flex flex-col items-center space-y-4">
         {/* Framed Image */}
         <div className="relative w-full max-w-lg border-4 border-gray-600 rounded-lg shadow-md">
-          <img
-            src={`http://127.0.0.1:5000/${selectedPhoto.image_url}`}
-            alt={selectedPhoto.caption || "Gallery Image"}
-            className="w-full max-h-[70vh] object-contain rounded-lg"
-          />
+        <img
+  src={selectedPhoto.image_url} // Use the full URL directly
+  alt={selectedPhoto.caption || "Gallery Image"}
+  className="w-full max-h-[70vh] object-contain rounded-lg"
+/>
+
         </div>
 
         {/* Image Details */}
@@ -346,13 +351,42 @@ const Gallery = () => {
             {showUploadForm && (
 
             <form onSubmit={handleUpload} className="mt-2 space-y-4">
-              <input
-                type="file"
-                accept="image/png, image/jpeg, image/webp"
-                onChange={handleFileChange}
-                className="w-full border rounded p-2"
-                required
-              />
+<div className="relative group">
+  <a
+    href="https://imgur.com/upload"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="relative inline-block w-full font-bold text-white text-center mb-2 uppercase rounded-lg
+               bg-gradient-to-r from-green-400 via-green-500 to-green-600 shadow-lg transition-all duration-300 ease-in-out 
+               hover:scale-105 hover:from-green-500 hover:via-green-600 hover:to-green-700 hover:shadow-2xl
+               before:absolute before:-inset-1 before:rounded-lg before:bg-green-300 before:blur-lg before:opacity-30"
+  >
+    <span className="relative z-10">Upload Photo to Imgur</span>
+  </a>
+
+  {/* Tooltip */}
+  <div
+    className="absolute bottom-full mb-2 w-64 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg 
+               opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+    style={{ left: "50%", transform: "translateX(-50%)" }}
+  >
+    Don't have a URL for your image yet? Click the link. <br />
+    1. Add your image <br />
+    2. Right-click on the image and "Copy Image Address" <br />
+    If it doesn't look like this: "https://i.imgur.com/example.jpg" <br />
+    try copying the address again.
+  </div>
+</div>
+
+<input
+  type="url"
+  placeholder="Image URL"
+  value={file}
+  onChange={(e) => setFile(e.target.value)} // Update state with the entered URL
+  className="w-full border rounded p-2"
+  required
+/>
+
               <input
                 type="text"
                 placeholder="Caption"
@@ -360,13 +394,16 @@ const Gallery = () => {
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full border rounded p-2"
               />
-              <input
-                type="text"
-                placeholder="Category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full border rounded p-2"
-              />
+<select
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+  className="w-full border rounded p-2"
+>
+  <option value="" disabled>Select Category</option>
+  <option value="Black & White">Black & White</option>
+  <option value="Color">Color</option>
+</select>
+
               <input
                 type="text"
                 placeholder="Photo Type"

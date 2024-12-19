@@ -6,23 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PhotoHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
-  <footer class="bg-gray-800 text-gray-200 text-center py-4">
-    <p>
-      &copy; <span id="current-year"></span>
-      <a
-        href="https://jonathenwhitford.netlify.app/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-yellow-400 hover:text-yellow-500 transition duration-300"
-      >
-        Jwhit Productions
-      </a>
-    </p>
+  <footer class="bg-gray-900 text-gray-300 py-6 relative">
+    <!-- Subtle Top Divider -->
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-400 to-red-500"></div>
+  
+    <!-- Footer Content -->
+    <div class="container mx-auto flex flex-col items-center justify-center relative group">
+      <p class="text-lg font-medium tracking-widest uppercase relative">
+        <span class="text-yellow-400">&copy; <span id="current-year"></span></span>
+        <a
+          href="https://jonathenwhitford.netlify.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-yellow-400 hover:text-yellow-300 transition-all duration-300 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-yellow-300 after:transition-all after:duration-300 hover:after:w-full"
+        >
+          Jwhit Productions
+        </a>
+      </p>
+      
+      <!-- Tooltip -->
+      <div
+      class="absolute bottom-12 opacity-0 group-hover:opacity-100 text-center text-gray-100 text-sm bg-black px-4 py-2 rounded-lg shadow-lg transition-opacity duration-500 whitespace-nowrap"
+      style="z-index: 50;"
+    >
+      ✨ Need a website? Click here to contact Jwhit Productions! ✨
+    </div>
+      <!-- Decorative Line -->
+
+    </div>
+    <script>
+      // Dynamically insert the current year
+      document.getElementById("current-year").textContent = new Date().getFullYear();
+    </script>
+    
+    <!-- Subtle Bottom Divider -->
+    <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-400 to-red-500"></div>
   </footer>
+  
+  
 </html>
