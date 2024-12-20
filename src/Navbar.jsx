@@ -61,56 +61,58 @@ const Navbar = () => {
 
 
 
-        {/* Navigation Links */}
-        <div className="hidden md:flex space-x-11 items-center">
-          <Link
-            to="/"
-            className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-            >
-            Home
-          </Link>
-          <Link
-            to="/packages"
-            className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-            >
-            Packages
-          </Link>
-          <Link
-            to="/contact"
-            className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-          >
-            Contact Me
-          </Link>
-          <Link
-            to="/gallery"
-            className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-          >
-            Gallery
-          </Link>
-          <Link
-            to="/reviews"
-            className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-          >
-            Reviews
-          </Link>
-          {isAuthenticated && (
-            <Link
-              to="/contact-center"
-              className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300"
-              >
-              Contact Center
-            </Link>
-          )}
-          {/* Sign Out Button */}
-          {isAuthenticated && (
-            <button
-              onClick={logout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300"
-            >
-              Sign Out
-            </button>
-          )}
-        </div>
+{/* Navigation Links */}
+<div className="hidden md:flex space-x-11 items-center font-serif" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
+  <Link
+    to="/"
+    className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+  >
+    Home
+  </Link>
+  <Link
+    to="/packages"
+    className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+  >
+    Packages
+  </Link>
+  <Link
+    to="/contact"
+    className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+  >
+    Inquiry
+  </Link>
+  <Link
+    to="/gallery"
+    className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+  >
+    Gallery
+  </Link>
+  <Link
+    to="/reviews"
+    className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+  >
+    Reviews
+  </Link>
+  {isAuthenticated && (
+    <Link
+      to="/contact-center"
+      className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
+    >
+      Admin
+    </Link>
+  )}
+  {/* Sign Out Button */}
+  {isAuthenticated && (
+    <button
+      onClick={logout}
+      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 font-serif"
+      style={{ fontFamily: "'Times New Roman', Times, serif" }}
+    >
+      Sign Out
+    </button>
+  )}
+</div>
+
         <div className="flex justify-center space-x-6 mt-4">
             <a
               href="https://www.instagram.com/yourprofile"

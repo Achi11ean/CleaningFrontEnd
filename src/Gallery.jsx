@@ -157,14 +157,39 @@ const Gallery = () => {
       {/* Main Content */}
       <div className="relative z-10 p-6">
       <h1
-  className="text-7xl mt-4 font-extrabold text-center mb-8 
-             bg-clip-text text-transparent 
-             bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 
-             drop-shadow-lg animate-fade-in"
-  style={{ fontFamily: "'Aspire', serif" }} // Apply the Aspire font
+  className="text-7xl mt-4 font-extrabold text-center mb-8 drop-shadow-lg animate-fade-in"
+  style={{
+    fontFamily: "'Aspire', serif", // Apply Aspire font
+    color: "#FFD700", // Base gold color
+    animation: "pulseGlow 2s infinite ease-in-out", // Add pulse animation
+  }}
 >
   ✨ Photo Gallery ✨
 </h1>
+
+<style>
+  {`
+    @keyframes pulseGlow {
+      0%, 100% {
+        text-shadow: 
+          0 0 5px #FFD700, 
+          0 0 10px #FFD700, 
+          0 0 20px #FFA500, 
+          0 0 30px #FFD700, 
+          0 0 40px #FFD700;
+      }
+      50% {
+        text-shadow: 
+          0 0 10px #FFD700, 
+          0 0 20px #FFD700, 
+          0 0 40px #FFA500, 
+          0 0 50px #FFD700, 
+          0 0 60px #FFD700;
+      }
+    }
+  `}
+</style>
+
 
         <div className="flex flex-wrap justify-center gap-4 mb-6">
   <input
