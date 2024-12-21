@@ -33,37 +33,27 @@ const HomePage = () => {
   return (
     <div className="w-full  text-gray-800">
       {/* Hero Section */}
-      <section className="py-12 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-300 text-gray-800">
+      <section className="py-10 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-300 text-gray-800">
         <div className="max-w-7xl mx-auto px-6 lg:flex lg:items-center lg:space-x-12">
           <div className="lg:w-1/2 mb-8 lg:mb-0">
             <img
-              src="sexyman.jpg"
+              src="arif 3.jpg"
               alt="About Me"
-              className="rounded-3xl shadow-lg w-full h-96 object-cover"
-            />
+              className=" shadow-lg w-full h-[600px] sm:h-[700px] object-cover"
+              />
           </div>
 
           {/* Text Section */}
           <div className="lg:w-1/2">
-          <h2
-  className="text-4xl font-bold text-gray-900 mb-6 text-center lg:text-center font-serif"
-  style={{
-    fontFamily: "'Times New Roman', Times, serif", // Classic newspaper font
-    letterSpacing: "0.05em", // Slight letter spacing
-    lineHeight: "1.2", // Compact line height
-    textTransform: "uppercase", // Uppercase for a traditional feel
-  }}
->
-  About Me
-</h2>
+
 
 
             <div
-  className="max-h-[200px] overflow-y-auto p-4 bg-gray-100 rounded-lg shadow-inner custom-scrollbar"
+  className="max-h-[700px] overflow-y-auto p-4 rounded-lg shadow-innertransition-all duration-300 custom-scrollbar"
 >
   <p className="text-lg leading-relaxed mb-4">
     Hi, I'm{" "}
-    <span className="font-semibold text-blue-600">Arif Kycyku</span>, a passionate photographer dedicated to capturing life's most precious moments. With years of experience in portraits, events, and creative photography, I strive to turn fleeting memories into timeless keepsakes.
+    <span className="font-semibold text-blue-600">Mark Cohen</span>, a passionate photographer dedicated to capturing life's most precious moments. With years of experience in portraits, events, and creative photography, I strive to turn fleeting memories into timeless keepsakes.
   </p>
   <p className="text-lg leading-relaxed mb-4">
     I believe every picture tells a story, and I'm here to tell yours. Whether it’s a serene golden hour portrait, a lively family event, or a unique creative project, I bring creativity, care, and professionalism to every shot.
@@ -86,7 +76,7 @@ const HomePage = () => {
       </div>
 
       {/* Gallery Section */}
-      <section className="py-28 bg-gradient-to-t from-gray-100 via-gray-200 to-gray-300">
+      <section className="py-12 bg-gradient-to-t from-gray-100 via-gray-200 to-gray-400">
         {loading ? (
           <p className="text-center text-gray-600">Loading...</p>
         ) : (

@@ -160,7 +160,7 @@ const Gallery = () => {
   className="text-7xl mt-4 font-extrabold text-center mb-8 drop-shadow-lg animate-fade-in"
   style={{
     fontFamily: "'Aspire', serif", // Apply Aspire font
-    color: "#FFD700", // Base gold color
+    color: "black", // Base gold color
     animation: "pulseGlow 2s infinite ease-in-out", // Add pulse animation
   }}
 >

@@ -152,7 +152,7 @@ const handlePreviousPage = () => {
   }}
 >    {/* Section Title */}
 <h1
-  className="relative text-5xl font-semibold text-center mb-8 text-red-700 
+  className="relative text-5xl font-semibold text-center mb-8 text-black 
              tracking-widest uppercase transition-all duration-300 ease-in-out 
              hover:scale-105 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] 
              hover:drop-shadow-[0_0_20px_rgba(255,255,255,1)]"

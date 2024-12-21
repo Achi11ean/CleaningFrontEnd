@@ -66,10 +66,10 @@ const Contact = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-end bg-cover bg-center"
-      style={{ backgroundImage: "url('contact.webp')" }}
+      className="min-h-screen flex items-center bg-gray-300 justify-end bg-cover bg-center"
+      style={{ backgroundImage: "url('')" }}
     >
-      <div className="bg-white bg-opacity-90 p-10 mr-10 rounded-lg shadow-2xl max-w-lg w-full">
+      <div className="bg-white bg-opacity-90 p-10 rounded-lg shadow-2xl max-w-2xl justify-center mx-auto w-full">
         <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-6">
           Get In Touch
         </h2>

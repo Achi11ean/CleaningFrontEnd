@@ -38,7 +38,7 @@ const Navbar = () => {
 
         </div>
         
-        
+        <div className="hidden md:flex space-x-8 items-center font-serif" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
         <div className="text-center my-">
   <Link
     to="/signin"
@@ -50,10 +50,10 @@ const Navbar = () => {
     "
     style={{ fontFamily: "'Aspire', serif" }}
   >
-    <span className="block sm:hidden bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+    <span className="block sm:hidden bg-black">
       A.K. Photos
     </span> 
-    <span className="hidden sm:block bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+    <span className="hidden sm:block text-black">
       Arif K. Photography
     </span>
   </Link>
@@ -62,7 +62,7 @@ const Navbar = () => {
 
 
 {/* Navigation Links */}
-<div className="hidden md:flex space-x-11 items-center font-serif" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
+
   <Link
     to="/"
     className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
@@ -111,9 +111,7 @@ const Navbar = () => {
       Sign Out
     </button>
   )}
-</div>
-
-        <div className="flex justify-center space-x-6 mt-4">
+          <div className="flex justify-center space-x-6 ">
             <a
               href="https://www.instagram.com/yourprofile"
               target="_blank"
@@ -132,6 +130,9 @@ const Navbar = () => {
             </a>
             
           </div>
+</div>
+
+
 
       </div>
       {isMenuOpen && (
