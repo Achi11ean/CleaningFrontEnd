@@ -7,9 +7,12 @@ const Contact = () => {
     phone_number: "",
     call_or_text: "call",
     description: "",
+    status: "pending", // Default status
   });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [showBubbles, setShowBubbles] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -19,6 +22,7 @@ const Contact = () => {
       setFormData({ ...formData, [name]: value });
     }
   };
+
   const formatPhoneNumber = (value) => {
     const phoneNumber = value.replace(/\D/g, ""); // Remove non-numeric characters
     const match = phoneNumber.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
@@ -55,7 +59,10 @@ const Contact = () => {
           phone_number: "",
           call_or_text: "call",
           description: "",
+          status: "pending",
         });
+        setShowBubbles(true); // Trigger animation
+        setTimeout(() => setShowBubbles(false), 3000); // Hide after 3 seconds
       } else {
         setError(data.error || "Something went wrong. Please try again.");
       }
@@ -66,11 +73,13 @@ const Contact = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center bg-gray-300 justify-end bg-cover bg-center"
-      style={{ backgroundImage: "url('')" }}
+      className="min-h-screen flex items-center bg-gray-600 justify-end pl-10 rounded-xl bg-cover bg-center"
+      style={{ backgroundImage: "url('cleaning8.webp')" }}
     >
-      <div className="bg-white bg-opacity-90 p-10 rounded-lg shadow-2xl max-w-2xl justify-center mx-auto w-full">
-        <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-6">
+      <div className="bg-white bg-opacity-90 p-10 rounded-lg overflow-x-auto shadow-2xl max-w-xl justify-center mr-10 w-full top-20">
+        <h2 className="text-6xl  font-extrabold text-gray-900 text-center mb-6"
+        style={{ fontFamily:"aspire, sans-serif"}}
+        >
           Get In Touch
         </h2>
 
@@ -83,57 +92,55 @@ const Contact = () => {
           <div className="mb-4 text-red-700 bg-red-100 p-3 rounded">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Your full name"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Full Name"
+              className="w-full p-4 text-lg ring-2 ring-black border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Your email address"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder=" Email Address"
+              className="w-full p-4 border text-lg ring-2 ring-black rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Phone Number (Optional)
+            <label className="block text-lg text-gray-700 text-center font-medium mb-1">
+              (Optional)
             </label>
             <input
               type="text"
               name="phone_number"
               value={formData.phone_number}
               onChange={handleChange}
-              placeholder="e.g. (123) 456-7890"
+              placeholder="Phone Number"
               maxLength="14"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 border  ring-2 ring-black rounded-lg text-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
+            <label className="block text-gray-700  text-center text-lg font-medium mb-1">
               Preferred Contact Method
             </label>
             <select
               name="call_or_text"
               value={formData.call_or_text}
               onChange={handleChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-lg p-4 border ring-2 ring-black rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="call">Call</option>
               <option value="text">Text</option>
@@ -141,7 +148,7 @@ const Contact = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
+            <label className="block text-center text-lg text-gray-700 font-medium mb-1">
               Description
             </label>
             <textarea
@@ -149,8 +156,8 @@ const Contact = () => {
               value={formData.description}
               onChange={handleChange}
               rows="5"
-              placeholder="Tell us about your inquiry..."
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="How may we help you? "
+              className="w-full p-3 border text-center text-lg ring-2 ring-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
@@ -163,6 +170,16 @@ const Contact = () => {
           </button>
         </form>
       </div>
+      {showBubbles && (
+        <div className="fixed inset-0 pointer-events-none flex flex-col items-center justify-end">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={index}
+              className="bubble bg-blue-400 text-white text-sm font-bold rounded-full p-3 m-2 animate-bubble"
+            ></div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

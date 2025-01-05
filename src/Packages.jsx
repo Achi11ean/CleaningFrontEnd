@@ -62,14 +62,29 @@ const Packages = () => {
   const [description, setDescription] = useState("");
 
   const gradientClasses = [
-    "from-yellow-300 to-yellow-500",
-    "from-pink-300 to-pink-500",
-    "from-green-300 to-green-500",
-    "from-blue-300 to-blue-500",
-    "from-purple-300 to-purple-500",
-    "from-red-300 to-red-500",
+    "from-blue-200 via-blue-300 to-blue-400", // Light ocean
+    "from-blue-300 via-blue-400 to-blue-500", // Serene skies
+    "from-blue-400 via-blue-500 to-blue-600", // Calm waters
+    "from-cyan-200 via-blue-300 to-blue-500", // Icy breeze
+    "from-indigo-300 via-blue-400 to-blue-600", // Twilight blues
+    "from-teal-300 via-blue-400 to-blue-500", // Aqua vibes
+    "from-blue-500 via-blue-600 to-blue-700", // Deep ocean
+    "from-sky-300 via-blue-400 to-indigo-500", // Midnight glow
+    "from-blue-100 via-blue-200 to-blue-300", // Misty morning
+    "from-cyan-100 via-blue-200 to-blue-300", // Frosty chill
+    "from-teal-200 via-blue-300 to-indigo-400", // Tropical dusk
+    "from-blue-600 via-indigo-500 to-blue-700", // Royal blue
+    "from-blue-400 via-cyan-300 to-blue-500", // Aqua shimmer
+    "from-blue-200 via-sky-300 to-blue-400", // Gentle wave
+    "from-indigo-500 via-blue-500 to-blue-700", // Bold night
+    "from-sky-200 via-blue-300 to-blue-500", // Clear horizon
+    "from-cyan-300 via-blue-400 to-indigo-500", // Arctic glow
+    "from-indigo-400 via-blue-500 to-blue-600", // Sapphire gradient
+    "from-teal-300 via-blue-500 to-indigo-600", // Crystal lagoon
+    "from-sky-400 via-blue-500 to-indigo-600", // Dreamy cascade
   ];
-
+  
+  
   // Fetch packages from the backend
   useEffect(() => {
     const fetchPackages = async () => {
@@ -143,41 +158,69 @@ const Packages = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-gray-100 via-gray-300 to-gray-900 text-gray-800">
+    <div className="w-full min-h-screen bg-gradient-to-b from-gray-300 via-gray-300 to-gray-800 text-gray-800">
       {/* Header */}
-      <header className="relative bg-transparent text-gray-900 text-center py-16">
+      <header className="relative bg-transparent text-gray-900 text-center py-10">
         {/* Background Image */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('banner.webp')" }}
+          className="absolute inset-0 bg-cover  bg-center"
+          style={{
+            backgroundImage: "url('banner3.webp')",
+          }}
         ></div>
 
-        {/* Subtle Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 to-transparent"></div>
+        {/* Fun Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-400/50 via-white/10 to-blue-500/50"></div>
 
         {/* Content */}
-        <div className="relative z-10 text-white">
-          <h1 className="text-6xl font-bold tracking-wide">
-            Explore The Golden Packages
-          </h1>
-          <p className="mt-4 text-2xl font-bold mx-auto">
-            Professional and personalized photography services to capture your
-            story.
-          </p>
-          <Link
-            to="/contact"
-            className="mt-6 inline-block bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 
-          text-white font-extrabold text-lg px-10 py-4 rounded-full shadow-2xl 
-          hover:from-yellow-500 hover:via-red-400 hover:to-pink-500 
-          transform hover:scale-110 transition-all duration-300 ease-out"
+        <div className="relative z-10 text-gray-800 px-12 max-w-3xl mx-auto">
+          <h1
+            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight animate-fade-in"
+            style={{
+              fontFamily: "'aspire', cursive",
+              color: "black",
+              textShadow: `
+      0 0 5px white, 
+      0 0 10px white, 
+      0 0 20px white, 
+      0 0 30px white, 
+      0 0 40px white, 
+      0 0 50px white
+    `,
+              animation: "fade-in 2s ease-out",
+            }}
           >
-            Book Now
-          </Link>
-        </div>
+            Cleaning Packages!
+          </h1>
+          <div className="mt-2">
+            <Link
+              to="/contact"
+              className="inline-block bg-gradient-to-r from-lime-400 via-green-500 to-teal-500 
+          text-white font-bold text-lg sm:text-xl px-8 sm:px-10 py-3 rounded-full shadow-xl
+          hover:from-teal-400 hover:via-green-400 hover:to-lime-500 
+          transform hover:rotate-1 hover:scale-105 transition-all duration-300 ease-out"
+            >
+              Book Now
+            </Link>
+          </div>
+
+          <p className="mt-6 text-base sm:text-lg lg:text-xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
+            Every package comes with our signature eco-friendly cleaning
+            services, because we care about you and the planet! 🌿✨</p>
+        </div> 
       </header>
+      <div className="w-full  h-2 bg-black mx-auto "></div>
+      <h1 
+  className="text-3xl md:text-5xl font-extrabold text-center bg-gradient-to-b from-blue-400 via-blue-500 to-black text-transparent bg-clip-text py-4 px-6 rounded-lg shadow-lg"
+  style={{ fontFamily: "moon" }}
+>
+  All cleaning services require an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs.
+</h1>
+<div className="w-full  h-1 bg-white mx-auto "></div>
+
 
       {isAdmin && (
-        <div className="max-w-md mx-auto bg-gray-700 p-6 rounded-lg shadow-md mt-5">
+        <div className="max-w-md mx-auto bg-white p-2 rounded-lg shadow-md mt-5">
           <button
             onClick={() => setShowForm((prev) => !prev)} // Toggle form visibility
             className="w-full py-3 px-6 text-2xl font-bold text-white uppercase 
@@ -265,7 +308,7 @@ const Packages = () => {
       )}
 
       {/* Package Cards */}
-      <section className="py-12 px-6">
+      <section className=" px-6 mt-3">
         {loading ? (
           <p className="text-center text-gray-700 text-xl">
             Loading packages...
@@ -286,13 +329,14 @@ const Packages = () => {
                   <img
                     src={pkg.image_url}
                     alt={pkg.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-28 object-cover"
                   />
                 )}
 
                 {/* Content */}
                 <div className="text-center p-4">
                   <h2 className="text-3xl font-bold">{pkg.title}</h2>
+                  <p>Prices Starting at:</p>
                   <p className="text-xl font-semibold ">${pkg.amount}</p>
                   <p className="text-black font-semibold text-lg flex items-center justify-center gap-2 animate-pulse">
                     <span className="material-icons mb-5 text-white text-2xl">
@@ -333,7 +377,7 @@ const Packages = () => {
             {/* Close Button */}
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 shadow-md"
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-300 transition-all duration-300 shadow-md"
               aria-label="Close Modal"
             >
               &times;

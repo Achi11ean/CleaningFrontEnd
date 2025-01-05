@@ -13,12 +13,10 @@ const Gallery = () => {
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState("");
   const [category, setCategory] = useState("Uncategorized");
-  const [photoType, setPhotoType] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [searchCategory, setSearchCategory] = useState("");
-  const [searchPhotoType, setSearchPhotoType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const photosPerPage = 12;
   const totalPages = Math.ceil(photos.length / photosPerPage);
@@ -59,7 +57,6 @@ const Gallery = () => {
     // Add query parameters for filtering
     const queryParams = new URLSearchParams();
     if (searchCategory) queryParams.append("category", searchCategory);
-    if (searchPhotoType) queryParams.append("photo_type", searchPhotoType);
   
     fetch(`http://127.0.0.1:5000/api/gallery?${queryParams}`)
       .then((res) => res.json())
@@ -75,7 +72,7 @@ const Gallery = () => {
   // Refetch photos on load and when filters change
   useEffect(() => {
     fetchPhotos();
-  }, [searchCategory, searchPhotoType]);
+  }, [searchCategory]);
   
   const handleDeletePhoto = async (photoId) => {
     if (!window.confirm("Are you sure you want to delete this photo?")) return; // Confirm deletion
@@ -116,7 +113,6 @@ const Gallery = () => {
       image_url: file, // Use the URL input
       caption,
       category,
-      photo_type: photoType,
     };
   
     try {
@@ -136,7 +132,6 @@ const Gallery = () => {
         setFile("");
         setCaption("");
         setCategory("Uncategorized");
-        setPhotoType("");
       } else {
         setMessage(data.error || "Failed to upload photo.");
       }
@@ -147,7 +142,16 @@ const Gallery = () => {
   };
   
   return (
-    <div className="relative min-h-screen bg-gradient-to-r from-black via-red-900 to-black overflow-hidden">
+<div
+  className="relative min-h-screen bg-gradient-to-r from-black via-red-900 to-black overflow-hidden"
+  style={{
+    backgroundImage: `url('gallery2.webp')`, // Dynamic image URL
+    backgroundSize: 'cover', // Ensure the image covers the container
+    backgroundPosition: 'center', // Center the image
+    backgroundRepeat: 'no-repeat', // Prevent tiling
+  }}
+>
+
       <div className="absolute inset-0 bg-gradient-radial from-transparent via-yellow-600 to-transparent opacity-30"></div>
 
       {/* Curtains */}
@@ -157,10 +161,10 @@ const Gallery = () => {
       {/* Main Content */}
       <div className="relative z-10 p-6">
       <h1
-  className="text-7xl mt-4 font-extrabold text-center mb-8 drop-shadow-lg animate-fade-in"
+  className="text-7xl mt-4 font-extrabold  text-center mb-8 drop-shadow-lg animate-fade-in"
   style={{
     fontFamily: "'Aspire', serif", // Apply Aspire font
-    color: "black", // Base gold color
+    color: "yellow", // Base gold color
     animation: "pulseGlow 2s infinite ease-in-out", // Add pulse animation
   }}
 >
@@ -198,23 +202,17 @@ const Gallery = () => {
     value={searchCategory}
     onChange={(e) => setSearchCategory(e.target.value)}
     className="border rounded p-2 w-full md:w-1/3"
-  />
-  <input
-    type="text"
-    placeholder="Search by Photo Type"
-    value={searchPhotoType}
-    onChange={(e) => setSearchPhotoType(e.target.value)}
-    className="border rounded p-2 w-full md:w-1/3"
-  />
+    title="Searchable categories: Kitchen, Bathroom, Carpet, Before/After, Moving Day, Garage, Tile/Grout, Office"
 
-</div>
+  />
+  </div>
 
         {/* Loading State */}
         {loading ? (
           <p className="text-center text-gray-600">Loading photos...</p>
         ) : (
           /* Gallery Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {currentPhotos.map((photo) => (
               <div
   key={photo.id}
@@ -254,7 +252,6 @@ const Gallery = () => {
                     <p className="text-sm">
                       {photo.category || "Uncategorized"}
                     </p>
-                    <p className="text-sm">{photo.photo_type || "No Type"}</p>
                   </div>
                 </div>
                 
@@ -331,12 +328,7 @@ const Gallery = () => {
               {selectedPhoto.category || "Uncategorized"}
             </span>
           </p>
-          <p className="text-md text-gray-400">
-            Type:{" "}
-            <span className="text-gray-200">
-              {selectedPhoto.photo_type || "No Type"}
-            </span>
-          </p>
+
         </div>
       </div>
     </div>
@@ -424,18 +416,18 @@ const Gallery = () => {
   onChange={(e) => setCategory(e.target.value)}
   className="w-full border rounded p-2"
 >
-  <option value="" disabled>Select Category</option>
-  <option value="Black & White">Black & White</option>
-  <option value="Color">Color</option>
-</select>
+  <option value="">Select Category</option>
+  <option value="Kitchen">Kitchen</option>
+  <option value="Bathroom">Bathroom</option>
+  <option value="Carpets">Carpet</option>
+  <option value="Before/After">Before/After</option>
+  <option value="MovingDay">Moving Day</option>
+  <option value="Garage">Garage</option>
+  <option value="Tile/Grout">Tile/Grout</option>
+  <option value="Office">Office</option>
+  </select>
 
-              <input
-                type="text"
-                placeholder="Photo Type"
-                value={photoType}
-                onChange={(e) => setPhotoType(e.target.value)}
-                className="w-full border rounded p-2"
-              />
+
 <button
   type="submit"
   className="relative w-full py-3 px-6 font-bold text-white uppercase rounded-lg 

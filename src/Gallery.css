@@ -23,9 +23,9 @@
     width: 50%;
     background: linear-gradient(
       to right,
-      #8b0000,
-      #b22222,
-      #8b0000
+      #1e3a8a,
+      #061d4e,
+      #678cf3
     ); /* Deep red gradient */
     background-size: 200% 100%;
     background-position: left;

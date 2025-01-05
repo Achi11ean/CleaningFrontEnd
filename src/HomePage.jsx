@@ -10,8 +10,45 @@ import { Swiper, SwiperSlide } from "swiper/react";
 const HomePage = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null); // Tracks the clicked image
 
+  const [selectedImage, setSelectedImage] = useState(null); // Tracks the clicked image
+  const [currentIndex, setCurrentIndex] = useState(0); // Tracks the active tab
+
+  const sections = [
+    {
+      title: "Residential Cleaning",
+      content: (
+        <p className="text-lg leading-relaxed mb-4">
+          Residential cleaning is our specialty! From cozy kitchens to serene bedrooms, we ensure your home feels fresh and inviting. Trust us to bring comfort and cleanliness to every corner of your living space.
+        </p>
+      ),
+    },
+    {
+      title: "Office Cleaning",
+      content: (
+        <p className="text-lg leading-relaxed mb-4">
+          A tidy workspace promotes productivity. Let us help you maintain a clean, professional office environment, perfect for achieving your goals while impressing clients and colleagues.
+        </p>
+      ),
+    },
+    {
+      title: "Eco-Friendly Solutions",
+      content: (
+        <p className="text-lg leading-relaxed mb-4">
+          Committed to a healthier planet, we use non-toxic, eco-friendly products that are safe for your family, pets, and the environment. Experience sustainable cleaning with us.
+        </p>
+      ),
+    },
+    {
+      title: "Moving Day Cleaning",
+      content: (
+        <p className="text-lg leading-relaxed mb-4">
+          Moving can be overwhelming — let us handle the cleaning! We’ll leave your old home spotless and prepare your new space for a fresh, stress-free start.
+        </p>
+      ),
+    },
+  ];
+  
   const openModal = (photo) => {
     console.log("Opening Modal with Photo Data:", photo); // Debug
     setSelectedImage(photo); // Pass the entire photo object
@@ -29,58 +66,187 @@ const HomePage = () => {
       .catch((error) => console.error("Error fetching gallery:", error))
       .finally(() => setLoading(false));
   }, []);
-
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % sections.length);
+    }, 30000);
+    return () => clearInterval(interval); 
+  }, [sections.length]);
   return (
     <div className="w-full  text-gray-800">
       {/* Hero Section */}
-      <section className="py-10 bg-gradient-to-b from-gray-100 via-gray-200 to-gray-300 text-gray-800">
-        <div className="max-w-7xl mx-auto px-6 lg:flex lg:items-center lg:space-x-12">
-          <div className="lg:w-1/2 mb-8 lg:mb-0">
-            <img
-              src="arif 3.jpg"
-              alt="About Me"
-              className=" shadow-lg w-full h-[600px] sm:h-[700px] object-cover"
-              />
-          </div>
+      <section className="py-16 bg-gradient-to-r from-blue-50 via-white to-blue-100 text-gray-800">
+  <div className="max-w-7xl mx-auto px-6 lg:flex lg:items-center lg:justify-between">
+    {/* Left Section: Text */}
+    <div className="lg:w-1/2 mb-12 lg:mb-0">
+      <h1 className="text-4xl font-bold leading-snug text-blue-700 mb-6">
+        Transform Your Space <br /> with <span className="text-blue-500">A Breath of Fresh Air</span>
+      </h1>
+      <p className="text-lg leading-relaxed mb-8">
+      At A Breath of Fresh Air Cleaning Services, we go beyond surface cleaning to create healthier, more peaceful homes. Using high-quality, non-toxic products and tools, we ensure your space is clean, safe, and free of harmful chemicals, leaving the air you breathe truly fresh.
 
-          {/* Text Section */}
-          <div className="lg:w-1/2">
+We understand the connection between your home and mental health. That’s why we offer customized cleaning plans to fit your needs, helping to reduce stress and bring clarity to your life.
 
-
-
-            <div
-  className="max-h-[700px] overflow-y-auto p-4 rounded-lg shadow-innertransition-all duration-300 custom-scrollbar"
->
-  <p className="text-lg leading-relaxed mb-4">
-    Hi, I'm{" "}
-    <span className="font-semibold text-blue-600">Mark Cohen</span>, a passionate photographer dedicated to capturing life's most precious moments. With years of experience in portraits, events, and creative photography, I strive to turn fleeting memories into timeless keepsakes.
-  </p>
-  <p className="text-lg leading-relaxed mb-4">
-    I believe every picture tells a story, and I'm here to tell yours. Whether it’s a serene golden hour portrait, a lively family event, or a unique creative project, I bring creativity, care, and professionalism to every shot.
-  </p>
-  <p className="text-lg leading-relaxed mb-4">
-    My journey into photography started with a simple camera and a love for capturing beauty in everyday life. Over the years, I've honed my craft to deliver high-quality, stunning visuals that my clients cherish. From candid moments to meticulously planned shoots, I ensure every detail is perfect.
-  </p>
-  <p className="text-lg leading-relaxed mb-4">
-    Let’s collaborate to create something special. Whether you're looking for a personal portrait session, coverage for a milestone event, or a creative project that pushes boundaries, I’m ready to bring your vision to life.
-  </p>
+Choose us to transform your home into a sanctuary—for your health, your family, and your peace of mind.
+      </p>
+      <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
+      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
+      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+  <Link to="/book">
+    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      Contact Us!
+    </button>
+  </Link>
+  <Link to="/gallery">
+    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      View Gallery
+    </button>
+  </Link>
+  <Link to="/packages">
+    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      Cleaning Packages
+    </button>
+  </Link>
+  <Link to="/reviews">
+    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      Reviews
+    </button>
+  </Link>
 </div>
 
 
-          </div>
-        </div>
-      </section>
+
+
+    </div>
+    <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
+      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
+      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
+      
+    {/* Right Section: Image */}
+    <div className="lg:w-1/2 relative">
+      <img
+        src="logo.jpeg"
+        alt="Amanda Cleaning"
+        className="rounded-3xl lg:ml-10 mt-5 shadow-lg w-full object-cover h-[400px] sm:h-[500px] object-top"
+        />
+      {/* Floating Bubbles */}
+      <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
+      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
+      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
+      
+    </div>
+  </div>
+
+  <div className="grid mt-24 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+  {/* Feature Card 1 */}
+  <div className="relative bg-white p-6 ml-4 rounded-lg shadow-lg text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl group border border-transparent hover:border-gradient-to-r hover:from-blue-500 hover:to-yellow-500">
+    <h3 className="text-xl font-semibold text-blue-600 mb-1 transition-all duration-300 group-hover:text-yellow-500">
+      Residential Cleaning
+    </h3>
+    <p className="text-gray-600 group-hover:opacity-0 transition-opacity duration-300">
+      From kitchens to bedrooms, we ensure every corner of your home is spotless and welcoming.
+    </p>
+    {/* Hover Detail */}
+    <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+      <h3 className="text-xl font-semibold text-blue-600 mb-2">Residential Cleaning</h3>
+      <p className="text-gray-700">
+        We offer tailored residential cleaning to create a cozy, spotless home.
+      </p>
+    </div>
+  </div>
+
+  {/* Feature Card 2 */}
+  <div className="relative bg-white p-6 rounded-lg shadow-lg text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl group border border-transparent hover:border-gradient-to-r hover:from-blue-500 hover:to-yellow-500">
+    <h3 className="text-xl font-semibold text-blue-600 mb-4 transition-all duration-300 group-hover:text-yellow-500">
+      Office Cleaning
+    </h3>
+    <p className="text-gray-600 group-hover:opacity-0 transition-opacity duration-300">
+      Keep your workspace tidy and professional with our thorough office cleaning services.
+    </p>
+    {/* Hover Detail */}
+    <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+      <h3 className="text-xl font-semibold text-blue-600 mb-2">Office Cleaning</h3>
+      <p className="text-gray-700">
+        A clean office boosts productivity and professionalism. Let us handle it!
+      </p>
+    </div>
+  </div>
+
+  {/* Feature Card 3 */}
+  <div className="relative bg-white p-6 rounded-lg shadow-lg text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl group border border-transparent hover:border-gradient-to-r hover:from-blue-500 hover:to-yellow-500">
+    <h3 className="text-xl font-semibold text-blue-600 mb-4 transition-all duration-300 group-hover:text-yellow-500">
+      Eco-Friendly Solutions
+    </h3>
+    <p className="text-gray-600 group-hover:opacity-0 transition-opacity duration-300">
+      Using non-toxic, eco-friendly products, we create a safe and healthy environment for you and the planet.
+    </p>
+    {/* Hover Detail */}
+    <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+      <h3 className="text-xl font-semibold text-blue-600 mb-2">Eco-Friendly Solutions</h3>
+      <p className="text-gray-700">
+        Safe, sustainable cleaning methods for a better planet and healthier home.
+      </p>
+    </div>
+  </div>
+
+  {/* Feature Card 4: Moving Day Cleaning */}
+  <div className="relative bg-white p-6 rounded-2xl mr-4 shadow-lg text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl group border border-transparent hover:border-gradient-to-r hover:from-blue-500 hover:to-yellow-500">
+    <h3 className="text-xl font-semibold text-blue-600 mb-4 transition-all duration-300 group-hover:text-yellow-500">
+      Moving Day Cleaning
+    </h3>
+    <p className="text-gray-600 group-hover:opacity-0 transition-opacity duration-300">
+      Make your move stress-free with our comprehensive cleaning services for both old and new homes.
+    </p>
+    {/* Hover Detail */}
+    <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-6">
+      <h3 className="text-xl font-semibold text-blue-600 mb-2">Moving Day Cleaning</h3>
+      <p className="text-gray-700">
+        Ensure a spotless start in your new space or leave your old one sparkling clean.
+      </p>
+    </div>
+  </div>
+
+
+
+
+  </div>
+</section>
+
 
       <div className="relative z-10  text-center">
-        <div className="w-full  h-2 bg-black mx-auto "></div>
+        <div className="w-full  h-1 bg-black mx-auto "></div>
+        
       </div>
 
       {/* Gallery Section */}
-      <section className="py-12 bg-gradient-to-t from-gray-100 via-gray-200 to-gray-400">
+      <section className="py-10 bubble-container  bg-gradient-to-t from-blue-600  via-black to-blue-600">
         {loading ? (
           <p className="text-center text-gray-600">Loading...</p>
         ) : (
           <div className="max-w-7xl mx-auto px-4">
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
+                                              <div className="bubble"></div>
             <Swiper
               modules={[Navigation, Pagination, Autoplay]}
               navigation
@@ -99,13 +265,17 @@ const HomePage = () => {
                 1024: { slidesPerView: 5, spaceBetween: 40 }, // Show 5 slides at >= 1024px
               }}
             >
+                                                <div className="bubble"></div>
+                                                <div className="bubble"></div>
+                                  <div className="bubble"></div>
+                                  <div className="bubble"></div>
               {galleryImages.slice(0, 8).map((photo) => (
                 <SwiperSlide key={photo.id}>
                   <div className="relative group rounded-xl overflow-hidden shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl">
-                    {/* Image */}
+
                     <img
-src={photo.image_url}
-alt={photo.caption || "Gallery Image"}
+                      src={photo.image_url}
+                      alt={photo.caption || "Gallery Image"}
                       className="w-full h-64 object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 cursor-pointer"
                       onClick={() => openModal(photo)} // Pass the full photo object
                     />
@@ -128,6 +298,18 @@ alt={photo.caption || "Gallery Image"}
                 </SwiperSlide>
               ))}
             </Swiper>
+            <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
+                <div className="bubble"></div>
           </div>
         )}
       </section>
@@ -136,20 +318,19 @@ alt={photo.caption || "Gallery Image"}
           <div className="relative max-w-4xl w-full p-4 bg-white rounded-lg shadow-2xl transform transition-all duration-300 ease-in-out">
             {/* Close Button */}
             <button
-  onClick={closeModal}
-  className="absolute top-2 right-2 z-10 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 shadow-md"
-  aria-label="Close Modal"
->
-  &times;
-</button>
-
+              onClick={closeModal}
+              className="absolute top-2 right-2 z-10 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 shadow-md"
+              aria-label="Close Modal"
+            >
+              &times;
+            </button>
 
             {/* Image and Details */}
             <div className="flex flex-col items-center justify-center">
               {/* Image */}
               <img
-src={selectedImage.image_url}
-alt={selectedImage.caption || "Expanded View"}
+                src={selectedImage.image_url}
+                alt={selectedImage.caption || "Expanded View"}
                 className="w-full max-w-[90vw] max-h-[60vh] object-contain rounded-lg shadow-lg transition-transform duration-300 ease-in-out transform"
               />
 
@@ -175,7 +356,6 @@ alt={selectedImage.caption || "Expanded View"}
       </div>
 
       {/* About Me Section */}
-
     </div>
   );
 };

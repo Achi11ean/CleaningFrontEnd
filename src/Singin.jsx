@@ -41,9 +41,9 @@ const SignIn = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      className="min-h-screen flex items-center justify-start bg-cover bg-center"
       style={{
-        backgroundImage: "url('signin2.webp')", // Set your background image
+        backgroundImage: "url('signin22.webp')", // Set your background image
       }}
     >
       {welcomeMessage ? (
@@ -53,10 +53,10 @@ const SignIn = () => {
           </h2>
         </div>
       ) : (
-        <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
+        <div className="bg-white p-10 rounded-3xl ml-4 shadow-2xl w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-extrabold text-gray-800 mb-2">
-              Welcome Back, Arif!
+              Welcome Back, Amanda!
             </h1>
           </div>
 

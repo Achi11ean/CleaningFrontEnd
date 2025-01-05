@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { FaInstagram, FaFacebook } from "react-icons/fa"; // Import social media icons
-import '../public/assets/Aspire.ttf';
+import './assets/Aspire.ttf';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useAuth(); // Access auth context
@@ -10,9 +10,9 @@ const Navbar = () => {
   const toggleMenu = () => setIsMenuOpen((prev) => !prev); // Toggle function
   
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white  shadow-md sticky top-0 z-50">
       
-      <div className="container mx-auto flex justify-between items-center px-6 py-4">
+      <div className="container  flex justify-between items-center px-full py-1">
         {/* Logo */}        {/* Mobile Menu Button */}
         <div className="md:hidden">
         <button
@@ -38,31 +38,35 @@ const Navbar = () => {
 
         </div>
         
-        <div className="hidden md:flex space-x-8 items-center font-serif" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
-        <div className="text-center my-">
-  <Link
-    to="/signin"
-    className="
-      text-6xl font-extrabold bg-clip-text 
-      bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 
-      drop-shadow-lg hover:drop-shadow-2xl 
-      transition duration-500 ease-in-out transform hover:scale-105
-    "
-    style={{ fontFamily: "'Aspire', serif" }}
+        
+        <div className="flex items-center justify-start flex-1">
+          
+<Link
+  to="/signin"
+  className="
+    text-6xl font-extrabold bg-clip-text 
+    bg-gradient-to-r from-blue-500 via-white to-blue-500 
+    drop-shadow-lg hover:drop-shadow-2xl 
+    transition duration-500 ease-in-out transform hover:scale-105
+    whitespace-nowrap mr-5
+    md:text-xl sm:text-xs xs:text-sm
+  "
+  style={{ fontFamily: "'Aspire', serif" }}
+>
+  <span
+    className="text-3xl bg-gradient-to-r from-black via-blue-400 to-blue-700 bg-clip-text text-transparent drop-shadow-md md:text-5xl sm:text-xl xs:text-xl"
   >
-    <span className="block sm:hidden bg-black">
-      A.K. Photos
-    </span> 
-    <span className="hidden sm:block text-black">
-      Arif K. Photography
-    </span>
-  </Link>
+    . ݁₊ ⊹ . ݁˖ . ݁ A Breath of Fresh Air 𓈒𓏸
+  </span>
+</Link>
+
+  
 </div>
 
 
 
 {/* Navigation Links */}
-
+<div className="hidden md:flex space-x-14 items-center flex-1 justify-center font-serif">
   <Link
     to="/"
     className="text-gray-700 hover:text-blue-500 text-2xl font-bold transition duration-300 uppercase tracking-wider"
@@ -104,34 +108,37 @@ const Navbar = () => {
   {/* Sign Out Button */}
   {isAuthenticated && (
     <button
-      onClick={logout}
-      className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 font-serif"
-      style={{ fontFamily: "'Times New Roman', Times, serif" }}
-    >
-      Sign Out
-    </button>
+  onClick={logout}
+  className="bg-red-500 text-white px-1  rounded-lg hover:bg-red-400 transition duration-300 font-serif"
+  style={{
+    fontFamily: "'Times New Roman', Times, serif",
+    whiteSpace: "nowrap", // Prevents text wrapping
+  }}
+>
+  Sign Out
+</button>
+
   )}
-          <div className="flex justify-center space-x-6 ">
-            <a
-              href="https://www.instagram.com/yourprofile"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-pink-500 hover:text-pink-600 text-3xl"
-            >
-              <FaInstagram />
-            </a>
-            <a
-              href="https://www.facebook.com/yourprofile"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-600 text-3xl"
-            >
-              <FaFacebook />
-            </a>
-            
-          </div>
 </div>
 
+<div className="flex justify-end items-end lg:ml-40 space-x-6">
+  <a
+    href="https://www.instagram.com/harmonicessence"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-pink-500 hover:text-pink-600 text-3xl"
+  >
+    <FaInstagram />
+  </a>
+  <a
+    href="https://www.facebook.com/harmonicessence"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-500 hover:text-blue-600 text-3xl"
+  >
+    <FaFacebook />
+  </a>
+</div>
 
 
       </div>
@@ -193,9 +200,14 @@ const Navbar = () => {
           Sign Out
         </button>
       )}
+      
     </div>
+    
   </div>
+  
 )}
+
+
 
     </nav>
   );
