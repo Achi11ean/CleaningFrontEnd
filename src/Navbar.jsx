@@ -12,7 +12,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white  shadow-md sticky top-0 z-50">
       
-      <div className="container  flex justify-between items-center px-full py-1">
+      <div className="flex justify-center items-center  py-3">
         {/* Logo */}        {/* Mobile Menu Button */}
         <div className="md:hidden">
         <button
@@ -39,29 +39,43 @@ const Navbar = () => {
         </div>
         
         
-        <div className="flex items-center justify-start flex-1">
           
-<Link
+        <Link
   to="/signin"
   className="
-    text-6xl font-extrabold bg-clip-text 
+    text-4xl md:text-2xl sm:text-lg xs:text-base font-extrabold bg-clip-text 
     bg-gradient-to-r from-blue-500 via-white to-blue-500 
     drop-shadow-lg hover:drop-shadow-2xl 
     transition duration-500 ease-in-out transform hover:scale-105
-    whitespace-nowrap mr-5
-    md:text-xl sm:text-xs xs:text-sm
+    whitespace-normal text-center mx-auto block
   "
-  style={{ fontFamily: "'Aspire', serif" }}
+  style={{ fontFamily: "Aspire, serif" }}
 >
+  {/* Large screen text */}
   <span
-    className="text-3xl bg-gradient-to-r from-black via-blue-400 to-blue-700 bg-clip-text text-transparent drop-shadow-md md:text-5xl sm:text-xl xs:text-xl"
+    className="
+      hidden md:inline text-3xl md:text-3xl sm:text-2xl xs:text-xs bg-gradient-to-r 
+      from-black via-blue-400 to-blue-700 bg-clip-text text-transparent 
+      drop-shadow-md"
   >
-    . ݁₊ ⊹ . ݁˖ . ݁ A Breath of Fresh Air 𓈒𓏸
+    . ݁₊ ⊹ . ݁˖ . A Breath of Fresh Air 𓈒𓏸
   </span>
+
+  {/* Small screen text */}
+  <span
+    className="
+      md:hidden text-2xl md:text-xl sm:text-sm xs:text-xs bg-gradient-to-r 
+      from-black via-blue-400 to-blue-700 bg-clip-text text-transparent 
+      drop-shadow-md block"
+  >
+    A Breath of Fresh Air 𓈒𓏸
+    
+  </span>
+
 </Link>
 
+
   
-</div>
 
 
 
@@ -119,31 +133,25 @@ const Navbar = () => {
 </button>
 
   )}
-</div>
 
-<div className="flex justify-end items-end lg:ml-40 space-x-6">
-  <a
-    href="https://www.instagram.com/harmonicessence"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-pink-500 hover:text-pink-600 text-3xl"
-  >
-    <FaInstagram />
-  </a>
-  <a
-    href="https://www.facebook.com/harmonicessence"
+<a
+    href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604/?mibextid=wwXIfr&rdid=zsYBC4u6zfu3Xmyh&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1R761L1bE9%2F%3Fmibextid%3DwwXIfr"
     target="_blank"
     rel="noopener noreferrer"
     className="text-blue-500 hover:text-blue-600 text-3xl"
   >
     <FaFacebook />
   </a>
+
 </div>
+
+
 
 
       </div>
       {isMenuOpen && (
-  <div className="md:hidden bg-gray-50 border-t border-gray-200">
+  <div className="md:hidden bg-gradient-to-t from-blue-100 via-blue-400 to-blue-500 border-t border-black">
+
     <div className="flex flex-col space-y-4 px-6 py-4">
       <Link
         to="/"
@@ -166,6 +174,7 @@ const Navbar = () => {
       >
         Contact Me
       </Link>
+      
       <Link
         to="/gallery"
         className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
@@ -189,6 +198,16 @@ const Navbar = () => {
           Contact Center
         </Link>
       )}
+          <div className="mx-auto">
+    <a
+    href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604/?mibextid=wwXIfr&rdid=zsYBC4u6zfu3Xmyh&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1R761L1bE9%2F%3Fmibextid%3DwwXIfr"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-500 hover:text-blue-600 text-3xl"
+  >
+    <FaFacebook />
+  </a>
+  </div>
       {isAuthenticated && (
         <button
           onClick={() => {

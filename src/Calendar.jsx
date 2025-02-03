@@ -4,7 +4,7 @@ import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 import { parseISO } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
-
+import "./App.css"
 const Calendar = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -74,7 +74,7 @@ const Calendar = () => {
 
   return (
     <div
-      className="max-w-4xl mx-auto p-6 rounded-lg shadow-md"
+      className="max-w-full mx-auto p-6 rounded-lg shadow-md"
       style={{
         background: "linear-gradient(135deg, #fbc2eb, #a6c1ee)", // Gradient colors
         backgroundSize: "cover",
@@ -118,13 +118,13 @@ const Calendar = () => {
               : "Recurring Payment"}
           </p>
           <p>
-            <strong>Inquiry Name:</strong> {selectedEvent.inquiry_name}
+            <strong>Inquiry Name:</strong> <br/> {selectedEvent.inquiry_name}
           </p>
           <p>
-            <strong>Phone Number:</strong> {selectedEvent.phone_number}
+            <strong>Phone Number:</strong> <br/>{selectedEvent.phone_number}
           </p>
           <p>
-            <strong>Notes:</strong> {selectedEvent.notes}
+            <strong>Notes:</strong> <br/> {selectedEvent.notes}
           </p>
           <p>
   <strong>Paid:</strong>{" "}

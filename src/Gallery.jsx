@@ -161,11 +161,11 @@ const Gallery = () => {
       {/* Main Content */}
       <div className="relative z-10 p-6">
       <h1
-  className="text-7xl mt-4 font-extrabold  text-center mb-8 drop-shadow-lg animate-fade-in"
+  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl mt-4 font-extrabold text-center mb-8 drop-shadow-lg animate-fade-in"
   style={{
     fontFamily: "'Aspire', serif", // Apply Aspire font
-    color: "yellow", // Base gold color
-    animation: "pulseGlow 2s infinite ease-in-out", // Add pulse animation
+    color: "white", // Base gold color
+    animation: "fade-in 2s  ease-in-out", // Add pulse animation
   }}
 >
   ✨ Photo Gallery ✨

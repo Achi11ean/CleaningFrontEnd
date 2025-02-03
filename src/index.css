@@ -309,3 +309,40 @@
       opacity: 0;
     }
   }
+
+  /* CSS for shimmer effect */
+  @keyframes shimmer {
+    0% {
+      background-position: 200%;
+    }
+    100% {
+      background-position: -200%;
+    }
+  }
+  
+
+.shimmer-text {
+  background: linear-gradient(90deg, #ffffff, #a2dcf7, #75a3ec,#518ded,#2b72e5,#518ded,#75a3ec,#a2c6ff,#a2dcf7, #ffffff);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Make the text transparent */
+  animation: shimmer 18s infinite linear;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse-animation {
+  animation: pulse 1s ease-in-out 5;  /* 1 second per pulse, ease-in-out timing, repeat 5 times */
+  animation-iteration-count: 3;
+}

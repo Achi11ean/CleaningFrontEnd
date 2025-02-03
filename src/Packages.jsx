@@ -159,11 +159,16 @@ const Packages = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-gray-300 via-gray-300 to-gray-800 text-gray-800">
+
+
       {/* Header */}
       <header className="relative bg-transparent text-gray-900 text-center py-10">
+      <div>
+  <h1 className="">Cleaning Packages</h1>
+</div>
         {/* Background Image */}
         <div
-          className="absolute inset-0 bg-cover  bg-center"
+          className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: "url('banner3.webp')",
           }}
@@ -171,13 +176,11 @@ const Packages = () => {
 
         {/* Fun Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-blue-400/50 via-white/10 to-blue-500/50"></div>
-
-        {/* Content */}
         <div className="relative z-10 text-gray-800 px-12 max-w-3xl mx-auto">
           <h1
-            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight animate-fade-in"
+            className="text-5xl sm:text-6xl lg:text-5xl font-extrabold leading-tight animate-fade-in"
             style={{
-              fontFamily: "'aspire', cursive",
+              fontFamily: "'playfair'",
               color: "black",
               textShadow: `
       0 0 5px white, 
@@ -190,34 +193,35 @@ const Packages = () => {
               animation: "fade-in 2s ease-out",
             }}
           >
-            Cleaning Packages!
-          </h1>
-          <div className="mt-2">
-            <Link
-              to="/contact"
-              className="inline-block bg-gradient-to-r from-lime-400 via-green-500 to-teal-500 
-          text-white font-bold text-lg sm:text-xl px-8 sm:px-10 py-3 rounded-full shadow-xl
-          hover:from-teal-400 hover:via-green-400 hover:to-lime-500 
-          transform hover:rotate-1 hover:scale-105 transition-all duration-300 ease-out"
-            >
-              Book Now
-            </Link>
-          </div>
+            Cleaning Packages
+          </h1> </div>
+        {/* Content */}
+        <div className="relative z-10 text-gray-800 px-12 max-w-4xl mx-auto">
 
-          <p className="mt-6 text-base sm:text-lg lg:text-xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
+
+
+          <p className="mt-6 text-base sm:text-lg lg:text-2xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
             Every package comes with our signature eco-friendly cleaning
-            services, because we care about you and the planet! 🌿✨</p>
+            services, because we care about you and the planet! 🌿✨                  <p className="text-black font-semibold text-lg flex items-center justify-center gap-2 animate-pulse">
+                    <span className="material-icons mb-5 text-blue-800 text-2xl">
+                      touch_app
+                    </span>
+                    Select a package for Details
+                  </p></p>
+            
         </div> 
-      </header>
-      <div className="w-full  h-2 bg-black mx-auto "></div>
-      <h1 
-  className="text-3xl md:text-5xl font-extrabold text-center bg-gradient-to-b from-blue-400 via-blue-500 to-black text-transparent bg-clip-text py-4 px-6 rounded-lg shadow-lg"
-  style={{ fontFamily: "moon" }}
->
-  All cleaning services require an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs.
-</h1>
-<div className="w-full  h-1 bg-white mx-auto "></div>
 
+      </header>
+      <div className="w-full h-2 bg-black mx-auto"></div>
+            
+            <h1 
+              className="text-3xl md:text-3xl  text-center text-black bg-red-600
+                py-4 px-6  shadow-lg pulse-animation" 
+              style={{ fontFamily: "'aspire', '" }}
+            >
+              🧼 All services <span className="underline font-extrabold">REQUIRE</span> an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs.🧹
+            </h1>
+            <div className="w-full h-2 bg-black mx-auto"></div>
 
       {isAdmin && (
         <div className="max-w-md mx-auto bg-white p-2 rounded-lg shadow-md mt-5">
@@ -316,7 +320,7 @@ const Packages = () => {
         ) : error ? (
           <p className="text-center text-red-500 text-xl">{error}</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {packages.map((pkg, index) => (
               <button
                 onClick={() => handleViewPackage(pkg)} // Open modal on card click
@@ -329,7 +333,7 @@ const Packages = () => {
                   <img
                     src={pkg.image_url}
                     alt={pkg.title}
-                    className="w-full h-28 object-cover"
+                    className="w-full h-28  object-cover"
                   />
                 )}
 
@@ -338,12 +342,7 @@ const Packages = () => {
                   <h2 className="text-3xl font-bold">{pkg.title}</h2>
                   <p>Prices Starting at:</p>
                   <p className="text-xl font-semibold ">${pkg.amount}</p>
-                  <p className="text-black font-semibold text-lg flex items-center justify-center gap-2 animate-pulse">
-                    <span className="material-icons mb-5 text-white text-2xl">
-                      touch_app
-                    </span>
-                    Select for Details
-                  </p>
+
                 </div>
 
                 {/* Admin Buttons */}
@@ -401,6 +400,17 @@ const Packages = () => {
               <p className="text-gray-800 text-md leading-relaxed">
                 {selectedPackage.description}
               </p>
+              <div className="mt-2">
+            <Link
+              to="/contact"
+              className="inline-block bg-gradient-to-r from-lime-400 via-green-500 to-teal-500 
+          text-white font-bold text-lg sm:text-xl px-8 sm:px-10 py-3 rounded-full shadow-xl
+          hover:from-teal-400 hover:via-green-400 hover:to-lime-500 
+          transform hover:rotate-1 hover:scale-105 transition-all duration-300 ease-out"
+            >
+              Book Now
+            </Link>
+          </div>
             </div>
           </div>
         </div>

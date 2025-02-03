@@ -118,7 +118,10 @@ const createOneTimeCleaning = async () => {
       date_time: "",
       amount: "",
       paid: false,
+      notes: "",
     });
+    window.reload();
+
   } catch (err) {
     console.error("Failed to create one-time cleaning:", err);
   }

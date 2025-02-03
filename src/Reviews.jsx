@@ -93,16 +93,18 @@ const ReviewList = () => {
 
         {/* Image Section */}
         <div className="flex justify-center items-center max-h-[80vh] overflow-hidden">
-          <img
-            src={imageUrl}
-            alt="Review"
-            className="w-auto max-h-[80vh] rounded-lg object-contain shadow-md"
-          />
-        </div>
+  <img
+    src={imageUrl}
+    alt="Review"
+    className={`rounded-lg object-contain shadow-md ${
+      imageUrl === "logo.jpeg" ? "max-h-40" : "max-h-[80vh]"
+    }`}
+  />
+</div>
 
         {/* Caption */}
         <div className="mt-4 text-center">
-          <p className="text-lg font-semibold text-gray-800">
+          <p className="text-lg max-h-32 overflow-y-auto font-semibold text-gray-800">
             {caption || "No caption provided"}
           </p>
           <p className="text-sm text-gray-600">
@@ -285,13 +287,14 @@ const ReviewList = () => {
           className="absolute inset-0 m-auto w-64 h-64 bg-cyan-700 opacity-20 rounded-full blur-[200px]"
           style={{ pointerEvents: "none" }}
         ></div>
-        <h2
-          onClick={() => setShowReviewForm(!showReviewForm)} // Toggle the form visibility
-          className="text-7xl font-bold  text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-300 to-yellow-400 drop-shadow-md cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
-          style={{ fontFamily: "'Aspire', serif" }} // Apply Aspire font
-        >
-          {showReviewForm ? "Close Review Form" : "Share Your Experience"}
-        </h2>
+<h2
+  onClick={() => setShowReviewForm(!showReviewForm)} // Toggle the form visibility
+  className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-300 to-yellow-400 drop-shadow-md cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
+  style={{ fontFamily: "'Aspire', serif" }} // Apply Aspire font
+>
+  {showReviewForm ? "Close Review Form" : "Share Your Experience"}
+</h2>
+
 
         <div className="border-b-2 border-gray-300 mx-auto w-1/2 mb-6"></div>
         {showReviewForm && (

@@ -4,7 +4,6 @@ import { FaTrash } from "react-icons/fa"; // Import a trash icon for delete butt
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 import Creations from "./Creation";
-import Finances from "./Finances"; // Import the new component
 import debounce from "lodash.debounce";
 
 axios.defaults.baseURL = "http://127.0.0.1:5000";
@@ -14,6 +13,9 @@ import Calendar from "./Calendar";
 const ContactCenter = () => {
   const [inquiries, setInquiries] = useState([]);
   const [activeTab, setActiveTab] = useState("Agenda"); // Default tab
+  const [oldRecords, setOldRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const { token } = useAuth();
   const [oneTimeCleanings, setOneTimeCleanings] = useState([]);
@@ -33,7 +35,55 @@ const ContactCenter = () => {
   });
 
   // Calculate paginated data
+  useEffect(() => {
+    fetchOldRecords();
+}, []);
+const fetchOldRecords = async () => {
+  if (!token) {
+      console.error("No authentication token found.");
+      return;
+  }
 
+  try {
+      const response = await axios.get("/api/old_records", {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      setOldRecords(response.data);
+  } catch (error) {
+      console.error("Error fetching old records:", error);
+  }
+};
+
+// Delete old records with authentication
+const deleteOldRecords = async () => {
+  if (oldRecords.length === 0) {
+      setMessage("No records to delete.");
+      return;
+  }
+
+  // Confirm before deletion
+  const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${oldRecords.length} old records?`
+  );
+  if (!confirmDelete) return;
+
+  setLoading(true);
+  setMessage("");
+
+  try {
+      const response = await axios.delete("/api/cleanup_old_records", {
+          headers: { Authorization: `Bearer ${token}` }, // Send token
+      });
+
+      setOldRecords([]); // Clear records on success
+      setMessage(response.data.message || "Old records deleted successfully!");
+  } catch (error) {
+      console.error("Error deleting records:", error);
+      setMessage("Failed to delete records.");
+  } finally {
+      setLoading(false);
+  }
+};
   // Handlers for pagination controls
   const handleCleaningNextPage = () => {
     if (cleaningCurrentPage < cleaningTotalPages) {
@@ -471,11 +521,11 @@ const ContactCenter = () => {
 
   const [error, setError] = useState("");
   const statusOptions = [
-    "pending",
-    "contacted",
-    "booked",
-    "booked & paid",
-    "completed",
+    "New Inquiry",
+    "Contacted",
+    "Booked",
+    "Paused",
+    "Completed",
   ];
   const formatPhoneNumber = (phoneNumber) => {
     if (!phoneNumber) return "N/A";
@@ -629,6 +679,15 @@ const ContactCenter = () => {
     setSearchTerm(value);
     debouncedSearch(value);
   };
+  const [showAlert, setShowAlert] = useState(false);
+  useEffect(() => {
+    if (oldRecords.length > 20) {
+        setShowAlert(true);
+    } else {
+        setShowAlert(false);
+    }
+}, [oldRecords.length]);
+
 
   // -----------------------------------------------------------------------------------------------------------------------------------End of Logic
   return (
@@ -650,12 +709,24 @@ const ContactCenter = () => {
           className="text-5xl pt-5 rounded-3xl font-bold mb-8 pb-3  text-center  bg-gradient-to-r from-pink-400 via-purple-300 to-yellow-300 shadow-lg"
           style={{ fontFamily: "'Pacifico', 'Dancing Script', cursive" }}
         >
-          Contact Center
+          Amanda's Hub
         </h1>
+        {showAlert && (
+  <div>
+    <div
+    title="--> Manage tab --> at the very bottom you can delete anything over 90 days old!."
+    className="left-0 right-0 bg-red-600 text-white p-4 text-center font-bold animate-bounce">
+      ⚠️ Warning: Database is getting large! Consider cleaning up old records. ⚠️
+      
+    </div>
+
+
+  </div>
+)}
 
         {/* Tab Navigation */}
         <div className="flex justify-center space-x-4 mb-6">
-          {["Agenda", "Manage", "Create Cleaning", "Finances"].map((tab) => (
+          {["Agenda", "Manage", "Create Cleaning"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -867,18 +938,19 @@ const ContactCenter = () => {
                             {inquiry.call_or_text || "N/A"}
                           </p>
                           <p className="text-sm mb-3">
-  <span className="font-semibold">Description:</span>
-  <br />
-  <div
-    className="max-h-24 overflow-y-auto"
-    style={{
-      wordBreak: "break-word", // Ensures long words wrap within the container
-      whiteSpace: "pre-wrap", // Preserves line breaks and spaces
-    }}
-  >
-    {inquiry.description || "No description available"}
-  </div>
-</p>
+                            <span className="font-semibold">Description:</span>
+                            <br />
+                            <div
+                              className="max-h-24 overflow-y-auto"
+                              style={{
+                                wordBreak: "break-word", // Ensures long words wrap within the container
+                                whiteSpace: "pre-wrap", // Preserves line breaks and spaces
+                              }}
+                            >
+                              {inquiry.description ||
+                                "No description available"}
+                            </div>
+                          </p>
 
                           <p className="text-sm mb-3">
                             <span className="font-semibold">Submitted:</span>{" "}
@@ -961,10 +1033,10 @@ const ContactCenter = () => {
                 Next
               </button>
             </div>
-{/* ------------------------------------------------END OF INQUIRY ------------------------------------------------------------------- */}
-            <div className="mt-6 ">
+            {/* ------------------------------------------------END OF INQUIRY ------------------------------------------------------------------- */}
 
-            <div className="flex justify-center my-4">
+            <div className="mt-6 ">
+              <div className="flex justify-center my-4">
                 <input
                   type="text"
                   placeholder="Search Cleanings by Inquiry Name or Notes"
@@ -974,7 +1046,7 @@ const ContactCenter = () => {
                 />
               </div>
               <div className="w-full  h-1 bg-white mx-auto "></div>
-              
+
               <div className="relative py-8 bg-opacity-80 backdrop-blur-lg rounded-lg shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-teal-600 opacity-50 rounded-lg"></div>
                 <h2 className="relative z-10 text-4xl font-extrabold text-center text-white tracking-wide drop-shadow-md font-[Poppins]">
@@ -982,146 +1054,132 @@ const ContactCenter = () => {
                 </h2>
               </div>
 
-              <div className="overflow-x-auto rounded-lg shadow-lg">
-                <table className="min-w-2xl bg-white border border-gray-300 rounded-lg">
-                  <thead className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                    <tr>
-                      <th className="py-3 px-8 text-left">Inquiry Name</th>
-                      <th className="py-3 px-8 text-left">Date and Time</th>
-                      <th className="py-3 px-8 text-left">Amount</th>
-                      <th className="py-3 px-8 text-center">Paid</th>
-                      <th className="py-3 px-40 text-left">Notes</th>
-                      <th className="py-3 px-20 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-600 text-sm">
-                    {displayedCleanings.map((cleaning, index) => (
-                      <tr
-                        key={cleaning.id}
-                        className={`border-b ${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-gray-100`}
-                      >
-                        {editingCleaningId === cleaning.id ? (
-                          // Edit mode
-                          <>
-                            <td className="py-3 px-6">
-                              <select
-                                name="inquiry_id"
-                                value={editCleaningFormData.inquiry_id}
-                                onChange={handleEditCleaningChange}
-                                className="block w-full p-2 border rounded"
-                              >
-                                <option value="" disabled>
-                                  Select an Inquiry
-                                </option>
-                                {inquiries.map((inquiry) => (
-                                  <option key={inquiry.id} value={inquiry.id}>
-                                    {inquiry.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-3 px-6">
-                              <input
-                                type="datetime-local"
-                                name="date_time"
-                                value={editCleaningFormData.date_time}
-                                onChange={handleEditCleaningChange}
-                                className="block w-full p-2 border rounded"
-                              />
-                            </td>
-                            <td className="py-3 px-6">
-                              <input
-                                type="number"
-                                name="amount"
-                                value={editCleaningFormData.amount}
-                                onChange={handleEditCleaningChange}
-                                className="block w-full p-2 border rounded"
-                              />
-                            </td>
-                            <td className="py-3 px-6 text-center">
-                              <input
-                                type="checkbox"
-                                name="paid"
-                                checked={editCleaningFormData.paid}
-                                onChange={handleEditCleaningChange}
-                                className="form-checkbox h-5 w-5"
-                              />
-                            </td>
-                            <td className="py-3 px-6">
-                              <textarea
-                                name="notes"
-                                value={editCleaningFormData.notes}
-                                onChange={handleEditCleaningChange}
-                                className="block w-full p-2 border rounded"
-                                placeholder="Add notes here..."
-                              ></textarea>
-                            </td>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+  {displayedCleanings.map((cleaning) => (
+    <div key={cleaning.id} className="bg-white shadow-lg rounded-lg p-4">
+      {editingCleaningId === cleaning.id ? (
+        // Edit Mode
+        <>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Inquiry Name</label>
+            <select
+              name="inquiry_id"
+              value={editCleaningFormData.inquiry_id}
+              onChange={handleEditCleaningChange}
+              className="block w-full p-2 border rounded"
+            >
+              <option value="" disabled>Select an Inquiry</option>
+              {inquiries.map((inquiry) => (
+                <option key={inquiry.id} value={inquiry.id}>
+                  {inquiry.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={submitEditCleaning}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() => setEditingCleaningId(null)}
-                                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                              >
-                                Cancel
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          // Display mode
-                          <>
-                            <td className="py-3 px-6">
-                              {cleaning.inquiry_name}
-                            </td>
-                            <td className="py-3 px-6">
-                              {formatDateTime(cleaning.date_time)}
-                            </td>
-                            <td className="py-3 px-6">${cleaning.amount}</td>
-                            <td className="py-3 px-6 text-center">
-                              {cleaning.paid ? "Yes" : "No"}
-                            </td>
-                            <td className="py-3 max-w-48">
-                              <div
-                                className="max-h-14 text-center overflow-y-auto"
-                                style={{
-                                  wordBreak: "break-word",
-                                  whiteSpace: "pre-wrap",
-                                  overflowWrap: "break-word", // Ensures text wraps within the div
-                                  maxWidth: "100%", // Makes the div stay within the cell width
-                                }}
-                              >
-                                {cleaning.notes || "No notes available"}
-                              </div>
-                            </td>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Date and Time</label>
+            <input
+              type="datetime-local"
+              name="date_time"
+              value={editCleaningFormData.date_time}
+              onChange={handleEditCleaningChange}
+              className="block w-full p-2 border rounded"
+            />
+          </div>
 
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={() => startEditingCleaning(cleaning)}
-                                className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => deleteCleaning(cleaning.id)}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Amount</label>
+            <input
+              type="number"
+              name="amount"
+              value={editCleaningFormData.amount}
+              onChange={handleEditCleaningChange}
+              className="block w-full p-2 border rounded"
+            />
+          </div>
+
+          <div className="mb-3 flex items-center">
+            <input
+              type="checkbox"
+              name="paid"
+              checked={editCleaningFormData.paid}
+              onChange={handleEditCleaningChange}
+              className="form-checkbox h-5 w-5"
+            />
+            <span className="ml-2">Paid</span>
+          </div>
+
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Notes</label>
+            <textarea
+              name="notes"
+              value={editCleaningFormData.notes}
+              onChange={handleEditCleaningChange}
+              className="block w-full p-2 border rounded"
+              placeholder="Add notes here..."
+            ></textarea>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={submitEditCleaning}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingCleaningId(null)}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        // Display Mode
+        <>
+<h3 className="text-xl sm:text-3xl font-semibold text-center p-2  rounded-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-pink-400">
+  {cleaning.inquiry_name}
+</h3>
+
+
+          <p className="text-md text-gray-600">
+            <strong>Date & Time:</strong> <br/> {formatDateTime(cleaning.date_time)}
+          </p>
+          <p className="text-md text-gray-600">
+            <strong>Amount:</strong> ${cleaning.amount}
+          </p>
+          <p className="text-md text-gray-600">
+            <strong>Paid:</strong> {cleaning.paid ? "Yes" : "No"}
+          </p>
+
+          <div className="text-md text-gray-600 mt-2">
+            <strong>Notes:</strong>
+            <div className="max-h-20 max-w-60 overflow-y-auto break-words">
+              {cleaning.notes || "No notes available"}
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => startEditingCleaning(cleaning)}
+              className="bg-green-400 text-black px-4 py-2 rounded hover:bg-yellow-600"
+            >
+               Edit ✐
+            </button>
+            <button
+              onClick={() => deleteCleaning(cleaning.id)}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              X
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  ))}
+</div>
               <div className="flex justify-center mt-4 gap-4">
                 <button
                   onClick={handleCleaningPreviousPage}
@@ -1189,138 +1247,120 @@ const ContactCenter = () => {
                 </h2>
               </div>
 
-              <div className="overflow-x-auto rounded-lg shadow-lg">
-                <table className="min-w-2xl bg-white border border-gray-300 rounded-lg">
-                  <thead className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                    <tr>
-                      <th className="py-3 px-10 text-left">Inquiry Name</th>
-                      <th className="py-3 px-6 text-left">Amount</th>
-                      <th className="py-3 px-28 text-left">Frequency</th>
-                      <th className="py-3 px-56 text-left">Notes</th>
-                      <th className="py-3 px-10 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-600 text-sm">
-                    {displayedRecurringPayments.map((payment, index) => (
-                      <tr
-                        key={payment.id}
-                        className={`border-b ${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-gray-100`}
-                      >
-                        {editingPaymentId === payment.id ? (
-                          // Edit mode
-                          <>
-                            <td className="py-3 px-6">
-                              <select
-                                name="inquiry_id"
-                                value={editRecurringPaymentFormData.inquiry_id}
-                                onChange={handleEditRecurringPaymentChange}
-                                className="block w-full p-2 border rounded"
-                              >
-                                <option value="" disabled>
-                                  Select an Inquiry
-                                </option>
-                                {inquiries.map((inquiry) => (
-                                  <option key={inquiry.id} value={inquiry.id}>
-                                    {inquiry.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-3 px-6">
-                              <input
-                                type="number"
-                                name="amount"
-                                value={editRecurringPaymentFormData.amount}
-                                onChange={handleEditRecurringPaymentChange}
-                                placeholder="Amount"
-                                className="block w-full p-2 border rounded"
-                              />
-                            </td>
-                            <td className="py-3 px-6">
-                              <input
-                                type="text"
-                                name="frequency"
-                                value={editRecurringPaymentFormData.frequency}
-                                onChange={handleEditRecurringPaymentChange}
-                                placeholder="Frequency"
-                                className="block w-full p-2 border rounded"
-                              />
-                            </td>
-                            <td className="py-3 px-6">
-                              <textarea
-                                name="notes"
-                                value={editRecurringPaymentFormData.notes}
-                                onChange={handleEditRecurringPaymentChange}
-                                placeholder="Notes"
-                                className="block w-full p-2 border rounded"
-                              ></textarea>
-                            </td>
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={submitEditRecurringPayment}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() => setEditingPaymentId(null)}
-                                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                              >
-                                Cancel
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          // Display mode
-                          <>
-                            <td className="py-3 px-6">
-                              {payment.inquiry_name}
-                            </td>
-                            <td className="py-3 px-6">${payment.amount}</td>
-                            <td className="py-3 text-center px-6">
-                              {payment.frequency}
-                            </td>
-                            <td className="py-3 max-w-60">
-                              <div
-                                className="max-h-14 text-center overflow-y-auto"
-                                style={{
-                                  wordBreak: "break-word",
-                                  whiteSpace: "pre-wrap",
-                                  overflowWrap: "break-word", // Ensures text wraps within the div
-                                  maxWidth: "100%", // Makes the div stay within the cell width
-                                }}
-                              >
-                                {payment.notes || "None"}
-                              </div>
-                            </td>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+  {displayedRecurringPayments.map((payment) => (
+    <div key={payment.id} className="bg-white shadow-lg rounded-lg p-4">
+      {editingPaymentId === payment.id ? (
+        // Edit Mode
+        <>
+          <div className="mb-3">
+            <label className="text-md font-semibold">Inquiry Name</label>
+            <select
+              name="inquiry_id"
+              value={editRecurringPaymentFormData.inquiry_id}
+              onChange={handleEditRecurringPaymentChange}
+              className="block w-full p-2 border rounded"
+            >
+              <option value="" disabled>Select an Inquiry</option>
+              {inquiries.map((inquiry) => (
+                <option key={inquiry.id} value={inquiry.id}>
+                  {inquiry.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={() =>
-                                  startEditingRecurringPayment(payment)
-                                }
-                                className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() =>
-                                  deleteRecurringPayment(payment.id)
-                                }
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Amount</label>
+            <input
+              type="number"
+              name="amount"
+              value={editRecurringPaymentFormData.amount}
+              onChange={handleEditRecurringPaymentChange}
+              placeholder="Amount"
+              className="block w-full p-2 border rounded"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Frequency</label>
+            <input
+              type="text"
+              name="frequency"
+              value={editRecurringPaymentFormData.frequency}
+              onChange={handleEditRecurringPaymentChange}
+              placeholder="Frequency"
+              className="block w-full p-2 border rounded"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Notes</label>
+            <textarea
+              name="notes"
+              value={editRecurringPaymentFormData.notes}
+              onChange={handleEditRecurringPaymentChange}
+              placeholder="Notes"
+              className="block w-full p-2 border rounded"
+            ></textarea>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={submitEditRecurringPayment}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingPaymentId(null)}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        // Display Mode
+        <>
+          <h3 className="text-xl sm:text-3xl font-semibold text-center p-2  rounded-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-pink-400">
+            {payment.inquiry_name}
+          </h3>
+
+          <p className="text-lg text-gray-600">
+            <strong>Amount:</strong> ${payment.amount}
+          </p>
+
+          <p className="text-lg text-gray-600">
+            <strong>Frequency:</strong> <br/> {payment.frequency}
+          </p>
+
+          <div className="text-md text-gray-600 mt-2">
+            <strong>Notes:</strong>
+            <div className="max-h-20 max-w-60 overflow-y-auto break-words">
+              {payment.notes || "None"}
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => startEditingRecurringPayment(payment)}
+              className="bg-green-400 text-black px-4 py-2 rounded hover:bg-yellow-600"
+            >
+               Edit ✐
+               </button>
+            <button
+              onClick={() => deleteRecurringPayment(payment.id)}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              X
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  ))}
+</div>
               <div className="flex justify-center mt-4 gap-4">
                 <button
                   onClick={handleRecurringPreviousPage}
@@ -1369,249 +1409,188 @@ const ContactCenter = () => {
                   Recurring Paid Records
                 </h2>
               </div>
-              <div className="overflow-x-auto rounded-lg shadow-lg">
-                <table className="min-w-2xl bg-white border border-gray-300 rounded-lg">
-                  <thead className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                    <tr>
-                      <th className="py-3 px-6 text-left">
-                        Recurring Payment Name
-                      </th>
-                      <th className="py-3 px-6 text-left">Dates Related</th>
-                      <th className="py-3 px-6 text-left">Amount Paid</th>
-                      <th className="py-3 px-6 text-left">Submitted At</th>
-                      <th className="py-3 px-6 text-left">Notes</th>
-                      <th className="py-3 px-6 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-600 text-sm">
-                    {displayedRecurringPaid.map((paid, index) => (
-                      <tr
-                        key={paid.id}
-                        className={`border-b ${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-gray-100`}
-                      >
-                        {editingPaidId === paid.id ? (
-                          <>
-                            <td className="py-3 px-6">
-                              <select
-                                name="recurring_payment_id"
-                                value={editPaidFormData.recurring_payment_id}
-                                onChange={(e) =>
-                                  setEditPaidFormData((prev) => ({
-                                    ...prev,
-                                    recurring_payment_id: e.target.value,
-                                  }))
-                                }
-                                className="block w-full p-2 border rounded"
-                              >
-                                <option value="" disabled>
-                                  Select Recurring Payment
-                                </option>
-                                {recurringPayments.map((payment) => (
-                                  <option key={payment.id} value={payment.id}>
-                                    {payment.inquiry_name}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-3 px-6">
-                              {Array.isArray(editPaidFormData.dates_related) &&
-                                editPaidFormData.dates_related.map(
-                                  (date, index) => {
-                                    console.log(
-                                      "Rendering date at index",
-                                      index,
-                                      ":",
-                                      date
-                                    ); // Log each date being rendered
-                                    return (
-                                      <div
-                                        key={index}
-                                        className="flex items-center gap-2 mb-2"
-                                      >
-                                        <input
-                                          type="datetime-local"
-                                          name="dates_related"
-                                          value={date}
-                                          onChange={(e) => {
-                                            const updatedDates = [
-                                              ...editPaidFormData.dates_related,
-                                            ];
-                                            updatedDates[index] =
-                                              e.target.value;
-                                            console.log(
-                                              "Updated Dates on Change:",
-                                              updatedDates
-                                            ); // Log updated dates on input change
-                                            console.log(
-                                              "Formatting date:",
-                                              date
-                                            ); // Log the date before formatting
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+  {displayedRecurringPaid.map((paid) => (
+    <div key={paid.id} className="bg-white shadow-lg rounded-lg p-4">
+      {editingPaidId === paid.id ? (
+        // Edit Mode
+        <>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Recurring Payment</label>
+            <select
+              name="recurring_payment_id"
+              value={editPaidFormData.recurring_payment_id}
+              onChange={(e) =>
+                setEditPaidFormData((prev) => ({
+                  ...prev,
+                  recurring_payment_id: e.target.value,
+                }))
+              }
+              className="block w-full p-2 border rounded"
+            >
+              <option value="" disabled>Select Recurring Payment</option>
+              {recurringPayments.map((payment) => (
+                <option key={payment.id} value={payment.id}>
+                  {payment.inquiry_name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                                            setEditPaidFormData((prev) => ({
-                                              ...prev,
-                                              dates_related: updatedDates,
-                                            }));
-                                          }}
-                                          className="block w-full p-2 border rounded"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            const updatedDates =
-                                              editPaidFormData.dates_related.filter(
-                                                (_, i) => i !== index
-                                              );
-                                            console.log(
-                                              "Updated Dates after Removal:",
-                                              updatedDates
-                                            ); // Log updated dates after removal
-                                            setEditPaidFormData((prev) => ({
-                                              ...prev,
-                                              dates_related: updatedDates,
-                                            }));
-                                          }}
-                                          className="text-red-500 hover:text-red-700"
-                                        >
-                                          Remove
-                                        </button>
-                                      </div>
-                                    );
-                                  }
-                                )}
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Dates Related</label>
+            {Array.isArray(editPaidFormData.dates_related) &&
+              editPaidFormData.dates_related.map((date, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="datetime-local"
+                    name="dates_related"
+                    value={date}
+                    onChange={(e) => {
+                      const updatedDates = [...editPaidFormData.dates_related];
+                      updatedDates[index] = e.target.value;
+                      setEditPaidFormData((prev) => ({
+                        ...prev,
+                        dates_related: updatedDates,
+                      }));
+                    }}
+                    className="block w-full p-2 border rounded"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditPaidFormData((prev) => ({
+                        ...prev,
+                        dates_related: prev.dates_related.filter((_, i) => i !== index),
+                      }));
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditPaidFormData((prev) => {
-                                    const newDatesRelated = Array.isArray(
-                                      prev.dates_related
-                                    )
-                                      ? [...prev.dates_related, ""]
-                                      : [""];
-                                    console.log(
-                                      "Add Date - Updated Dates Related:",
-                                      newDatesRelated
-                                    ); // Log new array after adding
-                                    return {
-                                      ...prev,
-                                      dates_related: newDatesRelated,
-                                    };
-                                  });
-                                }}
-                                className="mt-2 bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600"
-                              >
-                                Add Date
-                              </button>
-                            </td>
+            <button
+              type="button"
+              onClick={() => {
+                setEditPaidFormData((prev) => ({
+                  ...prev,
+                  dates_related: [...(prev.dates_related || []), ""],
+                }));
+              }}
+              className="mt-2 bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600"
+            >
+              Add Date
+            </button>
+          </div>
 
-                            <td className="py-3 px-6">
-                              <input
-                                type="number"
-                                name="amount_paid"
-                                value={editPaidFormData.amount_paid}
-                                onChange={(e) =>
-                                  setEditPaidFormData((prev) => ({
-                                    ...prev,
-                                    amount_paid: e.target.value,
-                                  }))
-                                }
-                                placeholder="Amount Paid"
-                                className="block w-full p-2 border rounded"
-                              />
-                            </td>
-                            <td className="py-3 px-6 text-center">
-                              {new Date(paid.submitted_at).toLocaleString()}
-                            </td>
-                            <td className="py-3 px-6">
-                              <textarea
-                                name="notes"
-                                value={editPaidFormData.notes}
-                                onChange={(e) =>
-                                  setEditPaidFormData((prev) => ({
-                                    ...prev,
-                                    notes: e.target.value,
-                                  }))
-                                }
-                                placeholder="Notes"
-                                className="block w-full p-2 border rounded"
-                              ></textarea>
-                            </td>
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={submitEditRecurringPaid}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() => setEditingPaidId(null)}
-                                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                              >
-                                Cancel
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="py-3 px-6">
-                              {paid.recurring_payment_name}
-                            </td>
-                            <td className="py-3 px-6">
-                              {paid.dates_related
-                                ? paid.dates_related
-                                    .split(", ") // Split into an array
-                                    .map((date, index) => (
-                                      <span key={index}>
-                                        {formatDateTime(date)}
-                                        <br />
-                                      </span>
-                                    ))
-                                : "None"}
-                            </td>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Amount Paid</label>
+            <input
+              type="number"
+              name="amount_paid"
+              value={editPaidFormData.amount_paid}
+              onChange={(e) =>
+                setEditPaidFormData((prev) => ({
+                  ...prev,
+                  amount_paid: e.target.value,
+                }))
+              }
+              placeholder="Amount Paid"
+              className="block w-full p-2 border rounded"
+            />
+          </div>
 
-                            <td className="py-3 px-6">${paid.amount_paid}</td>
-                            <td className="py-3 px-6">
-                              {new Date(paid.submitted_at).toLocaleString()}
-                            </td>
-                            <td className="py-3 px-6">
-                              <div
-                                className="max-h-16 overflow-y-auto max-w-44"
-                                style={{
-                                  wordBreak: "break-word",
-                                  whiteSpace: "pre-wrap",
-                                }}
-                              >
-                                {paid.notes || "None"}
-                              </div>
-                            </td>
+          <div className="mb-3">
+            <label className="text-sm font-semibold">Notes</label>
+            <textarea
+              name="notes"
+              value={editPaidFormData.notes}
+              onChange={(e) =>
+                setEditPaidFormData((prev) => ({
+                  ...prev,
+                  notes: e.target.value,
+                }))
+              }
+              placeholder="Notes"
+              className="block w-full p-2 border rounded"
+            ></textarea>
+          </div>
 
-                            <td className="py-3 px-6 text-center flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingPaidId(paid.id); // Set the ID of the record being edited
-                                  startEditingPaid(paid); // Use the defined function to initialize form data
-                                }}
-                                className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                              >
-                                Edit
-                              </button>
+          <div className="flex gap-2">
+            <button
+              onClick={submitEditRecurringPaid}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingPaidId(null)}
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        // Display Mode
+        <>
+          <h3 className="text-xl sm:text-3xl font-semibold text-center p-2  rounded-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-pink-400">
+            {paid.recurring_payment_name}
+          </h3>
 
-                              <button
-                                onClick={() => deleteRecurringPaid(paid.id)}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <p className="text-md text-gray-600">
+            <strong>Dates Related:</strong> <br />
+            {paid.dates_related
+              ? paid.dates_related
+                  .split(", ")
+                  .map((date, index) => (
+                    <span key={index} className="block">
+                      {formatDateTime(date)}
+                    </span>
+                  ))
+              : "None"}
+          </p>
+
+          <p className="text-lg text-gray-600">
+            <strong>Amount Paid:</strong> ${paid.amount_paid}
+          </p>
+
+          <p className="text-lg text-gray-600">
+            <strong>Submitted At:</strong> <br/> {new Date(paid.submitted_at).toLocaleString()}
+          </p>
+
+          <div className="text-lg text-gray-600 mt-2">
+            <strong>Notes:</strong>
+            <div className="max-h-20 max-w-60 overflow-y-auto break-words">
+              {paid.notes || "None"}
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => {
+                setEditingPaidId(paid.id);
+                startEditingPaid(paid);
+              }}
+              className="bg-green-400 text-black px-4 py-2 rounded hover:bg-yellow-600"
+            >
+               Edit ✐
+               </button>
+            <button
+              onClick={() => deleteRecurringPaid(paid.id)}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              X
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  ))}
+</div>
+
               <div className="flex justify-center mt-4 gap-4">
                 <button
                   onClick={handleRecurringPaidPreviousPage}
@@ -1714,10 +1693,11 @@ const ContactCenter = () => {
                         <span className="font-semibold">Rating:</span>{" "}
                         {review.rating}
                       </p>
-                      <p className="mb-2">
+                      <p className="mb-2 max-h-32 overflow-y-auto">
                         <span className="font-semibold">Comment:</span>{" "}
                         {review.comment}
                       </p>
+
                       <p className="text-sm text-gray-600 mb-3">
                         <span className="font-semibold">Submitted:</span>{" "}
                         {formatDateTime(review.created_at)}
@@ -1755,19 +1735,46 @@ const ContactCenter = () => {
                 </div>
               ))}
             </div>
+            <div className="max-w-xl mx-auto p-6 bg-black rounded-lg shadow-md">
+            <h2 
+        className={`text-2xl font-bold mb-4 text-center  animate-pulse ${
+            oldRecords.length < 10 ? "text-green-400" :
+            oldRecords.length < 20 ? "text-yellow-400" :
+            "text-red-500"
+        }`}
+    >
+        Cleanup Old Records ({oldRecords.length})
+    </h2>
+    {oldRecords.length > 0 ? (
+        <ul className="mb-4 border rounded p-4 bg-gray-100 max-h-60 overflow-y-auto">
+            {oldRecords.map((record) => (
+                <li key={record.id} className="p-2 border-b last:border-0">
+                    <strong>{record.name || "Unnamed Record"}</strong> - {record.submitted_at} ({record.type})
+                    {record.dates_related && <span> | Dates: {record.dates_related}</span>}
+                </li>
+            ))}
+        </ul>
+    ) : (
+        <p className="text-gray-500">No old records found.</p>
+    )}
+
+    <button
+        onClick={deleteOldRecords}
+        className="w-full h-2xl bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:bg-gray-400"
+        disabled={loading}
+    >
+        {loading ? "Deleting..." : `Delete ${oldRecords.length} Old Records`}
+    </button>
+
+    {message && <p className="mt-4 text-green-600">{message}</p>}
+</div>
+
           </div>
         )}
 
         {/* ----------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
         {/*                                                                  End of Manage Logic*/}
         {/* ----------------------------------------------------------------------------------------------------------------------------------------------------------------- */}
-        {activeTab === "Finances" && (
-          <Finances
-            cleaningSummary={cleaningSummary}
-            oneTimeCleanings={oneTimeCleanings}
-            recurringPaid={recurringPaid}
-          />
-        )}
       </div>
     </div>
   );

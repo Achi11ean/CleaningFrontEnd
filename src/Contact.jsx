@@ -41,16 +41,25 @@ const Contact = () => {
     e.preventDefault();
     setMessage("");
     setError("");
-
+  
+    // Extract digits only from the phone number
+    const digitsOnlyPhone = formData.phone_number.replace(/\D/g, "");
+  
+    // If phone number is entered, it must be exactly 10 digits
+    if (formData.phone_number && digitsOnlyPhone.length !== 10) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+  
     try {
       const response = await fetch("http://127.0.0.1:5000/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         setMessage(data.message);
         setFormData({
@@ -70,6 +79,7 @@ const Contact = () => {
       setError("An error occurred. Please try again.");
     }
   };
+  
 
   return (
     <div
@@ -77,11 +87,13 @@ const Contact = () => {
       style={{ backgroundImage: "url('cleaning8.webp')" }}
     >
       <div className="bg-white bg-opacity-90 p-10 rounded-lg overflow-x-auto shadow-2xl max-w-xl justify-center mr-10 w-full top-20">
-        <h2 className="text-6xl  font-extrabold text-gray-900 text-center mb-6"
-        style={{ fontFamily:"aspire, sans-serif"}}
-        >
-          Get In Touch
-        </h2>
+      <h2
+  className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 text-center mb-6"
+  style={{ fontFamily: "Aspire, sans-serif" }}
+>
+  Get In Touch
+</h2>
+
 
         {message && (
           <div className="mb-4 text-green-700 bg-green-100 p-3 rounded">
@@ -156,11 +168,22 @@ const Contact = () => {
               value={formData.description}
               onChange={handleChange}
               rows="5"
-              placeholder="How may we help you? "
+              placeholder="How may we help you?                                                     Please provide any details or cleaning packages you'd like to discuss! "
               className="w-full p-3 border text-center text-lg ring-2 ring-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
+          <div className="flex items-start space-x-2">
+  <input
+    type="checkbox"
+    id="agreement"
+    required
+    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-500"
+  />
+  <label htmlFor="agreement" className="text-gray-700 text-sm sm:text-base">
+    I agree to be contacted via <b>SMS, email, and/or phone call</b>. Message & data rates may apply.
+  </label>
+</div>
 
           <button
             type="submit"
