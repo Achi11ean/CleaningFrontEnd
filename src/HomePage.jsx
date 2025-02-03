@@ -58,7 +58,7 @@ const HomePage = () => {
 
   // Fetch gallery images
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/gallery")
+    fetch("https://cleaningbackend.onrender.com/api/gallery")
       .then((response) => response.json())
       .then((data) => {
         setGalleryImages(data);

@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
       console.log("Token being sent to /api/user:", token);
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/user", {
+        const response = await fetch("https://cleaningbackend.onrender.com/api/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

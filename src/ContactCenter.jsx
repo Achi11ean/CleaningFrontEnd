@@ -6,7 +6,7 @@ import "chart.js/auto";
 import Creations from "./Creation";
 import debounce from "lodash.debounce";
 
-axios.defaults.baseURL = "http://127.0.0.1:5000";
+axios.defaults.baseURL = "https://cleaningbackend.onrender.com";
 import { useAuth } from "./AuthContext"; // Adjust the path as necessary
 import Calendar from "./Calendar";
 

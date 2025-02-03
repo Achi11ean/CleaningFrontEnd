@@ -58,7 +58,7 @@ const Gallery = () => {
     const queryParams = new URLSearchParams();
     if (searchCategory) queryParams.append("category", searchCategory);
   
-    fetch(`http://127.0.0.1:5000/api/gallery?${queryParams}`)
+    fetch(`https://cleaningbackend.onrender.com/api/gallery?${queryParams}`)
       .then((res) => res.json())
       .then((data) => {
         const shuffledPhotos = shuffleArray(data); // Shuffle the photos
@@ -78,7 +78,7 @@ const Gallery = () => {
     if (!window.confirm("Are you sure you want to delete this photo?")) return; // Confirm deletion
   
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/gallery/${photoId}`, {
+      const response = await fetch(`https://cleaningbackend.onrender.com/api/gallery/${photoId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
@@ -116,7 +116,7 @@ const Gallery = () => {
     };
   
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/gallery/upload", {
+      const response = await fetch("https://cleaningbackend.onrender.com/api/gallery/upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

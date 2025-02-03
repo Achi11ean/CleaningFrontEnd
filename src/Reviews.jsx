@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext"; // For authenticated routes
 
-const API_URL = "http://127.0.0.1:5000/api/reviews";
+const API_URL = "https://cleaningbackend.onrender.com/api/reviews";
 
 const ReviewList = () => {
   const { token, user } = useAuth(); // Use token if user is signed in
