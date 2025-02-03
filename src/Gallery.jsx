@@ -308,14 +308,14 @@ const Gallery = () => {
       {/* Image Container */}
       <div className="flex flex-col items-center space-y-4">
         {/* Framed Image */}
-        <div className="relative w-full max-w-lg border-4 border-gray-600 rounded-lg shadow-md">
-        <img
-  src={selectedPhoto.image_url} // Use the full URL directly
-  alt={selectedPhoto.caption || "Gallery Image"}
-  className="w-full max-h-[calc(70vh-80px)] object-contain rounded-lg"
-/>
+        <div className="relative w-full max-w-lg border-4 border-gray-600 rounded-lg shadow-md overflow-y-auto">
+  <img
+    src={selectedPhoto.image_url} // Use the full URL directly
+    alt={selectedPhoto.caption || "Gallery Image"}
+    className="w-full max-h-[calc(70vh-80px)] object-contain rounded-lg"
+  />
+</div>
 
-        </div>
 
         {/* Image Details */}
         <div className="text-center text-white">
