@@ -79,9 +79,9 @@ const HomePage = () => {
   <div className="max-w-7xl mx-auto px-6 lg:flex lg:items-center  lg:justify-between">
     {/* Left Section: Text */}
     <div className="lg:w-1/2 mb-12  lg:mb-0">
-    <h1 className="text-3xl sm:text-xl md:text-3xl lg:text-4xl xl:text-3xl text-center  rounded-2xl font-poppins font-bold leading-snug text-blue-600 mb-6 text-shadow-md transition duration-500 hover:text-blue-500">
+    <h1 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-3xl text-center  rounded-2xl font-poppins font-bold leading-snug text-blue-600 mb-6 text-shadow-md transition duration-500 hover:text-blue-500">
   Transform Your Space with:<br/> 
-  <span className="text-black text-base sm:text-2xl md:text-2xl lg:text-3xl xl:text-5xl shimmer-text">
+  <span className="text-black sm:text-2xl md:text-4xl  shimmer-text">
   🌬️ A Breath of Fresh Air 🫧
 </span>
 
