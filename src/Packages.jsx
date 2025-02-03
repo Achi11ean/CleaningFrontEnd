@@ -395,7 +395,7 @@ const Packages = () => {
                 {selectedPackage.title}
               </h2>
               <p className="text-xl font-semibold text-gray-700 mb-4">
-                ${selectedPackage.amount}
+                Prices starting at: <br/>${selectedPackage.amount}
               </p>
               <p className="text-gray-800 text-md leading-relaxed">
                 {selectedPackage.description}
