@@ -312,7 +312,7 @@ const Packages = () => {
       )}
 
       {/* Package Cards */}
-      <section className=" px-6 mt-3 pb-5">
+      <section className=" px-6 mt-3 pb-10">
         {loading ? (
           <p className="text-center text-gray-700 text-xl">
             Loading packages...
