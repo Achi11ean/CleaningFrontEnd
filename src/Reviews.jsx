@@ -426,11 +426,12 @@ const ReviewForm = ({
           Comment:
         </label>
         <textarea
-          value={comment}
-          placeholder="Max Characters 500"
-          onChange={(e) => setComment(e.target.value)}
-          className="w-full border text-black rounded px-3 py-2"
-        />
+  value={comment}
+  placeholder="Max Characters 500"
+  onChange={(e) => setComment(e.target.value.slice(0, 500))}
+  className="w-full border text-black rounded px-3 py-2"
+/>
+
       </div>
 
       <div>
