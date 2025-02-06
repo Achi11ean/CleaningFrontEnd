@@ -10,7 +10,16 @@ const ReviewList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 12;
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleCommentChange = (e) => {
+    const newComment = e.target.value;
+    if (newComment.length > 500) {
+      setErrorMessage("Comment must be less than 500 characters.");
+    } else {
+      setErrorMessage("");
+    }
+    setComment(newComment);
+  };
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
@@ -417,10 +426,12 @@ const ReviewForm = ({
           Comment:
         </label>
         <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="w-full border text-black rounded px-3 py-2"
-        />
+  value={comment}
+  onChange={handleCommentChange}
+  className="w-full border text-black rounded px-3 py-2"
+/>
+{errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
       </div>
 
       <div>
