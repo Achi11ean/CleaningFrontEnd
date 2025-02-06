@@ -12,7 +12,7 @@ const ReviewList = () => {
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
   const [errorMessage, setErrorMessage] = useState("");
   const handleCommentChange = (e) => {
-    const newComment = e.target.value;
+  const newComment = e.target.value;
     if (newComment.length > 500) {
       setErrorMessage("Comment must be less than 500 characters.");
     } else {
