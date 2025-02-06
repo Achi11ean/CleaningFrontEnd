@@ -12,7 +12,7 @@ const ReviewList = () => {
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
   const [errorMessage, setErrorMessage] = useState("");
   const handleCommentChange = (e) => {
-  const newComment = e.target.value;
+    const newComment = e.target.value;
     if (newComment.length > 500) {
       setErrorMessage("Comment must be less than 500 characters.");
     } else {
@@ -426,12 +426,11 @@ const ReviewForm = ({
           Comment:
         </label>
         <textarea
-  value={comment}
-  onChange={handleCommentChange}
-  className="w-full border text-black rounded px-3 py-2"
-/>
-{errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-
+          value={comment}
+          placeholder="Max Characters 500"
+          onChange={(e) => setComment(e.target.value)}
+          className="w-full border text-black rounded px-3 py-2"
+        />
       </div>
 
       <div>
