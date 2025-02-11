@@ -182,35 +182,30 @@ const ReviewList = () => {
         </span>
       </h1>
       {/* Review Form */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {currentReviews.map((review) => (
-  <div
-    key={review.id}
-    className="relative group bg-white rounded-lg shadow-2xl overflow-hidden transition-transform transform hover:scale-105"
-  >
-    {/* Review Image or Placeholder */}
-    <div className="relative">
-    <img
-  src={review.photo_url || "logo.jpeg"}
-  alt="Review"
-  className="w-full h-48 object-cover cursor-pointer"
-  onClick={() => setSelectedImage(review)} // Pass the whole review
-/>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+  {currentReviews.map((review) => (
+    <div
+      key={review.id}
+      className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 
+                 text-white rounded-2xl shadow-lg overflow-hidden transform 
+                 transition-all duration-500 hover:scale-105 hover:shadow-[0px_10px_25px_rgba(255,255,255,0.2)] 
+                 w-[90%] max-w-[250px] mx-auto"
+    >
+      {/* Image Section */}
+      <div className="relative">
+        <img
+          src={review.photo_url || "logo.jpeg"}
+          alt="Review"
+          className="w-full h-40 object-cover rounded-t-2xl"
+          onClick={() => setSelectedImage(review)}
+        />
 
-
-      {/* Hover Overlay */}
-      <div
-        className="absolute bottom-0 left-0 right-0 top-2/3 bg-black bg-opacity-70 
-        opacity-0 group-hover:opacity-100 
-        flex flex-col justify-center items-center p-2 transition-opacity duration-300"
-        style={{ pointerEvents: "none" }}
-      >
-        {/* Stars */}
-        <div className="flex ">
+        {/* Floating Star Ratings */}
+        <div className="absolute -bottom-3 mt-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-90 px-3 py-1 rounded-full flex text-sm">
           {[...Array(5)].map((_, index) => (
             <span
               key={index}
-              className={`text-xl ${
+              className={`text-lg ${
                 index < review.rating ? "text-yellow-400" : "text-gray-500"
               }`}
             >
@@ -218,28 +213,44 @@ const ReviewList = () => {
             </span>
           ))}
         </div>
-        {/* Reviewer Info */}
-        <p className="text-white text-sm font-semibold mb-2">
-          Reviewer: {review.reviewer_name}
-        </p>
       </div>
-    </div>
 
-    {/* Buttons */}
-    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      {user?.username === "admin" && (
-        <button
-          onClick={() => handleDeleteReview(review.id)}
-          className="px-3 py-1 bg-red-500 text-white rounded-md shadow hover:bg-red-600"
+      {/* Review Details */}
+      <div className="p-4 flex flex-col items-center">
+        {/* Reviewer Name with Styling */}
+        <p className="text-sm font-bold text-cyan-300 tracking-wide mb-1">
+          {review.reviewer_name}
+        </p>
+
+        {/* Scrollable Review Comment */}
+        <div
+          className="bg-gray-700 bg-opacity-30 p-2 rounded-lg w-full max-h-20 overflow-y-auto text-xs text-gray-300 shadow-inner"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#00BFFF #333", // Custom scrollbar
+          }}
         >
-          Delete
-        </button>
+          {review.comment}
+        </div>
+      </div>
+
+      {/* Admin Buttons */}
+      {user?.username === "admin" && (
+        <div className="p-2 flex justify-center">
+          <button
+            onClick={() => handleDeleteReview(review.id)}
+            className="px-3 py-1 bg-red-600 text-white rounded-full text-xs shadow-md 
+                      hover:bg-red-700 hover:shadow-[0px_0px_10px_rgba(255,0,0,0.6)] transition-all"
+          >
+            ❌ Delete
+          </button>
+        </div>
       )}
     </div>
-  </div>
-))}
+  ))}
+</div>
 
-      </div>
+
       <br />
       <div className="flex justify-center items-center gap-4 mt-6">
         <button
@@ -297,11 +308,14 @@ const ReviewList = () => {
           style={{ pointerEvents: "none" }}
         ></div>
 <h2
-  onClick={() => setShowReviewForm(!showReviewForm)} // Toggle the form visibility
-  className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 via-blue-300 to-yellow-400 drop-shadow-md cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out"
-  style={{ fontFamily: "'Aspire', serif" }} // Apply Aspire font
+  onClick={() => setShowReviewForm(!showReviewForm)}
+  className="text-2xl sm:text-xl md:text-6xl lg:text-2xl font-extrabold text-center 
+             bg-clip-text text-transparent bg-gradient-to-r from-[#FFD700] via-[#00BFFF] to-[#FFD700] 
+             drop-shadow-[0px_0px_15px_rgba(255,255,255,0.8)] cursor-pointer 
+             transition-all duration-300 ease-in-out transform hover:scale-110 hover:drop-shadow-[0px_0px_25px_rgba(255,255,255,1)]"
+  style={{ fontFamily: "'Poppins', sans-serif" }}
 >
-  {showReviewForm ? "Close Review Form" : "Share Your Experience"}
+  {showReviewForm ? "❌ Close Review Form" : "⭐ Share Your Experience ⭐"}
 </h2>
 
 
