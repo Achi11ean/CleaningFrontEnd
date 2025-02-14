@@ -83,7 +83,7 @@ const Packages = () => {
     "from-teal-300 via-blue-500 to-indigo-600", // Crystal lagoon
     "from-sky-400 via-blue-500 to-indigo-600", // Dreamy cascade
   ];
-  
+
   
   // Fetch packages from the backend
   useEffect(() => {
@@ -97,12 +97,20 @@ const Packages = () => {
         console.error("Error fetching packages:", err.message);
         setError("Failed to load packages. Please try again later.");
       } finally {
-        setLoading(false);
+        setLoading(false); // Ensures state updates before showing the alert
       }
     };
 
     fetchPackages();
-  }, []);
+}, []);
+
+useEffect(() => {
+    if (!loading) {
+        alert("🧼 All services REQUIRE an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs. 🧹");
+    }
+}, [loading]); // This runs ONLY when 'loading' changes to false
+
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -214,13 +222,7 @@ const Packages = () => {
       </header>
       <div className="w-full h-2 bg-black mx-auto"></div>
             
-            <h1 
-              className="text-3xl md:text-3xl  text-center text-black bg-red-600
-                py-4 px-6  shadow-lg pulse-animation" 
-              style={{ fontFamily: "'aspire', '" }}
-            >
-              🧼 All services <span className="underline font-extrabold">REQUIRE</span> an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs.🧹
-            </h1>
+
             <div className="w-full h-2 bg-black mx-auto"></div>
 
             {isAdmin && (
