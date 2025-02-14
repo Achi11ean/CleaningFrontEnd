@@ -327,7 +327,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent; /* Make the text transparent */
-  animation: shimmer 18s infinite linear;
+  animation: shimmer 8s infinite linear;
 }
 
 @keyframes pulse {
