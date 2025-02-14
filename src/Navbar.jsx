@@ -148,84 +148,57 @@ const Navbar = () => {
 
 
 
-      </div>
+      </div>     
+      
       {isMenuOpen && (
-  <div className="md:hidden bg-gradient-to-t from-blue-100 via-blue-400 to-blue-500 border-t border-black">
+        <div className="md:hidden bg-gradient-to-b from-blue-100 via-blue-300 to-blue-500 shadow-2xl border-t border-gray-300 p-6 rounded-xl absolute top-16 right-4 left-4 animate-slideDown">
+          <div className="flex flex-col space-y-6 text-center">
+            {["/", "/packages", "/contact", "/gallery", "/reviews"].map((path, index) => (
+              <Link
+                key={index}
+                to={path}
+                className="text-black hover:text-gray-200 text-lg font-semibold transition-transform transform hover:scale-105"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {path === "/" ? "Home" : path.replace("/", "").charAt(0).toUpperCase() + path.slice(2)}
+              </Link>
+            ))}
+            {isAuthenticated && (
+              <Link
+                to="/contact-center"
+                className="text-white hover:text-gray-200 text-lg font-semibold transition-transform transform hover:scale-105"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact Center
+              </Link>
+            )}
 
-    <div className="flex flex-col space-y-4 px-6 py-4">
-      <Link
-        to="/"
-        className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-        onClick={() => setIsMenuOpen(false)} // Close menu on click
-      >
-        Home
-      </Link>
-      <Link
-        to="/packages"
-        className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        Packages
-      </Link>
-      <Link
-        to="/contact"
-        className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        Contact Me
-      </Link>
-      
-      <Link
-        to="/gallery"
-        className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        Gallery
-      </Link>
-      <Link
-        to="/reviews"
-        className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-        onClick={() => setIsMenuOpen(false)}
-      >
-        Reviews
-      </Link>
-      {isAuthenticated && (
-        <Link
-          to="/contact-center"
-          className="text-gray-700 hover:text-blue-500 text-xl font-bold transition duration-300"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          Contact Center
-        </Link>
-      )}
-          <div className="mx-auto">
-    <a
-    href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604/?mibextid=wwXIfr&rdid=zsYBC4u6zfu3Xmyh&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1R761L1bE9%2F%3Fmibextid%3DwwXIfr"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-500 hover:text-blue-600 text-3xl"
-  >
-    <FaFacebook />
-  </a>
-  </div>
-      {isAuthenticated && (
-        <button
-          onClick={() => {
-            logout();
-            setIsMenuOpen(false);
-          }}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300"
-        >
-          Sign Out
-        </button>
-      )}
-      
-    </div>
-    
-  </div>
-  
-)}
+            {/* Social Media */}
+            <div className="flex justify-center space-x-4 mt-4">
+              <a
+                href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-200 text-3xl"
+              >
+                <FaFacebook />
+              </a>
+            </div>
 
+            {isAuthenticated && (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-400 transition-transform transform hover:scale-105"
+              >
+                Sign Out
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
 
     </nav>

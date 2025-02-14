@@ -104,35 +104,40 @@ const Contact = () => {
           <div className="mb-4 text-red-700 bg-red-100 p-3 rounded">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+<form onSubmit={handleSubmit} className="space-y-6">
+          {/* Full Name */}
           <div>
+          <label className="block text-sm text-black text-center font-medium mb-1">First & Last Name</label>
+
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
-              className="w-full p-4 text-lg ring-2 ring-black border rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white placeholder-gray-400 shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
               required
             />
           </div>
 
+          {/* Email */}
           <div>
+          <label className="block text-sm text-black text-center font-medium mb-1">Email</label>
+
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder=" Email Address"
-              className="w-full p-4 border text-lg ring-2 ring-black rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Email Address"
+              className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white placeholder-gray-400 shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
               required
             />
           </div>
 
+          {/* Phone Number (Optional) */}
           <div>
-            <label className="block text-lg text-gray-700 text-center font-medium mb-1">
-              (Optional)
-            </label>
+            <label className="block text-sm text-black text-center font-medium mb-1">(Optional)</label>
             <input
               type="text"
               name="phone_number"
@@ -140,58 +145,60 @@ const Contact = () => {
               onChange={handleChange}
               placeholder="Phone Number"
               maxLength="14"
-              className="w-full p-4 border  ring-2 ring-black rounded-lg text-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white placeholder-gray-400 shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
 
+          {/* Preferred Contact Method */}
           <div>
-            <label className="block text-gray-700  text-center text-lg font-medium mb-1">
-              Preferred Contact Method
-            </label>
+            <label className="block text-lg text-black text-center font-medium mb-2">Preferred Contact</label>
             <select
               name="call_or_text"
               value={formData.call_or_text}
               onChange={handleChange}
-              className="w-full text-lg p-4 border ring-2 ring-black rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
             >
               <option value="call">Call</option>
               <option value="text">Text</option>
             </select>
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-center text-lg text-gray-700 font-medium mb-1">
-              Description
-            </label>
+            <label className="block text-lg text-black text-center font-medium mb-2">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows="5"
-              placeholder="How may we help you?                                                     Please provide any details or cleaning packages you'd like to discuss! "
-              className="w-full p-3 border text-center text-lg ring-2 ring-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="How may we assist you? Please provide any details or cleaning packages you'd like to discuss."
+              className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white placeholder-gray-400 shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
               required
             ></textarea>
           </div>
-          <div className="flex items-start space-x-2">
-  <input
-    type="checkbox"
-    id="agreement"
-    required
-    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring focus:ring-blue-500"
-  />
-  <label htmlFor="agreement" className="text-gray-700 text-sm sm:text-base">
-    I agree to be contacted via <b>SMS, email, and/or phone call</b>. Message & data rates may apply.
-  </label>
-</div>
 
+          {/* Agreement Checkbox */}
+          <div className="flex items-start space-x-2">
+            <input
+              type="checkbox"
+              id="agreement"
+              required
+              className="w-5 h-5 text-blue-500 border-gray-500 text-center rounded focus:ring focus:ring-blue-500"
+            />
+            <label htmlFor="agreement" className="text-black text-sm">
+              I agree to be contacted via <b>SMS, email, and/or phone call</b>. Message & data rates may apply.
+            </label>
+          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-300"
+            className="w-full bg-gradient-to-r from-gray-700 to-gray-900 text-white text-center font-semibold py-3 rounded-lg hover:from-gray-600 hover:to-gray-800 transition-transform transform hover:scale-105 shadow-lg"
           >
             Submit Inquiry
           </button>
         </form>
+
       </div>
       {showBubbles && (
         <div className="fixed inset-0 pointer-events-none flex flex-col items-center justify-end">
