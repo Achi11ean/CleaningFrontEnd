@@ -223,153 +223,174 @@ const Packages = () => {
             </h1>
             <div className="w-full h-2 bg-black mx-auto"></div>
 
-      {isAdmin && (
-        <div className="max-w-md mx-auto bg-white p-2 rounded-lg shadow-md mt-5">
-          <button
-            onClick={() => setShowForm((prev) => !prev)} // Toggle form visibility
-            className="w-full py-3 px-6 text-2xl font-bold text-white uppercase 
+            {isAdmin && (
+  <div className="max-w-lg mx-auto bg-gradient-to-b from-gray-900 to-gray-800 bg-opacity-90 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-gray-700 mt-6">
+    
+    {/* Toggle Button */}
+    <button
+      onClick={() => setShowForm((prev) => !prev)}
+      className="w-full py-4 px-6 text-xl sm:text-2xl font-bold text-white uppercase 
                  bg-gradient-to-r from-yellow-400 via-red-500 to-purple-600 
-                 hover:scale-105 transform transition-all duration-300 rounded-lg"
-          >
-            {showForm ? "Close Package Form" : "Add New Package"}
-          </button>
+                 hover:scale-105 hover:shadow-lg transform transition-all duration-300 rounded-2xl"
+    >
+      {showForm ? "❌ Close Package Form" : "➕ Add New Package"}
+    </button>
 
-          {showForm && (
-            <form
-              onSubmit={(e) => handleFormSubmit(e)} // Attach the submit handler
-              className="space-y-4 mt-4"
-            >
-              <input
-                type="text"
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded p-2"
-                required
-              />
-              <input
-                type="number"
-                placeholder="Amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full border rounded p-2"
-                required
-              />
-
-              {/* Tooltip */}
-              <div className="relative group">
-                <a
-                  href="https://imgur.com/upload"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative inline-block w-full font-bold text-white text-center mb-2 uppercase rounded-lg
-               bg-gradient-to-r from-green-400 via-green-500 to-green-600 shadow-lg transition-all duration-300 ease-in-out 
-               hover:scale-105 hover:from-green-500 hover:via-green-600 hover:to-green-700 hover:shadow-2xl
-               before:absolute before:-inset-1 before:rounded-lg before:bg-green-300 before:blur-lg before:opacity-30"
-                >
-                  <span className="relative z-10">Upload Photo to Imgur</span>
-                </a>
-
-                <input
-                  type="url"
-                  placeholder="Image URL"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full border rounded p-2"
-                  required
-                />
-
-                {/* Tooltip */}
-                <div
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg 
-               opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                >
-                  Don't have a URL for your image yet? Click the link. <br />
-                  1. Add your image <br />
-                  2. Right-click on the image and "Copy Image Address" <br />
-                  If it doesn't look like this:
-                  "https://i.imgur.com/example.jpg" <br />
-                  try copying the address again.
-                </div>
-              </div>
-
-              <textarea
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full border rounded p-2"
-              ></textarea>
-              <button
-                type="submit"
-                className="w-full py-2 px-4 font-bold text-white uppercase 
-                     bg-blue-500 hover:bg-blue-600 rounded-lg"
-              >
-                Upload Package
-              </button>
-            </form>
-          )}
+    {/* Form */}
+    {showForm && (
+      <form 
+        onSubmit={(e) => handleFormSubmit(e)}
+        className="space-y-6 mt-6"
+      >
+        {/* Title Input */}
+        <div>
+          <label className="block text-gray-300 font-semibold mb-2">📦 Package Title</label>
+          <input
+            type="text"
+            placeholder="Enter title..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400"
+            required
+          />
         </div>
-      )}
+
+        {/* Amount Input */}
+        <div>
+          <label className="block text-gray-300 font-semibold mb-2">💰 Package Amount</label>
+          <input
+            type="number"
+            placeholder="Enter amount..."
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400"
+            required
+          />
+        </div>
+
+        {/* Image Upload */}
+        <div className="relative group">
+          <label className="block text-gray-300 font-semibold mb-2">📸 Upload Image</label>
+          <a
+            href="https://imgur.com/upload"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-lg font-bold text-white text-center py-3 uppercase rounded-lg 
+                     bg-gradient-to-r from-green-400 via-green-500 to-green-600 shadow-lg transition-all 
+                     hover:scale-105 hover:from-green-500 hover:via-green-600 hover:to-green-700"
+          >
+            🚀 Upload Photo to Imgur
+          </a>
+
+          <input
+            type="url"
+            placeholder="Paste image URL here..."
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400 mt-2"
+            required
+          />
+
+          {/* Tooltip */}
+          <div
+            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          >
+            Don't have a URL? Click the link above, upload an image, then **right-click on the image and "Copy Image Address"**.
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-gray-300 font-semibold mb-2">📝 Description</label>
+          <textarea
+            placeholder="Enter package details..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400 resize-none h-32"
+          ></textarea>
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full py-4 text-lg font-bold text-white uppercase 
+                   bg-blue-500 hover:bg-blue-600 rounded-xl shadow-md transform transition-all 
+                   hover:scale-105 hover:shadow-lg active:scale-95"
+        >
+          🚀 Upload Package
+        </button>
+      </form>
+    )}
+  </div>
+)}
+
 
       {/* Package Cards */}
-      <section className=" px-6 mt-3 pb-10">
-        {loading ? (
-          <p className="text-center text-gray-700 text-xl">
-            Loading packages...
-          </p>
-        ) : error ? (
-          <p className="text-center text-red-500 text-xl">{error}</p>
-        ) : (
-          <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            {packages.map((pkg, index) => (
-              <button
-                onClick={() => handleViewPackage(pkg)} // Open modal on card click
-                className={`bg-gradient-to-br ${
-                  gradientClasses[index % gradientClasses.length]
-                } text-white shadow-lg rounded-lg overflow-hidden transform transition duration-300 hover:scale-105 relative`}
-              >
-                {/* Image */}
-                {pkg.image_url && (
-                  <img
-                    src={pkg.image_url}
-                    alt={pkg.title}
-                    className="w-full h-28  object-cover"
-                  />
-                )}
+      <section className="px-6 mt-6 pb-12">
+  {loading ? (
+    <p className="text-center text-gray-400 text-xl font-semibold animate-pulse">
+      ⏳ Loading packages...
+    </p>
+  ) : error ? (
+    <p className="text-center text-red-500 text-xl font-bold">{error}</p>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      {packages.map((pkg, index) => (
+        <button
+          key={pkg.id}
+          onClick={() => handleViewPackage(pkg)}
+          className={`relative bg-gray-900 bg-opacity-90 backdrop-blur-lg p-5 rounded-2xl shadow-xl 
+                      overflow-hidden transition-all transform duration-300 hover:scale-105 
+                      hover:shadow-2xl border-2 ${gradientClasses[index % gradientClasses.length]} border-opacity-40`}
+        >
+          {/* Package Image */}
+          {pkg.image_url && (
+            <div className="relative w-full h-40 rounded-xl overflow-hidden">
+              <img
+                src={pkg.image_url}
+                alt={pkg.title}
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+              />
+              {/* Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-40"></div>
+            </div>
+          )}
 
-                {/* Content */}
-                <div className="text-center p-4">
-                  <h2 className="text-3xl font-bold">{pkg.title}</h2>
-                  <p>Prices Starting at:</p>
-                  <p className="text-xl font-semibold ">${pkg.amount}</p>
-
-                </div>
-
-                {/* Admin Buttons */}
-                {isAdmin && (
-                  <div
-                    className="absolute  bottom-2 right-2 flex gap-2"
-                    onClick={(e) => e.stopPropagation()} // Prevent click propagation
-                  >
-                    <button
-                      onClick={() => handleEditPackage(pkg)} // Edit button
-                      className="bg-black mt-2 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeletePackage(pkg.id)} // Delete button
-                      className="bg-red-500 mt-2  hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </button>
-            ))}
+          {/* Package Details */}
+          <div className="text-center mt-4">
+            <h2 className="text-2xl font-extrabold text-white uppercase tracking-wider">
+              {pkg.title}
+            </h2>
+            <p className="text-gray-300 mt-2 text-lg">Prices Starting at:</p>
+            <p className="text-2xl font-bold text-yellow-400">${pkg.amount}</p>
           </div>
-        )}
-      </section>
+
+          {/* Admin Controls */}
+          {isAdmin && (
+            <div
+              className="absolute bottom-3 right-3 flex gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => handleEditPackage(pkg)}
+                className="px-4 py-2 text-sm font-bold text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg shadow-md transition-all transform hover:scale-105"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => handleDeletePackage(pkg.id)}
+                className="px-4 py-2 text-sm font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-md transition-all transform hover:scale-105"
+              >
+                ❌ Delete
+              </button>
+            </div>
+          )}
+        </button>
+      ))}
+    </div>
+  )}
+</section>
+
       {selectedPackage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
