@@ -18,7 +18,7 @@ const HomePage = () => {
     {
       title: "Residential Cleaning",
       content: (
-        <p className="text-lg leading-relaxed mb-4">
+        <p className="text-lg  leading-relaxed mb-4">
           Residential cleaning is our specialty! From cozy kitchens to serene bedrooms, we ensure your home feels fresh and inviting. Trust us to bring comfort and cleanliness to every corner of your living space.
         </p>
       ),
@@ -148,7 +148,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
 
   <div className="grid mt-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 sm:px-8">
   {/* Feature Card */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg border-blue-700  shadow-lg text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
+  <div className="relative bg-white p-4 sm:p-6 rounded-lg border-blue-700 shadow-blue-500 shadow-lg  text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
     <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-1 transition-all duration-300 group-hover:text-yellow-500">
       Residential Cleaning
     </h3>
@@ -157,7 +157,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
     </p>
     
     {/* Hover/Tap Detail */}
-    <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
+    <div className="absolute inset-0 flex flex-col justify-center shadow-blue-500 shadow-xl items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
       <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Residential Cleaning</h3>
       <p className="text-gray-700 text-sm sm:text-base">
         We offer tailored residential cleaning to create a cozy, spotless home.
@@ -166,7 +166,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
   </div>
 
   {/* Feature Card 2 */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
+  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center shadow-blue-500  border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
   <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
     Office Cleaning
   </h3>
@@ -175,7 +175,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
   </p>
   
   {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
+  <div className="absolute inset-0 flex flex-col justify-center shadow-blue-500 shadow-xl items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
     <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Office Cleaning</h3>
     <p className="text-gray-700 text-sm sm:text-base">
       A clean office boosts productivity and professionalism. Let us handle it!
@@ -185,7 +185,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
 
 
   {/* Feature Card 3 */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
+  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center shadow-blue-500  border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
   <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
     Eco-Friendly Solutions
   </h3>
@@ -194,7 +194,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
   </p>
   
   {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
+  <div className="absolute inset-0 flex flex-col justify-center items-center shadow-blue-500 shadow-xl bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
     <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Eco-Friendly Solutions</h3>
     <p className="text-gray-700 text-sm sm:text-base">
       Safe, sustainable cleaning methods for a better planet and healthier home.
@@ -204,7 +204,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
 
 
   {/* Feature Card 4: Moving Day Cleaning */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-blue-700 text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
+  <div className="relative bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-blue-700 shadow-blue-500  text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
   <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
     Moving Day Cleaning
   </h3>
@@ -213,7 +213,7 @@ Choose us to transform your home into a sanctuary—for your health, your family
   </p>
   
   {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
+  <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg shadow-blue-500 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
     <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Moving Day Cleaning</h3>
     <p className="text-gray-700 text-sm sm:text-base">
       Ensure a spotless start in your new space or leave your old one sparkling clean.
