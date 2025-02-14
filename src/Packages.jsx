@@ -341,7 +341,7 @@ useEffect(() => {
         <button
           key={pkg.id}
           onClick={() => handleViewPackage(pkg)}
-          className={`relative bg-gray-900 bg-opacity-90 backdrop-blur-lg p-5 rounded-2xl shadow-xl 
+          className={`relative bg-gray-900 bg-opacity-90 pb-12 backdrop-blur-lg p-5 rounded-2xl shadow-xl 
                       overflow-hidden transition-all transform duration-300 hover:scale-105 
                       hover:shadow-2xl border-2 ${gradientClasses[index % gradientClasses.length]} border-opacity-40`}
         >
@@ -368,25 +368,24 @@ useEffect(() => {
           </div>
 
           {/* Admin Controls */}
-          {isAdmin && (
-            <div
-              className="absolute bottom-3 right-3 flex gap-3"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => handleEditPackage(pkg)}
-                className="px-4 py-2 text-sm font-bold text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg shadow-md transition-all transform hover:scale-105"
-              >
-                ✏️ Edit
-              </button>
-              <button
-                onClick={() => handleDeletePackage(pkg.id)}
-                className="px-4 py-2 text-sm font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-md transition-all transform hover:scale-105"
-              >
-                ❌ Delete
-              </button>
-            </div>
-          )}
+{/* Admin Controls - Now positioned below */}
+{isAdmin && (
+  <div className="flex gap-3 justify-center mt-4">
+    <button
+      onClick={() => handleEditPackage(pkg)}
+      className="px-4 py-2 text-sm font-bold text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg shadow-md transition-all transform hover:scale-105"
+    >
+      ✏️ Edit
+    </button>
+    <button
+      onClick={() => handleDeletePackage(pkg.id)}
+      className="px-4 py-2 text-sm font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-md transition-all transform hover:scale-105"
+    >
+      ❌ Delete
+    </button>
+  </div>
+)}
+
         </button>
       ))}
     </div>
