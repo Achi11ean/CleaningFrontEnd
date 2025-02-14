@@ -208,7 +208,7 @@ useEffect(() => {
 
 
 
-          <p className="mt-6 text-base sm:text-lg lg:text-2xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
+          <p className="mt-6 text-base sm:text-lg font-serif lg:text-2xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
             Every package comes with our signature eco-friendly cleaning
             services, because we care about you and the planet! 🌿✨                  <p className="text-black font-semibold text-lg flex items-center justify-center gap-2 animate-pulse">
                     <span className="material-icons mb-5 text-blue-800 text-2xl">
