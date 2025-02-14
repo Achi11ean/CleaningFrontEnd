@@ -370,7 +370,7 @@ useEffect(() => {
           {/* Admin Controls */}
 {/* Admin Controls - Now positioned below */}
 {isAdmin && (
-  <div className="flex gap-3 justify-center mt-4">
+  <div className="flex gap-3  justify-center mt-16">
     <button
       onClick={() => handleEditPackage(pkg)}
       className="px-4 py-2 text-sm font-bold text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg shadow-md transition-all transform hover:scale-105"
