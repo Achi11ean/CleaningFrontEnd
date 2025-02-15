@@ -34,7 +34,7 @@ const Packages = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/packages/${packageId}`,
+        `https://cleaningbackend.onrender.com/api/packages/${packageId}`,
         {
           method: "DELETE",
           headers: {
@@ -89,7 +89,7 @@ const Packages = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/packages");
+        const response = await fetch("https://cleaningbackend.onrender.com/api/packages");
         if (!response.ok) throw new Error("Failed to fetch packages");
         const data = await response.json();
         setPackages(data);
@@ -123,8 +123,8 @@ useEffect(() => {
 
     try {
       const url = editMode
-        ? `http://127.0.0.1:5000/api/packages/${currentPackageId}` // Update endpoint
-        : "http://127.0.0.1:5000/api/packages"; // Create endpoint
+        ? `https://cleaningbackend.onrender.com/api/packages/${currentPackageId}` // Update endpoint
+        : "https://cleaningbackend.onrender.com/api/packages"; // Create endpoint
 
       const method = editMode ? "PUT" : "POST";
 
