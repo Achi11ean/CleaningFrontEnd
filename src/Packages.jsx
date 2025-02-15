@@ -225,7 +225,7 @@ useEffect(() => {
 
             <div className="w-full h-2 bg-black mx-auto"></div>
 
-            {/* {isAdmin && ( */}
+            {isAdmin && (
   <div className="max-w-lg mx-auto bg-gradient-to-b from-gray-900 to-gray-800 bg-opacity-90 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-gray-700 mt-6">
     
     {/* Toggle Button */}
@@ -324,8 +324,7 @@ useEffect(() => {
       </form>
     )}
   </div>
-{/* )} */}
-
+)}
 
       {/* Package Cards */}
       <section className="px-6 mt-6 pb-12">
@@ -371,7 +370,7 @@ useEffect(() => {
 
           {/* Admin Controls */}
 {/* Admin Controls - Now positioned below */}
-{/* {isAdmin && ( */}
+{isAdmin && (
   <div className="flex gap-3  justify-center mt-16">
     <button
       onClick={() => handleEditPackage(pkg)}
@@ -386,8 +385,7 @@ useEffect(() => {
       ❌ Delete
     </button>
   </div>
-{/* )} */}
-
+)}
         </button>
       ))}
     </div>
