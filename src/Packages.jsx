@@ -34,7 +34,7 @@ const Packages = () => {
 
     try {
       const response = await fetch(
-        `https://cleaningbackend.onrender.com/api/packages/${packageId}`,
+        `http://127.0.0.1:5000/api/packages/${packageId}`,
         {
           method: "DELETE",
           headers: {
@@ -89,7 +89,7 @@ const Packages = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await fetch("https://cleaningbackend.onrender.com/api/packages");
+        const response = await fetch("http://127.0.0.1:5000/api/packages");
         if (!response.ok) throw new Error("Failed to fetch packages");
         const data = await response.json();
         setPackages(data);
@@ -123,8 +123,8 @@ useEffect(() => {
 
     try {
       const url = editMode
-        ? `https://cleaningbackend.onrender.com/api/packages/${currentPackageId}` // Update endpoint
-        : "https://cleaningbackend.onrender.com/api/packages"; // Create endpoint
+        ? `http://127.0.0.1:5000/api/packages/${currentPackageId}` // Update endpoint
+        : "http://127.0.0.1:5000/api/packages"; // Create endpoint
 
       const method = editMode ? "PUT" : "POST";
 
@@ -225,7 +225,7 @@ useEffect(() => {
 
             <div className="w-full h-2 bg-black mx-auto"></div>
 
-            {isAdmin && (
+            {/* {isAdmin && ( */}
   <div className="max-w-lg mx-auto bg-gradient-to-b from-gray-900 to-gray-800 bg-opacity-90 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-gray-700 mt-6">
     
     {/* Toggle Button */}
@@ -324,7 +324,7 @@ useEffect(() => {
       </form>
     )}
   </div>
-)}
+{/* )} */}
 
 
       {/* Package Cards */}
@@ -363,13 +363,15 @@ useEffect(() => {
             <h2 className="text-2xl font-extrabold text-white uppercase tracking-wider">
               {pkg.title}
             </h2>
-            <p className="text-gray-300 mt-2 text-lg">Prices Starting at:</p>
+            {!(pkg.description && pkg.description.toLowerCase().includes("flat fee")) && (
+    <p className="text-gray-300 mt-2 text-lg">Prices Starting at:</p>
+  )}
             <p className="text-2xl font-bold text-yellow-400">${pkg.amount}</p>
           </div>
 
           {/* Admin Controls */}
 {/* Admin Controls - Now positioned below */}
-{isAdmin && (
+{/* {isAdmin && ( */}
   <div className="flex gap-3  justify-center mt-16">
     <button
       onClick={() => handleEditPackage(pkg)}
@@ -384,7 +386,7 @@ useEffect(() => {
       ❌ Delete
     </button>
   </div>
-)}
+{/* )} */}
 
         </button>
       ))}
@@ -417,8 +419,12 @@ useEffect(() => {
                 {selectedPackage.title}
               </h2>
               <p className="text-xl font-semibold text-gray-700 mb-4">
-                Prices starting at: <br/>${selectedPackage.amount}
-              </p>
+  {!(selectedPackage.description && selectedPackage.description.toLowerCase().includes("flat fee")) && (
+    <>Prices starting at: <br/></>
+  )}
+  ${selectedPackage.amount}
+</p>
+
               <p className="text-gray-800 text-md leading-relaxed">
                 {selectedPackage.description}
               </p>

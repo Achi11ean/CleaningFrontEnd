@@ -148,7 +148,6 @@ const Contact = () => {
               className="w-full p-4 text-lg bg-gray-900/50 border text-center border-gray-600 rounded-lg text-white placeholder-gray-400 shadow-lg focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
-
           {/* Preferred Contact Method */}
           <div>
             <label className="block text-lg text-black text-center font-medium mb-2">Preferred Contact</label>
