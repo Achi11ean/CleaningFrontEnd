@@ -32,7 +32,7 @@ const Navbar = () => {
         <ul className="hidden md:flex space-x-8 text-gray-700 font-semibold uppercase tracking-wider">
           <li><Link to="/" className="hover:text-blue-600 transition">Home</Link></li>
           <li><Link to="/packages" className="hover:text-blue-600 transition">Packages</Link></li>
-          <li><Link to="/contact" className="hover:text-blue-600 transition">Inquiry</Link></li>
+          <li><Link to="/contact" className="hover:text-blue-600 transition">Book Now</Link></li>
           <li><Link to="/gallery" className="hover:text-blue-600 transition">Gallery</Link></li>
           <li><Link to="/reviews" className="hover:text-blue-600 transition">Reviews</Link></li>
           {isAuthenticated && (
@@ -68,11 +68,11 @@ const Navbar = () => {
 
       {/* Mobile Dropdown */}
       {menuOpen && (
-        <div className="md:hidden mx-4 mt-2 mb-4 rounded-2xl border border-gray-200 bg-white/90 backdrop-blur-xl shadow-2xl p-4 text-center text-gray-800 space-y-4">
-          <ul className="flex flex-col space-y-2 text-lg font-bold">
+        <div className="md:hidden mx-4 mt-2 mb-4 rounded-2xl border border-gray-200 bg-black/20 backdrop-blur-xl shadow-2xl p-4 text-center text-gray-800 space-y-4">
+          <ul className="flex flex-col font-serif space-y-2 text-lg font-bold">
             <li><Link to="/" onClick={toggleMenu}>Home</Link></li>
             <li><Link to="/packages" onClick={toggleMenu}>Packages</Link></li>
-            <li><Link to="/contact" onClick={toggleMenu}>Inquiry</Link></li>
+            <li><Link to="/contact" onClick={toggleMenu}>Book Now</Link></li>
             <li><Link to="/gallery" onClick={toggleMenu}>Gallery</Link></li>
             <li><Link to="/reviews" onClick={toggleMenu}>Reviews</Link></li>
             {isAuthenticated && (
@@ -91,6 +91,7 @@ const Navbar = () => {
                 </li>
               </>
             )}
+            <div className="items-center justify-center flex">
             <li>
               <a
                 href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604"
@@ -101,6 +102,7 @@ const Navbar = () => {
                 <FaFacebook />
               </a>
             </li>
+            </div>
           </ul>
         </div>
       )}
