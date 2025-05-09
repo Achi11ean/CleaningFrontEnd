@@ -6,7 +6,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-
+import ServiceArea from "./ServiceArea";
 const HomePage = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,161 +73,59 @@ const HomePage = () => {
     return () => clearInterval(interval); 
   }, [sections.length]);
   return (
-    <div className="w-full  text-gray-800">
+<div className="bg-gradient-to-br from-white via-teal-50 to-teal-100 border-t-8 border-blue-400 pt-24  shadow-2xl min-h-screen  mx-auto">
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 via-white to-blue-100 text-gray-800 ">
-  <div className="max-w-7xl mx-auto px-6 lg:flex lg:items-center  lg:justify-between">
-    {/* Left Section: Text */}
-    <div className="lg:w-1/2 mb-12  lg:mb-0">
-    <h1 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-3xl text-center  rounded-2xl font-poppins font-bold leading-snug text-blue-600 mb-6 text-shadow-md transition duration-500 hover:text-blue-500">
-  Transform Your Space with:<br/> 
-  <span className="text-black sm:text-2xl md:text-4xl  shimmer-text">
-  🌬️ A Breath of Fresh Air 🫧
-</span>
-
-</h1>
-
-
-
-      <p className="text-lg leading-relaxed text-center mb-8">
-      At A Breath of Fresh Air Cleaning Services, we go beyond surface cleaning to create healthier, more peaceful homes. Using high-quality, non-toxic products and tools, we ensure your space is clean, safe, and free of harmful chemicals, leaving the air you breathe truly fresh.
-
-We understand the connection between your home and mental health. That’s why we offer customized cleaning plans to fit your needs, helping to reduce stress and bring clarity to your life.
-
-Choose us to transform your home into a sanctuary—for your health, your family, and your peace of mind.
-      </p>
-      <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
-      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
-      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-  <Link to="/contact">
-    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      Contact Us!
-    </button>
-  </Link>
-  <Link to="/gallery">
-    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      View Gallery
-    </button>
-  </Link>
-  <Link to="/packages">
-    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      Cleaning Packages
-    </button>
-  </Link>
-  <Link to="/reviews">
-    <button className="w-full px-6 py-3 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-      Reviews
-    </button>
-  </Link>
+      <section className="py-2  text-gray-800 ">
+        <div className=" text-center">   
+           <h1 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-3xl font-bold font-poppins text-blue-600  leading-snug hover:text-blue-500 transition duration-500">
+      Transform Your Space with:<br />
+      <span className="text-black sm:text-2xl md:text-6xl font-serif">
+        🌬️ A Breath of Fresh Air 🫧
+      </span>
+    </h1>
 </div>
 
-
-
-
-    </div>
-    <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
-      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
-      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
-      
-    {/* Right Section: Image */}
-    <div className="lg:w-1/2 relative">
-      <img
-        src="logo.jpeg"
-        alt="Amanda Cleaning"
-        className="rounded-3xl lg:ml-10 mt-5 shadow-lg w-auto max-w-full sm:w-[80%] md:w-[60%] lg:w-[100%] object-cover h-auto max-h-[500px] object-top"
-        />
-      {/* Floating Bubbles */}
-      <div className="absolute top-0 left-1/4 w-12 h-12 bg-blue-200 rounded-full opacity-50 "></div>
-      <div className="absolute bottom-0 right-1/4 w-16 h-16 bg-blue-400 rounded-full opacity-40 "></div>
-      <div className="absolute bottom-10 left-10 w-8 h-8 bg-blue-100 rounded-full opacity-60"></div>
-      
-    </div>
-  </div>
-
-  <div className="grid mt-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 sm:px-8">
-  {/* Feature Card */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg border-blue-700 shadow-blue-500 shadow-lg  text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
-    <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-1 transition-all duration-300 group-hover:text-yellow-500">
-      Residential Cleaning
-    </h3>
-    <p className="text-gray-600 text-sm sm:text-base group-hover:opacity-0 transition-opacity duration-300">
-      From kitchens to bedrooms, we ensure every corner of your home is spotless and welcoming.
-    </p>
-    
-    {/* Hover/Tap Detail */}
-    <div className="absolute inset-0 flex flex-col justify-center shadow-blue-500 shadow-xl items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
-      <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Residential Cleaning</h3>
-      <p className="text-gray-700 text-sm sm:text-base">
-        We offer tailored residential cleaning to create a cozy, spotless home.
-      </p>
-    </div>
-  </div>
-
-  {/* Feature Card 2 */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center shadow-blue-500  border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
-  <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
-    Office Cleaning
-  </h3>
-  <p className="text-gray-600 text-sm sm:text-base group-hover:opacity-0 transition-opacity duration-300">
-    Keep your workspace tidy and professional with our thorough office cleaning services.
+<div className=" text-center p-3 md:p-12 my-1 max-w-5xl mx-auto">
+  <h2 className="text-2xl md:text-4xl font-extrabold text-blue-700  border-b-2 border-blue-500 drop-shadow-sm">
+    About Us 
+  </h2>
+  <p className="text-lg md:text-xl text-gray-800 leading-relaxed space-y-6">
+    <span>
+      At <strong>A Breath of Fresh Air Cleaning Services</strong>, we go beyond surface cleaning to create healthier, more peaceful homes. Using high-quality, non-toxic products and tools, we ensure your space is clean, safe, and free of harmful chemicals—leaving the air you breathe truly fresh.
+    </span>
+    <br />
+    <span>
+      We understand the connection between your home and mental health. That’s why we offer customized cleaning plans to fit your needs, helping to reduce stress and bring clarity to your life.
+    </span>
+    <br />
+    <span>
+      Choose us to transform your home into a sanctuary—for your health, your family, and your peace of mind.
+    </span>
   </p>
-  
-  {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center shadow-blue-500 shadow-xl items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
-    <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Office Cleaning</h3>
-    <p className="text-gray-700 text-sm sm:text-base">
-      A clean office boosts productivity and professionalism. Let us handle it!
-    </p>
-  </div>
+    <div className="grid grid-cols-2 mb-2 sm:grid-cols-2 gap-4">
+      <Link to="/contact">
+        <button className="w-full px-6 py-1 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
+          Contact Us!
+        </button>
+      </Link>
+      <Link to="/gallery">
+        <button className="w-full px-6 py-1 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
+          View Gallery
+        </button>
+      </Link>
+      <Link to="/packages">
+        <button className="w-full px-6 py-1 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
+          Services
+        </button>
+      </Link>
+      <Link to="/reviews">
+        <button className="w-full px-6 py-1 bg-gradient-to-t from-blue-400 to-blue-800 text-white rounded-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
+          Reviews
+        </button>
+      </Link>
+    </div> 
 </div>
-
-
-  {/* Feature Card 3 */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center shadow-blue-500  border-blue-700 transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
-  <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
-    Eco-Friendly Solutions
-  </h3>
-  <p className="text-gray-600 text-sm sm:text-base group-hover:opacity-0 transition-opacity duration-300">
-    Using non-toxic, eco-friendly products, we create a safe and healthy environment for you and the planet.
-  </p>
-  
-  {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center items-center shadow-blue-500 shadow-xl bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
-    <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Eco-Friendly Solutions</h3>
-    <p className="text-gray-700 text-sm sm:text-base">
-      Safe, sustainable cleaning methods for a better planet and healthier home.
-    </p>
-  </div>
-</div>
-
-
-  {/* Feature Card 4: Moving Day Cleaning */}
-  <div className="relative bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-blue-700 shadow-blue-500  text-center transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl group border border-transparent hover:border-blue-400">
-  <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-3 transition-all duration-300 group-hover:text-yellow-500">
-    Moving Day Cleaning
-  </h3>
-  <p className="text-gray-600 text-sm sm:text-base group-hover:opacity-0 transition-opacity duration-300">
-    Make your move stress-free with our comprehensive cleaning services for both old and new homes.
-  </p>
-  
-  {/* Hover/Tap Detail */}
-  <div className="absolute inset-0 flex flex-col justify-center items-center bg-gradient-to-r from-blue-200 via-yellow-100 to-blue-200 rounded-lg shadow-blue-500 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 sm:p-6">
-    <h3 className="text-lg sm:text-xl font-semibold text-blue-600 mb-2">Moving Day Cleaning</h3>
-    <p className="text-gray-700 text-sm sm:text-base">
-      Ensure a spotless start in your new space or leave your old one sparkling clean.
-    </p>
-  </div>
-</div>
-
-
-
-
-
-  </div>
 </section>
-
 
       <div className="relative z-10  text-center">
         <div className="w-full  h-1 bg-black mx-auto "></div>
@@ -235,11 +133,11 @@ Choose us to transform your home into a sanctuary—for your health, your family
       </div>
 
       {/* Gallery Section */}
-      <section className="py-10 bubble-container  bg-gradient-to-t from-blue-600  via-black to-blue-600">
+      <section className="py-12 bubble-container   bg-gradient-to-t from-blue-600  via-black to-blue-600">
         {loading ? (
           <p className="text-center text-gray-600">Loading...</p>
         ) : (
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-2">
                                               <div className="bubble"></div>
                                               <div className="bubble"></div>
                                               <div className="bubble"></div>
@@ -324,7 +222,9 @@ Choose us to transform your home into a sanctuary—for your health, your family
                 <div className="bubble"></div>
                 <div className="bubble"></div>
                 <div className="bubble"></div>
+                
           </div>
+          
         )}
       </section>
       {selectedImage && (
@@ -359,15 +259,18 @@ Choose us to transform your home into a sanctuary—for your health, your family
                 <p className="text-sm text-yellow-500">
                   Photo Type: {selectedImage.photo_type || "No Type"}
                 </p>
+                
               </div>
+              
             </div>
+            
+            
           </div>
+          
         </div>
       )}
+<ServiceArea />
 
-      <div className="relative z-10 -mt-12 text-center">
-        <div className="w-full mt-5 h-2 bg-black mx-auto "></div>
-      </div>
 
       {/* About Me Section */}
     </div>

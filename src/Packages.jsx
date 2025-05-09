@@ -166,11 +166,11 @@ useEffect(() => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-gray-300 via-gray-300 to-gray-800 text-gray-800">
+    <div className="w-full min-h-screen bg-gradient-to-b from-blue-500 via-blue-300 to-gray-800 text-gray-800">
 
 
       {/* Header */}
-      <header className="relative bg-transparent text-gray-900 text-center py-10">
+      <header className="relative bg-transparent text-gray-900 text-center py-16">
       <div>
   <h1 className="">Cleaning Packages</h1>
 </div>
@@ -359,13 +359,11 @@ useEffect(() => {
 
           {/* Package Details */}
           <div className="text-center mt-4">
-            <h2 className="text-2xl font-extrabold text-white uppercase tracking-wider">
+            <h2 className="text-2xl font-serif font-extrabold text-white uppercase tracking-wider">
               {pkg.title}
             </h2>
-            {!(pkg.description && pkg.description.toLowerCase().includes("flat fee")) && (
-    <p className="text-gray-300 mt-2 text-lg">Prices Starting at:</p>
-  )}
-            <p className="text-2xl font-bold text-yellow-400">${pkg.amount}</p>
+
+
           </div>
 
           {/* Admin Controls */}
@@ -416,12 +414,7 @@ useEffect(() => {
               <h2 className="text-3xl font-bold mb-2">
                 {selectedPackage.title}
               </h2>
-              <p className="text-xl font-semibold text-gray-700 mb-4">
-  {!(selectedPackage.description && selectedPackage.description.toLowerCase().includes("flat fee")) && (
-    <>Prices starting at: <br/></>
-  )}
-  ${selectedPackage.amount}
-</p>
+
 
               <p className="text-gray-800 text-md leading-relaxed">
                 {selectedPackage.description}
