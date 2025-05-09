@@ -81,8 +81,8 @@ const Contact = () => {
       style={{ backgroundImage: "url('cleaning8.webp')" }}
     >
 <div className="bg-gradient-to-br from-blue-200 via-blue-300 to-indigo-500 bg-opacity-90 mt-16 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 max-w-6xl w-full text-white">
-        <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-gray-900 mb-10">
-          ✨ Contact Us
+        <h2 className="text-4xl border-2 rounded-3xl border-white bg-white/60 sm:text-5xl font-extrabold text-center text-gray-900 mb-4">
+          Contact Us
         </h2>
 
         {message && (
