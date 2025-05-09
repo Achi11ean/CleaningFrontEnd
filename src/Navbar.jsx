@@ -20,7 +20,7 @@ const Navbar = () => {
     <nav className="fixed  top-0 left-0 w-full z-50 bg-white/60 backdrop-blur-md shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="inline-block">
+        <Link to="/signin" className="inline-block">
           <img
             src="/logo2.jpg"
             alt="A Breath of Fresh Air Logo"
