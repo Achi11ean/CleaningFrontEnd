@@ -80,7 +80,7 @@ const Contact = () => {
       className="min-h-screen bg-gray-700 bg-cover bg-center flex items-center justify-center px-4 py-12"
       style={{ backgroundImage: "url('cleaning8.webp')" }}
     >
-      <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 max-w-6xl w-full">
+      <div className="bg-white/90 mt-16 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 max-w-6xl w-full">
         <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-gray-900 mb-10">
           ✨ Contact Us
         </h2>
