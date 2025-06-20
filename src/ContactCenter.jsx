@@ -689,6 +689,39 @@ const deleteOldRecords = async () => {
 }, [oldRecords.length]);
 
 
+
+const [contactFormOpen, setContactFormOpen] = useState(true);
+const [statusLoading, setStatusLoading] = useState(false);
+const toggleContactFormStatus = async () => {
+  try {
+    setStatusLoading(true);
+    const response = await axios.patch(
+      "/api/contact-status",
+      { is_open: !contactFormOpen },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setContactFormOpen(response.data.is_open);
+  } catch (error) {
+    console.error("Failed to toggle contact form status:", error);
+  } finally {
+    setStatusLoading(false);
+  }
+};
+
+const fetchContactFormStatus = async () => {
+  try {
+    const response = await axios.get("/api/contact-status");
+    setContactFormOpen(response.data.is_open);
+  } catch (error) {
+    console.error("Failed to fetch contact form status:", error);
+  }
+};
+
+useEffect(() => {
+  fetchContactFormStatus();
+}, []);
+
+
   // -----------------------------------------------------------------------------------------------------------------------------------End of Logic
   return (
     <div
@@ -706,7 +739,7 @@ const deleteOldRecords = async () => {
       <div className="relative z-10">
         {/* Header */}
         <h1
-          className="text-5xl pt-5 rounded-3xl font-bold mb-8 pb-3  text-center  bg-gradient-to-r from-pink-400 via-purple-300 to-yellow-300 shadow-lg"
+          className="text-5xl pt-5 rounded-3xl font-bold mb-8 pb-3 mt-20 text-center  bg-gradient-to-r from-pink-400 via-purple-300 to-yellow-300 shadow-lg"
           style={{ fontFamily: "'Pacifico', 'Dancing Script', cursive" }}
         >
           Amanda's Hub
@@ -759,6 +792,25 @@ const deleteOldRecords = async () => {
 
         {activeTab === "Manage" && (
           <div className="flex flex-col items-center justify-center">
+<div className="mb-6 flex justify-center">
+  <button
+    onClick={toggleContactFormStatus}
+    disabled={statusLoading}
+    className={`px-6 py-3 rounded-full text-white font-bold shadow-lg transition-all ${
+      contactFormOpen
+        ? "bg-green-500 hover:bg-green-600"
+        : "bg-red-500 hover:bg-red-600"
+    }`}
+  >
+    {statusLoading
+      ? "Updating..."
+      : contactFormOpen
+      ? "✅ Contact Form is OPEN – Click to Disable"
+      : "🚫 Contact Form is CLOSED – Click to Enable"}
+  </button>
+</div>
+
+
             {/* Search Bar */}
             <div className="flex flex-wrap gap-4 mb-6 justify-center">
               <input

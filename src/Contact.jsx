@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +12,21 @@ const Contact = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [showBubbles, setShowBubbles] = useState(false);
+const [formOpen, setFormOpen] = useState(true);
+const [statusChecked, setStatusChecked] = useState(false);
+useEffect(() => {
+  fetch("https://cleaningbackend.onrender.com/api/contact-status")
+    .then((res) => res.json())
+    .then((data) => {
+      setFormOpen(data.is_open);
+      setStatusChecked(true);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch contact form status:", err);
+      setFormOpen(false); // fallback to disabled
+      setStatusChecked(true);
+    });
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,6 +106,27 @@ const Contact = () => {
         {error && (
           <div className="mb-4 text-red-700 bg-red-100 p-3 rounded">{error}</div>
         )}
+{statusChecked && !formOpen && (
+  <div className="relative bg-gradient-to-br from-red-300 via-blue-900 to-pink-500 border-4 border-white text-white text-center p-8 rounded-[2rem] shadow-[0_0_40px_rgba(255,255,255,0.2)] mb-8 max-w-2xl mx-auto animate-fade-in backdrop-blur-lg">
+    
+    {/* Logo in top-right */}
+    <img
+      src="/logo.jpeg" // ⬅️ Replace with your actual logo path
+      alt="Logo"
+      className="absolute top-4 right-4 w-16 h-16 object-contain drop-shadow-lg rounded-full border-2 border-white bg-white"
+    />
+
+    <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight font-serif drop-shadow-md">
+      🧹 All our brooms are busy!
+    </h3>
+    <p className="mt-4 text-white text-base sm:text-lg italic font-medium">
+      We’re currently not accepting new clients at this time. 💔 <br />
+      Please check back soon — we’d love to shine for you later!
+    </p>
+  </div>
+)}
+
+{formOpen && (
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Column */}
@@ -180,7 +216,7 @@ const Contact = () => {
             </button>
           </div>
         </form>
-
+)}
         {/* Optional animation */}
         {showBubbles && (
           <div className="fixed inset-0 pointer-events-none flex flex-col items-center justify-end">
