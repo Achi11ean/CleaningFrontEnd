@@ -74,7 +74,7 @@ const Calendar = () => {
 
   return (
     <div
-      className="max-w-full mx-auto p-6 rounded-lg shadow-md"
+      className="max-w-full mx-auto p-1 rounded-lg shadow-md"
       style={{
         background: "linear-gradient(135deg, #fbc2eb, #a6c1ee)", // Gradient colors
         backgroundSize: "cover",
@@ -83,7 +83,7 @@ const Calendar = () => {
       }}
     >
       <h2
-        className="text-6xl font-extrabold mb-4 text-center text-gray-700"
+        className="text-3xl font-serif border-2 rounded-2xl border-blue-900 font-extrabold mb-4 text-center text-gray-700"
         style={{
           fontFamily: "'Aspire', sans-serif",
         }}

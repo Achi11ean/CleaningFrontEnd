@@ -775,7 +775,7 @@ useEffect(() => {
         </div>
 
         {/* Tab Content */}
-        <div className=" rounded-4xl  p-6 shadow-md">
+        <div className=" rounded-4xl   shadow-md">
           {activeTab === "Agenda" && (
             <div>
               <Calendar />
