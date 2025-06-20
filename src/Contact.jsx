@@ -107,24 +107,26 @@ useEffect(() => {
           <div className="mb-4 text-red-700 bg-red-100 p-3 rounded">{error}</div>
         )}
 {statusChecked && !formOpen && (
-  <div className="relative bg-gradient-to-br from-red-300 via-blue-900 to-pink-500 border-4 border-white text-white text-center p-8 rounded-[2rem] shadow-[0_0_40px_rgba(255,255,255,0.2)] mb-8 max-w-2xl mx-auto animate-fade-in backdrop-blur-lg">
-    
-    {/* Logo in top-right */}
-    <img
-      src="/logo.jpeg" // ⬅️ Replace with your actual logo path
-      alt="Logo"
-      className="absolute top-4 right-4 w-16 h-16 object-contain drop-shadow-lg rounded-full border-2 border-white bg-white"
-    />
+  <div className="relative bg-gradient-to-br from-blue-400 via-indigo-900 to-blue-600 border-4 border-white text-white text-center p-6 sm:p-10 rounded-[2rem] shadow-[0_0_50px_rgba(255,255,255,0.25)] mb-10 max-w-[95vw] sm:max-w-2xl mx-auto animate-fade-in backdrop-blur-xl">
 
-    <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight font-serif drop-shadow-md">
-      🧹 All our brooms are busy!
+    {/* Logo */}
+
+
+    {/* Heading */}
+    <h3 className="text-xl sm:text-3xl font-extrabold tracking-wide font-serif drop-shadow-lg border-2 border-white rounded-xl inline-block px-4 py-2 bg-white/10 backdrop-blur-md">
+      🧹 All Our Brooms Are Busy!
     </h3>
-    <p className="mt-4 text-white text-base sm:text-lg italic font-medium">
-      We’re currently not accepting new clients at this time. 💔 <br />
-      Please check back soon — we’d love to shine for you later!
+
+    {/* Message */}
+    <p className="mt-6 text-sm sm:text-lg italic font-medium px-4">
+      We’re currently not accepting new clients at this time. 💔 <br className="hidden sm:block" />
+      <span className="block mt-4">
+        Please check back soon — we’d love to shine for you later!
+      </span>
     </p>
   </div>
 )}
+
 
 {formOpen && (
 
