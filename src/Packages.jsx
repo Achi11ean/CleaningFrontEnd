@@ -1,435 +1,232 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import "./index.css"; // Tailwind CSS
-import { useAuth } from "./AuthContext";
 
 const Packages = () => {
-  const [packages, setPackages] = useState([]); // State to store packages from the backend
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [selectedPackage, setSelectedPackage] = useState(null); // Holds the package details for the modal
-  const handleViewPackage = (pkg) => {
-    setSelectedPackage(pkg); // Set the clicked package
-  };
+  const [selectedPackage, setSelectedPackage] = useState(null);
 
-  const closeModal = () => {
-    setSelectedPackage(null); // Clear the modal state
-  };
+  const handleViewPackage = (pkg) => setSelectedPackage(pkg);
+  const closeModal = () => setSelectedPackage(null);
 
-  const [editMode, setEditMode] = useState(false); // Determines if editing
-  const [currentPackageId, setCurrentPackageId] = useState(null); // Package being edited
-  const handleEditPackage = (pkg) => {
-    setTitle(pkg.title);
-    setAmount(pkg.amount);
-    setImageUrl(pkg.image_url);
-    setDescription(pkg.description);
-    setCurrentPackageId(pkg.id);
-    setEditMode(true);
-    setShowForm(true); // Show form
-  };
-
-  const handleDeletePackage = async (packageId) => {
-    if (!window.confirm("Are you sure you want to delete this package?"))
-      return; // Confirm deletion
-
-    try {
-      const response = await fetch(
-        `https://cleaningbackend.onrender.com/api/packages/${packageId}`,
+  // ✅ Full static packages list
+  const packages = [
         {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include token
-          },
-        }
-      );
+      id: 3,
+      title: "One-Time Deep Clean",
+      description: `✨ Perfect for seasonal resets or special occasions.
+Our Deep Clean covers every nook and cranny for a total refresh:
+• Cleaning under & behind appliances (where accessible)
+• Moving light furniture to clean behind/underneath
+• Interior windows + tracks & sills
+• Upholstery vacuuming (sofas, chairs, cushions)
+• Detailed baseboard & trim cleaning throughout
+• Doors, frames, light switches & vents detailed
+• Bathrooms & kitchen scrubbed top to bottom
+• Floors vacuumed & mopped with safe, effective solutions
 
-      if (response.ok) {
-        setPackages((prev) => prev.filter((pkg) => pkg.id !== packageId)); // Remove package from state
-      } else {
-        console.error("Failed to delete package");
-      }
-    } catch (err) {
-      console.error("Error deleting package:", err);
-    }
-  };
+💲 Starting at $475`,
+    },
+    {
+      id: 1,
+      title: "Recurring Maintenance Cleaning",
+      description: `A consistently clean home, without the stress.
+Keep your home fresh and inviting week after week. Every new client begins with an Initial Deep Clean to set the standard. After that, choose the maintenance plan that fits your lifestyle.
 
-  const { user } = useAuth();
-  const isAdmin = user?.username === "admin";
-  const [showForm, setShowForm] = useState(false);
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [description, setDescription] = useState("");
+Standard Package
+• Dusting of accessible surfaces, décor, blinds, fans
+• Vacuuming & mopping of all floors
+• Kitchen: counters, sinks, cabinet fronts, appliance exteriors, backsplash
+• Bathrooms: toilets, tubs, showers, sinks, mirrors, fixtures
+• Bedrooms: bed making, surface wipe-downs
+• Trash removal & disinfecting high-touch points
 
-  const gradientClasses = [
-    "from-blue-200 via-blue-300 to-blue-400", // Light ocean
-    "from-blue-300 via-blue-400 to-blue-500", // Serene skies
-    "from-blue-400 via-blue-500 to-blue-600", // Calm waters
-    "from-cyan-200 via-blue-300 to-blue-500", // Icy breeze
-    "from-indigo-300 via-blue-400 to-blue-600", // Twilight blues
-    "from-teal-300 via-blue-400 to-blue-500", // Aqua vibes
-    "from-blue-500 via-blue-600 to-blue-700", // Deep ocean
-    "from-sky-300 via-blue-400 to-indigo-500", // Midnight glow
-    "from-blue-100 via-blue-200 to-blue-300", // Misty morning
-    "from-cyan-100 via-blue-200 to-blue-300", // Frosty chill
-    "from-teal-200 via-blue-300 to-indigo-400", // Tropical dusk
-    "from-blue-600 via-indigo-500 to-blue-700", // Royal blue
-    "from-blue-400 via-cyan-300 to-blue-500", // Aqua shimmer
-    "from-blue-200 via-sky-300 to-blue-400", // Gentle wave
-    "from-indigo-500 via-blue-500 to-blue-700", // Bold night
-    "from-sky-200 via-blue-300 to-blue-500", // Clear horizon
-    "from-cyan-300 via-blue-400 to-indigo-500", // Arctic glow
-    "from-indigo-400 via-blue-500 to-blue-600", // Sapphire gradient
-    "from-teal-300 via-blue-500 to-indigo-600", // Crystal lagoon
-    "from-sky-400 via-blue-500 to-indigo-600", // Dreamy cascade
+💲 Starting at $225 per visit`,
+    },
+    {
+      id: 2,
+      title: "Premium Package",
+      description: `Everything in Standard, plus:
+• Baseboards & trim wiped
+• Doors, frames & light switches detailed
+• Interior windows (dusting and glass wiping only)
+• Upholstery vacuumed
+• Bed linens changed (when provided)
+
+💲 Starting at $300 per visit`,
+    },
+
+    {
+      id: 4,
+      title: "Move-In / Move-Out Clean",
+      description: `🚚 Leave it spotless or start fresh in your new home.
+Our most detailed package ensures your space is move-ready:
+• Inside & outside of appliances (fridge, oven, microwave, dishwasher, etc.)
+• Inside & outside of cabinetry & drawers in every room
+• Walls, doors, trim & baseboards washed down
+• Interior windows + tracks & sills cleaned
+• Drains cleaned & deodorized
+• Vent covers, fans & light fixtures dusted
+• Floors vacuumed, mopped, & polished
+• Every corner detailed — so you or the next resident walk into a home that feels brand new
+
+💲 Starting at $625`,
+    },
+    {
+      id: 5,
+      title: "Kitchen & Bath Package",
+      description: `🍽️ Focus on the most-used spaces in your home.
+• Kitchen: counters, backsplash, sinks & drains, cabinet fronts, appliance exteriors, floors
+• Bathrooms: toilets, tubs, showers, sinks, mirrors, fixtures, tile & grout, floors
+• Fixtures polished & disinfected
+• High-touch areas sanitized
+
+💲 Starting at $225`,
+    },
+    {
+      id: 6,
+      title: "Kitchen Appliance Cleaning Package",
+      description: `🍳 Restore shine & extend the life of your appliances.
+• Interior & exterior cleaning of fridge, oven, microwave, dishwasher
+• Grease, spills, & buildup removed with safe solutions
+• Fresh, sanitized appliances that perform better
+
+💲 Starting at $250`,
+    },
+    {
+      id: 7,
+      title: "Small Appliance Cleaning Package",
+      description: `☕ Everyday essentials, refreshed.
+• Coffee makers & espresso machines (descaling & sanitizing)
+• Toasters, toaster ovens & air fryers
+• Blenders, juicers, or mixers
+• Ice makers & other small appliances
+
+💲 Starting at $50`,
+    },
+    {
+      id: 8,
+      title: "Detailed Window Cleaning",
+      description: `🪟 Let the light shine in.
+• Interior glass panes cleaned streak-free
+• Locks, frames, latches polished
+• Tracks & sills deep cleaned
+• Optional: safe ground-level exterior cleaning
+
+💲 Starting at $250`,
+    },
+    {
+      id: 9,
+      title: "Post-Construction Cleaning",
+      description: `🏗️ From dusty to dazzling.
+• Fine dust removal from ceilings, walls, vents, fixtures
+• Cabinets, drawers & shelves cleaned inside & out
+• Baseboards, doors, trim polished
+• Windows, tracks & sills cleaned
+• Floors vacuumed, mopped & detailed
+• Safe disposal of small construction debris
+
+💲 Starting at $650`,
+    },
+    {
+      id: 10,
+      title: "VIP Membership Packages",
+      description: `🌿 Our most exclusive offering — for clients who want premium care, savings & peace of mind.
+Choose 3, 6, or 12 months prepaid and enjoy:
+• Complimentary add-ons (like fridge interiors, linen changes, oven cleaning, window refreshes)
+• Discounts on total service cost (greater savings for 6 & 12 months)
+• Priority scheduling — your appointments come first
+• A consistent cleaning team you can trust
+
+💲 Starting at $225 per cleaning`,
+    },
+    {
+      id: 11,
+      title: "Commercial Cleaning Package",
+      description: `✨ Reliable, eco-friendly cleaning tailored to your business.
+• Desks, counters & high-touch surfaces disinfected
+• Restrooms sanitized (toilets, sinks, mirrors, fixtures, floors)
+• Breakroom/kitchenette cleaned (counters, sinks, appliances, cabinet fronts)
+• Trash emptied & liners replaced
+• Floors vacuumed & mopped
+• Interior glass & partitions cleaned
+• Rotating deep-cleaning available (vents, upholstery, appliances, etc.)
+
+💲 Starting at $250 per visit`,
+    },
   ];
 
-  
-  // Fetch packages from the backend
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch("https://cleaningbackend.onrender.com/api/packages");
-        if (!response.ok) throw new Error("Failed to fetch packages");
-        const data = await response.json();
-        setPackages(data);
-      } catch (err) {
-        console.error("Error fetching packages:", err.message);
-        setError("Failed to load packages. Please try again later.");
-      } finally {
-        setLoading(false); // Ensures state updates before showing the alert
-      }
-    };
-
-    fetchPackages();
-}, []);
-
-useEffect(() => {
-    if (!loading) {
-        alert("🧼 All services REQUIRE an in-home consultation to ensure a shared understanding and deliver the highest quality service tailored to your needs. 🧹");
-    }
-}, [loading]); // This runs ONLY when 'loading' changes to false
-
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    const updatedPackage = {
-      title,
-      amount: parseFloat(amount),
-      image_url: imageUrl,
-      description,
-    };
-
-    try {
-      const url = editMode
-        ? `https://cleaningbackend.onrender.com/api/packages/${currentPackageId}` // Update endpoint
-        : "https://cleaningbackend.onrender.com/api/packages"; // Create endpoint
-
-      const method = editMode ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updatedPackage),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (editMode) {
-          setPackages((prev) =>
-            prev.map((pkg) =>
-              pkg.id === currentPackageId ? data.package : pkg
-            )
-          );
-        } else {
-          setPackages((prev) => [...prev, data.package]);
-        }
-        // Reset form and mode
-        setShowForm(false);
-        setEditMode(false);
-        setCurrentPackageId(null);
-        setTitle("");
-        setAmount("");
-        setImageUrl("");
-        setDescription("");
-      } else {
-        console.error("Failed to submit package:", data.error);
-      }
-    } catch (err) {
-      console.error("Error submitting package:", err);
-    }
-  };
-
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-blue-500 via-blue-300 to-gray-800 text-gray-800">
-
-
+    <div className="w-full min-h-screen pt-6 bg-gradient-to-b from-black via-gray-900 to-black text-gray-100">
       {/* Header */}
-      <header className="relative bg-transparent text-gray-900 text-center py-16">
-      <div>
-  <h1 className="">Cleaning Packages</h1>
-</div>
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url('banner3.webp')",
-          }}
-        ></div>
-
-        {/* Fun Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-400/50 via-white/10 to-blue-500/50"></div>
-        <div className="relative z-10 text-gray-800 px-12 max-w-3xl mx-auto">
-          <h1
-            className="text-5xl sm:text-6xl lg:text-5xl font-extrabold leading-tight animate-fade-in"
-            style={{
-              fontFamily: "'playfair'",
-              color: "black",
-              textShadow: `
-      0 0 5px white, 
-      0 0 10px white, 
-      0 0 20px white, 
-      0 0 30px white, 
-      0 0 40px white, 
-      0 0 50px white
-    `,
-              animation: "fade-in 2s ease-out",
-            }}
-          >
-            Cleaning Packages
-          </h1> </div>
-        {/* Content */}
-        <div className="relative z-10 text-gray-800 px-12 max-w-4xl mx-auto">
-
-
-
-          <p className="mt-6 text-base sm:text-lg font-serif lg:text-2xl font-medium tracking-wide leading-relaxed bg-white/90 p-4 rounded-xl shadow-md">
-            Every package comes with our signature eco-friendly cleaning
-            services, because we care about you and the planet! 🌿✨                  <p className="text-black font-semibold text-lg flex items-center justify-center gap-2 animate-pulse">
-                    <span className="material-icons mb-5 text-blue-800 text-2xl">
-                      touch_app
-                    </span>
-                    Select a package for Details
-                  </p></p>
-            
-        </div> 
-
+      <br/><br/>
+      <header className="text-center mt-6 mb-2   border-b border-blue-500">
+        <h1
+          className="text-5xl border-b-2 sm:text-6xl font-extrabold uppercase tracking-wide text-blue-400 drop-shadow-lg"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Cleaning Packages
+        </h1>
+        <p className=" max-w-3xl mx-auto mb-4 text-md shadow-md shadow-white sm:text-xl font-medium bg-gradient-to-r from-blue-600/20 to-black/30 px-6 py-4  shadow-md border border-blue-700/40">
+          Premium Eco-Friendly Home & Business Cleaning <br/> <br/>
+          Using only EWG-rated A or higher, non-toxic products safe for your
+          family, pets, and the planet. Our expert team delivers detailed,
+          reliable cleaning tailored to your needs.
+        </p>
       </header>
-      <div className="w-full h-2 bg-black mx-auto"></div>
-            
 
-            <div className="w-full h-2 bg-black mx-auto"></div>
-
-            {isAdmin && (
-  <div className="max-w-lg mx-auto bg-gradient-to-b from-gray-900 to-gray-800 bg-opacity-90 backdrop-blur-lg p-6 rounded-2xl shadow-xl border border-gray-700 mt-6">
-    
-    {/* Toggle Button */}
-    <button
-      onClick={() => setShowForm((prev) => !prev)}
-      className="w-full py-4 px-6 text-xl sm:text-2xl font-bold text-white uppercase 
-                 bg-gradient-to-r from-yellow-400 via-red-500 to-purple-600 
-                 hover:scale-105 hover:shadow-lg transform transition-all duration-300 rounded-2xl"
-    >
-      {showForm ? "❌ Close Package Form" : "➕ Add New Package"}
-    </button>
-
-    {/* Form */}
-    {showForm && (
-      <form 
-        onSubmit={(e) => handleFormSubmit(e)}
-        className="space-y-6 mt-6"
-      >
-        {/* Title Input */}
-        <div>
-          <label className="block text-gray-300 font-semibold mb-2">📦 Package Title</label>
-          <input
-            type="text"
-            placeholder="Enter title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400"
-            required
-          />
+      {/* Package Grid */}
+      <section className="px-6 mt-10 pb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {packages.map((pkg) => (
+            <button
+              key={pkg.id}
+              onClick={() => handleViewPackage(pkg)}
+              className="relative bg-gradient-to-b from-gray-800 to-black border border-blue-600 p-6 rounded-lg shadow-xl 
+                         transition-all transform hover:scale-105 hover:shadow-blue-500/30 text-left group"
+            >
+              <h2 className="text-2xl font-bold text-blue-400 uppercase tracking-wide mb-2 group-hover:text-white transition">
+                {pkg.title}
+              </h2>
+              <p className="text-gray-300 line-clamp-4 text-sm">
+                {pkg.description}
+              </p>
+              <span className="absolute bottom-3 right-4 text-sm font-semibold text-blue-400 underline group-hover:text-white transition">
+                View Details
+              </span>
+            </button>
+          ))}
         </div>
+      </section>
 
-        {/* Amount Input */}
-        <div>
-          <label className="block text-gray-300 font-semibold mb-2">💰 Package Amount</label>
-          <input
-            type="number"
-            placeholder="Enter amount..."
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400"
-            required
-          />
-        </div>
-
-        {/* Image Upload */}
-        <div className="relative group">
-          <label className="block text-gray-300 font-semibold mb-2">📸 Upload Image</label>
-          <a
-            href="https://imgur.com/upload"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full text-lg font-bold text-white text-center py-3 uppercase rounded-lg 
-                     bg-gradient-to-r from-green-400 via-green-500 to-green-600 shadow-lg transition-all 
-                     hover:scale-105 hover:from-green-500 hover:via-green-600 hover:to-green-700"
-          >
-            🚀 Upload Photo to Imgur
-          </a>
-
-          <input
-            type="url"
-            placeholder="Paste image URL here..."
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400 mt-2"
-            required
-          />
-
-          {/* Tooltip */}
-          <div
-            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          >
-            Don't have a URL? Click the link above, upload an image, then **right-click on the image and "Copy Image Address"**.
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-gray-300 font-semibold mb-2">📝 Description</label>
-          <textarea
-            placeholder="Enter package details..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-3 text-lg bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none placeholder-gray-400 resize-none h-32"
-          ></textarea>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full py-4 text-lg font-bold text-white uppercase 
-                   bg-blue-500 hover:bg-blue-600 rounded-xl shadow-md transform transition-all 
-                   hover:scale-105 hover:shadow-lg active:scale-95"
-        >
-          🚀 Upload Package
-        </button>
-      </form>
-    )}
-  </div>
-)}
-
-      {/* Package Cards */}
-      <section className="px-6 mt-6 pb-12">
-  {loading ? (
-    <p className="text-center text-gray-400 text-xl font-semibold animate-pulse">
-      ⏳ Loading packages...
-    </p>
-  ) : error ? (
-    <p className="text-center text-red-500 text-xl font-bold">{error}</p>
-  ) : (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-      {packages.map((pkg, index) => (
-        <button
-          key={pkg.id}
-          onClick={() => handleViewPackage(pkg)}
-          className={`relative bg-gray-900 bg-opacity-90 pb-12 backdrop-blur-lg p-5 rounded-2xl shadow-xl 
-                      overflow-hidden transition-all transform duration-300 hover:scale-105 
-                      hover:shadow-2xl border-2 ${gradientClasses[index % gradientClasses.length]} border-opacity-40`}
-        >
-          {/* Package Image */}
-          {pkg.image_url && (
-            <div className="relative w-full h-40 rounded-xl overflow-hidden">
-              <img
-                src={pkg.image_url}
-                alt={pkg.title}
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-              />
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-40"></div>
-            </div>
-          )}
-
-          {/* Package Details */}
-          <div className="text-center mt-4">
-            <h2 className="text-2xl font-serif font-extrabold text-white uppercase tracking-wider">
-              {pkg.title}
-            </h2>
-
-
-          </div>
-
-          {/* Admin Controls */}
-{/* Admin Controls - Now positioned below */}
-{isAdmin && (
-  <div className="flex gap-3  justify-center mt-16">
-    <button
-      onClick={() => handleEditPackage(pkg)}
-      className="px-4 py-2 text-sm font-bold text-black bg-yellow-400 hover:bg-yellow-500 rounded-lg shadow-md transition-all transform hover:scale-105"
-    >
-      ✏️ Edit
-    </button>
-    <button
-      onClick={() => handleDeletePackage(pkg.id)}
-      className="px-4 py-2 text-sm font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-md transition-all transform hover:scale-105"
-    >
-      ❌ Delete
-    </button>
-  </div>
-)}
-        </button>
-      ))}
-    </div>
-  )}
-</section>
-
+      {/* Modal */}
       {selectedPackage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 px-2 sm:px-4">
+          <div className="relative bg-gradient-to-b from-gray-900 to-black border border-blue-600 shadow-2xl w-full max-w-lg sm:max-w-2xl p-6 sm:p-10 
+                          max-h-[90vh] overflow-y-auto rounded-lg">
             {/* Close Button */}
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-lg font-extrabold w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-300 transition-all duration-300 shadow-md"
-              aria-label="Close Modal"
+              className="absolute top-4 right-4 text-gray-400 hover:text-blue-400 text-3xl font-bold transition"
             >
-              &times;
+              ×
             </button>
 
             {/* Modal Content */}
-            <div className="text-center">
-              {selectedPackage.image_url && (
-                <img
-                  src={selectedPackage.image_url}
-                  alt={selectedPackage.title}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-              )}
-              <h2 className="text-3xl font-bold mb-2">
-                {selectedPackage.title}
-              </h2>
+            <h2 className="text-3xl font-bold border-b-2  text-blue-400 mb-6 uppercase tracking-wider drop-shadow">
+              {selectedPackage.title}
+            </h2>
+            <p className="text-gray-200 whitespace-pre-line leading-relaxed text-base">
+              {selectedPackage.description}
+            </p>
 
-
-              <p className="text-gray-800 text-md leading-relaxed">
-                {selectedPackage.description}
-              </p>
-              <div className="mt-2">
-            <Link
-              to="/contact"
-              className="inline-block bg-gradient-to-r from-lime-400 via-green-500 to-teal-500 
-          text-white font-bold text-lg sm:text-xl px-8 sm:px-10 py-3 rounded-full shadow-xl
-          hover:from-teal-400 hover:via-green-400 hover:to-lime-500 
-          transform hover:rotate-1 hover:scale-105 transition-all duration-300 ease-out"
-            >
-              Book Now
-            </Link>
-          </div>
+            {/* CTA */}
+            <div className="mt-8 text-center">
+              <Link
+                to="/contact"
+                className="inline-block bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg px-8 py-3 rounded-lg shadow-lg 
+                           hover:from-blue-500 hover:to-blue-700 hover:shadow-blue-500/40 transform hover:scale-105 transition-all"
+              >
+                Book Now
+              </Link>
             </div>
           </div>
         </div>
