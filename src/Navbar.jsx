@@ -22,11 +22,7 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <ul className="hidden md:flex space-x-8 text-gray-700 font-semibold uppercase tracking-wider">
-          <li>
-            <Link to="/packages" className="hover:text-blue-600 transition">
-              Packages
-            </Link>
-          </li>
+
           <li>
             <Link to="/contact" className="hover:text-blue-600 transition">
               Contact us
@@ -69,11 +65,7 @@ const Navbar = () => {
                 Home
               </Link>
             </li>
-            <li>
-              <Link to="/packages" onClick={toggleMenu}>
-                Packages
-              </Link>
-            </li>
+
             <li>
               <Link to="/contact" onClick={toggleMenu}>
                Contact Us
