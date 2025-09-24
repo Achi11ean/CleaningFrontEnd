@@ -230,7 +230,7 @@ const HomePage = () => {
           href="mailto:Abofacs.inquiries@gmail.com"
           className="hover:text-blue-400 underline"
         >
-          Abreatheoffreshaircs@gmail.com
+          abofacs.inquiries@gmail.com
         </a>
       </p>
       <div className="flex space-x-4 mt-3">
