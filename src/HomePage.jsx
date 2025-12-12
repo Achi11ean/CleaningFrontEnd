@@ -98,11 +98,27 @@ const HomePage = () => {
 
     {/* Quick Links */}
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-10">
-      <Link to="/contact">
-        <button className="w-full px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300">
-          Contact Us!
-        </button>
-      </Link>
+<a
+  href="https://www.honeybook.com/widget/_294956/cf_id/690ceb0d1a673a002c963efb"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="w-full"
+>
+  <button
+    className="
+      w-full px-6 py-2
+      bg-gradient-to-r from-blue-500 to-blue-800
+      text-white font-semibold
+      rounded-lg shadow-md
+      hover:shadow-blue-500/50
+      hover:scale-105
+      transition-all duration-300
+    "
+  >
+    Contact Us!
+  </button>
+</a>
+
       <Link to="/gallery">
         <button className="w-full px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300">
           View Gallery
@@ -216,7 +232,11 @@ const HomePage = () => {
         <li><Link to="/packages">Services</Link></li>
         <li><Link to="/gallery">Gallery</Link></li>
         <li><Link to="/reviews">Reviews</Link></li>
-        <li><Link to="/contact">Contact</Link></li>
+<li>
+  <a href="https://www.honeybook.com/widget/_294956/cf_id/690ceb0d1a673a002c963efb">
+    Contact
+  </a>
+</li>
       </ul>
     </div>
 
