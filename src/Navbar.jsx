@@ -23,11 +23,17 @@ const Navbar = () => {
         {/* Desktop Links */}
         <ul className="hidden md:flex space-x-8 text-gray-700 font-semibold uppercase tracking-wider">
 
-          <li>
-            <Link to="/contact" className="hover:text-blue-600 transition">
-              Contact us
-            </Link>
-          </li>
+<li>
+  <a
+    href="https://www.honeybook.com/widget/_294956/cf_id/690ceb0d1a673a002c963efb"
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={toggleMenu}
+  >
+    Contact Us
+  </a>
+</li>
+
           <li>
             <Link to="/gallery" className="hover:text-blue-600 transition">
               Gallery
@@ -66,11 +72,17 @@ const Navbar = () => {
               </Link>
             </li>
 
-            <li>
-              <Link to="/contact" onClick={toggleMenu}>
-               Contact Us
-              </Link>
-            </li>
+<li>
+  <a
+    href="https://www.honeybook.com/widget/_294956/cf_id/690ceb0d1a673a002c963efb"
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={toggleMenu}
+  >
+    Contact Us
+  </a>
+</li>
+
             <li>
               <Link to="/gallery" onClick={toggleMenu}>
                 Gallery
