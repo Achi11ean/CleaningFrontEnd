@@ -17,6 +17,8 @@ import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
 import ManageAvailability from "./ManageAvailability";
 import Booking from "./Booking";
+import CreateInventoryItem from "./CreateInventoryItem";
+import ManageInventory from "./ManageInventory";
 
 import AdminShifts from "./AdminShifts";
 export default function AdminDashboard() {
@@ -28,6 +30,9 @@ const [shiftsSubTab, setShiftsSubTab] = useState("me"); // "me" | "all"
 const [workDaySubTab, setWorkDaySubTab] = useState("workday"); 
 const [servicesSubTab, setServicesSubTab] = useState("create");
 const [usersSubTab, setUsersSubTab] = useState("staff"); // "staff" | "admins"
+// Inventory sub-tabs
+const [inventorySubTab, setInventorySubTab] = useState("create");
+// "create" | "manage" | "staff"
 
 // "create" | "manage"
 const [timeOffSubTab, setTimeOffSubTab] = useState("manage");
@@ -53,6 +58,8 @@ const deactivateStaff = async (id) => {
 useEffect(() => {
   if (activeTab !== "workday") {
     setWorkDaySubTab("workday"); // reset to default
+        setInventorySubTab("create"); // 👈 reset inventory
+
   }
 }, [activeTab]);
 
@@ -394,7 +401,7 @@ Profile
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🟢 Work Day
+        🟢 Day
       </button>
 <button
   onClick={() => setWorkDaySubTab("employees")}
@@ -417,12 +424,78 @@ Profile
       >
         👥 Active
       </button>
+      <button
+  onClick={() => setWorkDaySubTab("inventory")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    workDaySubTab === "inventory"
+      ? "border-blue-600 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  📦 Inventory
+</button>
+
     </div>
 
     {/* Work Day Sub Content */}
     {!loading && !error && workDaySubTab === "workday" && (
       <ClientSchedulesCalendar />
     )}
+{!loading && !error && workDaySubTab === "inventory" && (
+  <>
+    {/* Inventory Sub Tabs */}
+    <div className="flex space-x-4 border-b mb-6 mt-4">
+      <button
+        onClick={() => setInventorySubTab("create")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          inventorySubTab === "create"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        ➕ Create
+      </button>
+
+      <button
+        onClick={() => setInventorySubTab("manage")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          inventorySubTab === "manage"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🛠️ Manage
+      </button>
+
+      <button
+        onClick={() => setInventorySubTab("staff")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          inventorySubTab === "staff"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        👥 Staff
+      </button>
+    </div>
+{inventorySubTab === "manage" && (
+  <ManageInventory />
+)}
+
+    {/* Inventory Sub Content */}
+    {inventorySubTab === "create" && (
+      <CreateInventoryItem />
+    )}
+
+
+    {inventorySubTab === "staff" && (
+      <div className="text-gray-500 italic text-center py-10">
+        Staff inventory view coming soon 👷
+      </div>
+    )}
+  </>
+)}
+
 
     {!loading && !error && workDaySubTab === "staff" && (
       <AdminWorkDay />

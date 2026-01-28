@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
+import StaffNotes from "./StaffNotes";
 
 export default function AdminAllProfiles() {
   const { authAxios } = useAdmin();
@@ -61,21 +62,32 @@ export default function AdminAllProfiles() {
         <h3 className="text-xl font-bold mb-4">Staff</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {staff.map((s) => (
-            <ProfileCard
-              key={`staff-${s.id}`}
-              username={s.username}
-              role={s.role}
-              profile={s.profile}
-            />
-          ))}
+         {staff.map((s) => (
+  <ProfileCard
+    key={`staff-${s.id}`}
+    username={s.username}
+    role={s.role}
+    profile={s.profile}
+    staffId={s.id}          // 👈 ADD
+    axios={authAxios}       // 👈 ADD
+    isStaff                 // 👈 FLAG
+  />
+))}
+
         </div>
       </div>
     </div>
   );
 }
 
-function ProfileCard({ username, role, profile }) {
+function ProfileCard({
+  username,
+  role,
+  profile,
+  staffId,
+  axios,
+  isStaff = false,
+}) {
   return (
     <div className="border rounded-xl p-5 flex space-x-4 items-start bg-gray-50">
 
@@ -107,6 +119,15 @@ function ProfileCard({ username, role, profile }) {
                 {profile.bio}
               </p>
             )}
+            {isStaff && staffId && (
+  <div className="mt-4">
+    <StaffNotes
+      axios={axios}
+      staffId={staffId}
+    />
+  </div>
+)}
+
           </>
         ) : (
           <p className="mt-2 text-sm text-orange-600">
@@ -114,6 +135,8 @@ function ProfileCard({ username, role, profile }) {
           </p>
         )}
       </div>
+      
     </div>
+    
   );
 }

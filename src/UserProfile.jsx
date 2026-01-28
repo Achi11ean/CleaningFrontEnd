@@ -173,116 +173,125 @@ const handleChange = (e) => {
     return <p className="text-center text-gray-500">Loading profile...</p>;
   }
 
-  return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border p-8">
+return (
+  <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border p-4 sm:p-6 md:p-8">
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        My Profile
-      </h2>
+    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+      My Profile
+    </h2>
 
-      {status && (
-        <div className="mb-4 text-green-600 font-semibold">
-          {status}
-        </div>
-      )}
+    {status && (
+      <div className="mb-4 text-green-600 font-semibold text-sm">
+        {status}
+      </div>
+    )}
 
-      {error && (
-        <div className="mb-4 text-red-600 font-semibold">
-          {error}
-        </div>
-      )}
+    {error && (
+      <div className="mb-4 text-red-600 font-semibold text-sm">
+        {error}
+      </div>
+    )}
 
-      {/* Photo */}
-      <div className="flex items-center space-x-6 mb-6">
-        <div className="w-28 h-28 rounded-full overflow-hidden border bg-gray-100 flex items-center justify-center">
-          {form.photo_url ? (
-            <img
-              src={form.photo_url}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-gray-400 text-sm">No Photo</span>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Profile Photo
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="text-sm"
+    {/* Photo */}
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
+      <div className="mx-auto sm:mx-0 w-28 h-28 rounded-full overflow-hidden border bg-gray-100 flex items-center justify-center">
+        {form.photo_url ? (
+          <img
+            src={form.photo_url}
+            alt="Profile"
+            className="w-full h-full object-cover"
           />
-        </div>
+        ) : (
+          <span className="text-gray-400 text-xs text-center px-2">
+            No Photo
+          </span>
+        )}
       </div>
 
-      {/* Names */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-semibold mb-1">First Name</label>
-          <input
-            name="first_name"
-            value={form.first_name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-1">Last Name</label>
-          <input
-            name="last_name"
-            value={form.last_name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+      <div className="text-center sm:text-left">
+        <label className="block text-sm font-semibold mb-2">
+          Profile Photo
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoUpload}
+          className="text-sm w-full"
+        />
       </div>
-{/* Phone */}
-<div className="mb-6">
-  <label className="block text-sm font-semibold mb-1">
-    Phone Number
-  </label>
-<input
-  type="tel"
-  name="phone_number"
-  value={form.phone_number}
-  onChange={handleChange}
-  placeholder="(555) 123-4567"
-  className="w-full border rounded px-3 py-2"
-/>
+    </div>
 
-</div>
-
-      {/* Bio */}
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-1">Bio</label>
-        <textarea
-          name="bio"
-          value={form.bio}
+    {/* Names */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+      <div>
+        <label className="block text-sm font-semibold mb-1">
+          First Name
+        </label>
+        <input
+          name="first_name"
+          value={form.first_name}
           onChange={handleChange}
-          rows={5}
-          className="w-full border rounded px-3 py-2"
+          className="w-full border rounded-lg px-3 py-2"
         />
       </div>
 
-      {/* Save */}
-      <div className="flex justify-end">
-        <button
-          disabled={saving}
-          onClick={saveProfile}
-          className={`px-6 py-2 rounded font-semibold text-white transition ${
-            saving
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {saving ? "Saving..." : "Save Profile"}
-        </button>
+      <div>
+        <label className="block text-sm font-semibold mb-1">
+          Last Name
+        </label>
+        <input
+          name="last_name"
+          value={form.last_name}
+          onChange={handleChange}
+          className="w-full border rounded-lg px-3 py-2"
+        />
       </div>
     </div>
-  );
+
+    {/* Phone */}
+    <div className="mb-6">
+      <label className="block text-sm font-semibold mb-1">
+        Phone Number
+      </label>
+      <input
+        type="tel"
+        name="phone_number"
+        value={form.phone_number}
+        onChange={handleChange}
+        placeholder="(555) 123-4567"
+        className="w-full border rounded-lg px-3 py-2"
+      />
+    </div>
+
+    {/* Bio */}
+    <div className="mb-6">
+      <label className="block text-sm font-semibold mb-1">
+        Bio
+      </label>
+      <textarea
+        name="bio"
+        value={form.bio}
+        onChange={handleChange}
+        rows={4}
+        className="w-full border rounded-lg px-3 py-2 resize-none"
+      />
+    </div>
+
+    {/* Save */}
+    <div className="flex flex-col sm:flex-row sm:justify-end">
+      <button
+        disabled={saving}
+        onClick={saveProfile}
+        className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-white transition ${
+          saving
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
+        }`}
+      >
+        {saving ? "Saving..." : "Save Profile"}
+      </button>
+    </div>
+  </div>
+);
+
 }
