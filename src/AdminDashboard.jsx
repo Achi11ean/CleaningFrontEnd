@@ -102,8 +102,8 @@ const deleteStaff = async (id) => {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-sky-100 pt-24 px-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-sky-100 pt-24 ">
+      <div className="max-w-6xl text-center mx-auto bg-white rounded-none shadow-2xl border border-gray-200 p-2">
 
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -118,7 +118,15 @@ const deleteStaff = async (id) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 border-b mb-6">
+{/* Tabs */}
+<div
+  className="
+    grid grid-cols-4 gap-2
+    md:flex md:gap-4
+    border-b mb-6
+  "
+>
+
             <button
   onClick={() => setActiveTab("clients")}
   className={`px-4 py-2 font-semibold border-b-2 transition ${
@@ -127,7 +135,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧾 Clients
+  Clients
 </button>
 <button
   onClick={() => {
@@ -141,7 +149,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🟢 Work Day
+  Work 
 </button>
 <button
   onClick={() => {
@@ -154,7 +162,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧾 Shifts
+  Shifts
 </button>
 
             <button
@@ -168,7 +176,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  👤 Profile
+Profile
 </button>
 
 
@@ -180,7 +188,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  ⏱️ Staff Time
+  Time
 </button>
 <button
   onClick={() => {
@@ -193,7 +201,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧰 Services
+  Services
 </button>
 <button
   onClick={() => setActiveTab("reviews")}
@@ -203,7 +211,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  ⭐ Reviews
+  Reviews
 </button>
 <button
   onClick={() => {
@@ -216,7 +224,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🕒 Time Off
+  🕦 Off
 </button>
 
 

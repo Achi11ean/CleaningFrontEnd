@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
+import AssignCleaners from "./AssignCleaners";
 
 export default function ManagerCreateSchedules() {
   const { authAxios } = useStaff();
 
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState("");
+const [staff, setStaff] = useState([]);
+const [admins, setAdmins] = useState([]);
+const [selectedClient, setSelectedClient] = useState(null);
 
   const [form, setForm] = useState({
     schedule_type: "one_time",
@@ -18,6 +22,25 @@ export default function ManagerCreateSchedules() {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
+useEffect(() => {
+  const loadInitialData = async () => {
+    try {
+      const [clientsRes, staffRes, adminsRes] = await Promise.all([
+        authAxios.get("/clients"),
+        authAxios.get("/staff/all"),
+        authAxios.get("/admin/all"),
+      ]);
+
+      setClients(clientsRes.data || []);
+      setStaff(staffRes.data || []);
+      setAdmins(adminsRes.data || []);
+    } catch (err) {
+      console.error("Failed to load data", err);
+    }
+  };
+
+  loadInitialData();
+}, []);
 
   const deriveDayOfWeek = (dateStr) => {
     if (!dateStr) return "";
@@ -112,6 +135,40 @@ export default function ManagerCreateSchedules() {
     }
   };
 
+
+  const assignCleaner = async ({ staff_id = null, admin_id = null }) => {
+  if (!selectedClient) return;
+
+  await authAxios.post(
+    `/clients/${selectedClient.id}/assign-one`,
+    { staff_id, admin_id }
+  );
+
+  const res = await authAxios.get(
+    `/clients/${selectedClient.id}/assignments`
+  );
+
+  setSelectedClient({
+    ...selectedClient,
+    cleaners: res.data.assignments,
+  });
+};
+
+const removeAssignment = async (assignmentId) => {
+  await authAxios.delete(
+    `/clients/${selectedClient.id}/assignments/${assignmentId}`
+  );
+
+  const res = await authAxios.get(
+    `/clients/${selectedClient.id}/assignments`
+  );
+
+  setSelectedClient({
+    ...selectedClient,
+    cleaners: res.data.assignments,
+  });
+};
+
   return (
     <div className="max-w-3xl mx-auto border rounded-xl p-6 shadow-sm">
       <h2 className="text-2xl font-bold mb-4">➕ Create Client Schedule</h2>
@@ -119,11 +176,18 @@ export default function ManagerCreateSchedules() {
       {/* Client Selector */}
       <div className="mb-4">
         <label className="block font-semibold mb-1">Client</label>
-        <select
-          value={selectedClientId}
-          onChange={(e) => setSelectedClientId(e.target.value)}
-          className="w-full border rounded p-2"
-        >
+  <select
+  value={selectedClientId}
+  onChange={(e) => {
+    const id = Number(e.target.value);
+    setSelectedClientId(id);
+
+    const client = clients.find((c) => c.id === id);
+    setSelectedClient(client || null);
+  }}
+  className="w-full border rounded p-2"
+>
+
           <option value="">-- Select a client --</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
@@ -132,6 +196,8 @@ export default function ManagerCreateSchedules() {
           ))}
         </select>
       </div>
+
+
 
       <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -240,6 +306,15 @@ export default function ManagerCreateSchedules() {
           )}
         </div>
       </form>
+      {selectedClient && (
+  <AssignCleaners
+    client={selectedClient}
+    staff={staff}
+    admins={admins}
+    onAssign={assignCleaner}
+    onRemove={removeAssignment}
+  />
+)}
     </div>
   );
 }

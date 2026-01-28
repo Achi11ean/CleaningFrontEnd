@@ -6,7 +6,7 @@ import StaffClients from "./StaffClients";
 import ClientSchedulesManagers from "./ClientSchedulesManagers"; // 👈 NEW
 import ManagerCreateSchedules from "./ManagerCreateSchedules"; // 👈 NEW
 import AllAvailability from "./AllAvailability";
-
+import ManagerBooking from "./ManagerBooking";
 import StaffWorkDayCalendar from "./StaffWorkDayCalendar"; // 👈 NEW
 import ActiveShiftPanel from "./ActiveShiftPanel";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
@@ -266,6 +266,9 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
 
     {clientSubTab === "create" && staff?.role === "manager" && (
       <ManagerCreateSchedules />
+    )}
+        {clientSubTab === "create" && staff?.role === "manager" && (
+      <ManagerBooking />
     )}
   </>
 )}

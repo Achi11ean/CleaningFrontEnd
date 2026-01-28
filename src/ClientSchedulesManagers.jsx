@@ -13,6 +13,12 @@ const DAY_NAMES = [
 
 export default function ClientSchedulesManagers() {
   const { authAxios } = useStaff();   // 👈 DIFFERENCE: useStaff instead of useAdmin
+const getCleanerName = (c) => {
+  if (c.profile?.first_name || c.profile?.last_name) {
+    return `${c.profile?.first_name || ""} ${c.profile?.last_name || ""}`.trim();
+  }
+  return c.username;
+};
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -105,81 +111,119 @@ export default function ClientSchedulesManagers() {
         </p>
       )}
 
-      <div className="overflow-x-auto border rounded-lg shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100 uppercase text-gray-700 text-xs">
-            <tr>
-              <th className="px-4 py-3 text-left">Client</th>
-              <th className="px-4 py-3 text-left">Type</th>
-              <th className="px-4 py-3 text-left">Start Date</th>
-              <th className="px-4 py-3 text-left">Day</th>
-              <th className="px-4 py-3 text-left">Time</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y">
-            {schedules.map((s) => (
-              <tr key={s.id} className="hover:bg-blue-50">
-                <td className="px-4 py-3 font-semibold">
-                  {s.client?.first_name} {s.client?.last_name}
-                </td>
-
-                <td className="px-4 py-3 capitalize">
-                  {s.schedule_type.replace("_", " ")}
-                </td>
-
-                <td className="px-4 py-3">
-                  {s.start_date
-                    ? new Date(s.start_date).toLocaleDateString()
-                    : "-"}
-                </td>
-
-                <td className="px-4 py-3">
-                  {s.day_of_week !== null
-                    ? DAY_NAMES[s.day_of_week]
-                    : "—"}
-                </td>
-
-                <td className="px-4 py-3">
-                  {formatTime12(s.start_time)} → {formatTime12(s.end_time)}
-                </td>
-
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      s.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : s.status === "paused"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
-                </td>
-
-                <td className="px-4 py-3 space-x-2">
-                  <button
-                    onClick={() => startEdit(s)}
-                    className="px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => deleteSchedule(s.id)}
-                    className="px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+  {schedules.map((s) => (
+    <div
+      key={s.id}
+      className="rounded-2xl border bg-white shadow-sm p-4 space-y-3 hover:shadow-md transition"
+    >
+      {/* CLIENT NAME */}
+      <div>
+        <div className="font-bold text-lg">
+          {s.client?.first_name} {s.client?.last_name}
+        </div>
+        <div className="text-sm text-gray-500 capitalize">
+          {s.schedule_type.replace("_", " ")}
+        </div>
       </div>
+
+      {/* DATE + DAY */}
+      <div className="text-sm text-gray-700">
+        <div>
+          📆{" "}
+          {s.start_date
+            ? new Date(s.start_date).toLocaleDateString()
+            : "No start date"}
+        </div>
+        <div>
+          🗓️{" "}
+          {s.day_of_week !== null
+            ? DAY_NAMES[s.day_of_week]
+            : "No fixed day"}
+        </div>
+      </div>
+
+      {/* TIME */}
+      <div className="text-sm text-gray-700">
+        ⏰ {formatTime12(s.start_time)} → {formatTime12(s.end_time)}
+      </div>
+
+      {/* STATUS */}
+      <div>
+        <span
+          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+            s.status === "active"
+              ? "bg-green-100 text-green-700"
+              : s.status === "paused"
+              ? "bg-yellow-100 text-yellow-700"
+              : "bg-gray-200 text-gray-700"
+          }`}
+        >
+          {s.status}
+        </span>
+      </div>
+      {/* ASSIGNED CLEANERS */}
+<div className="space-y-1">
+  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+    Assigned Cleaners
+  </div>
+
+  {s.client?.cleaners?.length > 0 ? (
+    <div className="flex flex-wrap gap-2">
+      {s.client.cleaners.map((c) => (
+        <div
+          key={c.assignment_id}
+          className="
+            flex items-center gap-2
+            bg-blue-50 text-blue-800
+            px-3 py-1 rounded-full text-xs font-medium
+          "
+        >
+          {c.profile?.photo_url ? (
+            <img
+              src={c.profile.photo_url}
+              alt=""
+              className="w-5 h-5 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-5 h-5 rounded-full bg-blue-200 flex items-center justify-center text-[10px] font-bold">
+              {getCleanerName(c)[0]}
+            </div>
+          )}
+
+          <span>{getCleanerName(c)}</span>
+
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="text-xs italic text-gray-400">
+      No cleaners assigned
+    </div>
+  )}
+</div>
+
+
+      {/* ACTIONS */}
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={() => startEdit(s)}
+          className="flex-1 px-3 py-2 text-sm rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200"
+        >
+          Edit
+        </button>
+
+        <button
+          onClick={() => deleteSchedule(s.id)}
+          className="flex-1 px-3 py-2 text-sm rounded-lg bg-red-100 text-red-700 hover:bg-red-200"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
 
       {/* EDIT MODAL */}
       {editing && (
