@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
-
+import AssignCleaners from "./AssignCleaners";
 export default function CreateSchedules() {
   const { authAxios } = useAdmin();
 
@@ -28,20 +28,66 @@ const deriveDayOfWeek = (dateStr) => {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
+const [selectedClient, setSelectedClient] = useState(null);
+const [staff, setStaff] = useState([]);
+const [admins, setAdmins] = useState([]);
+const assignCleaner = async ({ staff_id = null, admin_id = null }) => {
+  if (!selectedClient) return;
 
-  // Load clients for dropdown
-  useEffect(() => {
-    const loadClients = async () => {
-      try {
-        const res = await authAxios.get("/clients");
-        setClients(res.data || []);
-      } catch (err) {
-        console.error("Failed to load clients", err);
-      }
-    };
+  await authAxios.post(
+    `/clients/${selectedClient.id}/assign-one`,
+    { staff_id, admin_id }
+  );
 
-    loadClients();
-  }, []);
+  const res = await authAxios.get(
+    `/clients/${selectedClient.id}/assignments`
+  );
+
+  setSelectedClient({
+    ...selectedClient,
+    cleaners: res.data.assignments,
+  });
+};
+
+const removeCleaner = async (assignmentId) => {
+  await authAxios.delete(
+    `/clients/${selectedClient.id}/assignments/${assignmentId}`
+  );
+
+  const res = await authAxios.get(
+    `/clients/${selectedClient.id}/assignments`
+  );
+
+  setSelectedClient({
+    ...selectedClient,
+    cleaners: res.data.assignments,
+  });
+};
+
+
+useEffect(() => {
+  const loadInitialData = async () => {
+    try {
+      const [clientsRes, staffRes, adminsRes] = await Promise.all([
+        authAxios.get("/clients"),
+        authAxios.get("/staff/all"),
+        authAxios.get("/admin/all"),
+      ]);
+
+      setClients(clientsRes.data || []);
+      setStaff(staffRes.data || []);
+      setAdmins(adminsRes.data || []);
+    } catch (err) {
+      console.error("Failed to load data", err);
+    }
+  };
+
+  loadInitialData();
+}, []);
+
+
+
+
 
 const handleChange = (e) => {
   const { name, value } = e.target;
@@ -121,11 +167,18 @@ const handleChange = (e) => {
       {/* Client Selector */}
       <div className="mb-4">
         <label className="block font-semibold mb-1">Client</label>
-        <select
-          value={selectedClientId}
-          onChange={(e) => setSelectedClientId(e.target.value)}
-          className="w-full border rounded p-2"
-        >
+     <select
+  value={selectedClientId}
+  onChange={(e) => {
+    const id = Number(e.target.value);
+    setSelectedClientId(id);
+
+    const fullClient = clients.find((c) => c.id === id);
+    setSelectedClient(fullClient || null);
+  }}
+  className="w-full border rounded p-2"
+>
+
           <option value="">-- Select a client --</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
@@ -242,6 +295,16 @@ const handleChange = (e) => {
           )}
         </div>
       </form>
+      {selectedClient && (
+  <AssignCleaners
+    client={selectedClient}
+    staff={staff}
+    admins={admins}
+    onAssign={assignCleaner}
+    onRemove={removeCleaner}
+  />
+)}
+
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAdmin } from "./AdminContext";
+import TimeOffPreview from "./TimeOffPreview";
 
 const DAYS = [
   "monday",
@@ -10,6 +11,45 @@ const DAYS = [
   "saturday",
   "sunday",
 ];
+const DAY_GRADIENTS = {
+  monday: "bg-gradient-to-br from-blue-100 to-blue-50",
+  tuesday: "bg-gradient-to-br from-purple-100 to-purple-50",
+  wednesday: "bg-gradient-to-br from-emerald-100 to-emerald-50",
+  thursday: "bg-gradient-to-br from-amber-100 to-amber-50",
+  friday: "bg-gradient-to-br from-pink-100 to-pink-50",
+  saturday: "bg-gradient-to-br from-indigo-100 to-indigo-50",
+  sunday: "bg-gradient-to-br from-rose-100 to-rose-50",
+};
+
+const DAY_ORDER_SUN_FIRST = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+function getDayLabel(schedule) {
+  if (schedule.day_of_week !== null && schedule.day_of_week !== undefined) {
+    return DAYS[schedule.day_of_week];
+  }
+
+  const date = schedule.starts_on || schedule.start_date;
+  if (!date) return null;
+
+  const jsDay = new Date(date + "T12:00:00").getDay();
+  const normalized = jsDay === 0 ? 6 : jsDay - 1;
+  return DAYS[normalized];
+}
+
+function getDaySortIndex(schedule) {
+  const label = getDayLabel(schedule);
+  if (!label) return 99;
+  return DAY_ORDER_SUN_FIRST.indexOf(label);
+}
+
 
 function formatTime(time) {
   if (!time) return "";
@@ -48,6 +88,7 @@ export default function Booking() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+const [openTimeOffFor, setOpenTimeOffFor] = useState(null);
 
   const normalizedSearch = search.trim().toLowerCase();
   const matchedDay = DAYS.find((d) => d.startsWith(normalizedSearch));
@@ -77,19 +118,12 @@ const filteredRows = useMemo(() => {
     if (!matchedDay) return nameMatch;
 
     const slot = r.availability?.weekly?.[matchedDay];
-    if (!slot || !slot.start || !slot.end) return false;
+    const isAvailableThatDay = slot?.start && slot?.end;
 
-    const hasClientThatDay = r.clients.some((c) =>
-      c.schedules.some(
-        (s) =>
-          s.day_of_week !== null &&
-          s.day_of_week === DAYS.indexOf(matchedDay)
-      )
-    );
-
-    return hasClientThatDay || nameMatch;
+    return isAvailableThatDay || nameMatch;
   });
 }, [rows, normalizedSearch, matchedDay]);
+
 
   if (loading) {
     return <p className="italic text-gray-500">Loading booking overview…</p>;
@@ -117,6 +151,15 @@ const filteredRows = useMemo(() => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredRows.map((r) => {
           const weekly = r.availability?.weekly || {};
+const consolidatedSchedules = r.clients
+  .flatMap((client) =>
+    client.schedules.map((schedule) => ({
+      ...schedule,
+      client,
+      sortIndex: getDaySortIndex(schedule),
+    }))
+  )
+  .sort((a, b) => a.sortIndex - b.sortIndex);
 
           return (
             <div
@@ -145,88 +188,118 @@ const filteredRows = useMemo(() => {
                     {r.type} {r.role ? `• ${r.role}` : ""}
                   </div>
                 </div>
+                
               </div>
+<button
+  onClick={() =>
+    setOpenTimeOffFor(openTimeOffFor === r.id ? null : r.id)
+  }
+  className="text-xs px-3 py-1 rounded-full border
+             bg-white hover:bg-red-50
+             border-red-300 text-red-700"
+>
+  🛑 Time Off
+</button>
 
               {/* AVAILABILITY */}
-              <div>
-                <h4 className="font-semibold mb-1">🕒 Availability</h4>
-                <div className="grid grid-cols-2 gap-1 text-sm">
-                  {DAYS.map((day) => {
-                    const slot = weekly?.[day];
-                    return (
-                      <div key={day}>
-                        <strong className="capitalize">{day}:</strong>{" "}
-                        {slot?.start && slot?.end ? (
-                          <span>
-                            {formatTime(slot.start)} –{" "}
-                            {formatTime(slot.end)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">Unavailable</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            <div>
+  <h4 className="font-semibold text-center mb-2">🕒 Availability</h4>
+
+  <div className="grid grid-cols-2 gap-2 text-sm">
+    {DAYS.map((day) => {
+      const slot = weekly[day];
+
+      return (
+        <div
+          key={day}
+          className={`
+            rounded-lg p-2
+            border border-black/10
+            ${DAY_GRADIENTS[day]}
+          `}
+        >
+          <div className="font-semibold capitalize text-gray-800">
+            {day}
+          </div>
+
+          {slot?.start && slot?.end ? (
+            <div className="text-gray-700">
+              {formatTime(slot.start)} – {formatTime(slot.end)}
+            </div>
+          ) : (
+            <div className="text-gray-400 italic">
+              Unavailable
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>
+
 
               {/* CLIENTS */}
-              <div>
-                <h4 className="font-semibold mb-1">🏠 Assigned Clients</h4>
+          <div>
+  <h4 className="font-semibold mb-1">🏠 Assigned Clients</h4>
 
-                {r.clients.length === 0 ? (
-                  <p className="text-gray-500 italic text-sm">
-                    No assigned clients
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {r.clients.map((c) => (
-                      <div
-                        key={c.id}
-                        className="border rounded-lg p-2 bg-gray-50"
-                      >
-                        <div className="font-semibold text-sm">
-                          {c.first_name} {c.last_name}
-                        </div>
+  {consolidatedSchedules.length === 0 ? (
+    <p className="text-gray-500 italic text-sm">
+      No assigned clients
+    </p>
+  ) : (
+    <ul className="text-xs mt-2 space-y-2">
+      {consolidatedSchedules.map((s) => (
+        <li
+          key={s.id}
+          className="border rounded-lg p-2 bg-gray-50"
+        >
+          <div className="font-semibold text-sm">
+            {s.client.first_name} {s.client.last_name}
+          </div>
 
-                        {c.schedules.length === 0 ? (
-                          <p className="text-xs text-gray-500 italic">
-                            No active schedules
-                          </p>
-                        ) : (
-                          <ul className="text-xs mt-1 space-y-1">
-                            {c.schedules.map((s) => (
-                              <li key={s.id} className="leading-snug">
-  <div className="font-medium">
-    {formatRecurrence(s.recurrence_type)}
-    {s.day_of_week !== null && (
-      <span className="capitalize">
-        {" "}• {DAYS[s.day_of_week]}
-      </span>
-    )}
+          <div className="font-medium">
+            {formatRecurrence(s.recurrence_type)}
+            {getDayLabel(s) && (
+              <span className="capitalize">
+                {" "}• {getDayLabel(s)}
+              </span>
+            )}
+          </div>
+
+          <div className="text-gray-600">
+            {formatTime(s.start_time)} → {formatTime(s.end_time)}
+          </div>
+
+          <div className="text-gray-500 italic">
+            {s.recurrence_type === "one_time"
+              ? `Service Date ${formatDate(s.starts_on || s.start_date)}`
+              : `Starts ${formatDate(s.starts_on)}`
+            }
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+{openTimeOffFor === r.id && (
+  <div className="border-t pt-3">
+    <h4 className="font-semibold mb-2 text-red-700">
+      🚫 Time Off Requests
+    </h4>
+
+    <TimeOffPreview
+      authAxios={authAxios}
+      owner={{ id: r.id, type: r.type }}
+    />
   </div>
+)}
 
-  <div className="text-gray-600">
-    {formatTime(s.start_time)} → {formatTime(s.end_time)}
-  </div>
 
-  <div className="text-gray-500 italic">
-    Starts {formatDate(s.starts_on)}
-  </div>
-</li>
-
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
           );
         })}
       </div>
+      
     </div>
   );
 }
