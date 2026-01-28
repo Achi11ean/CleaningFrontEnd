@@ -5,12 +5,22 @@ import UserProfile from "./UserProfile";
 import StaffClients from "./StaffClients";
 import ClientSchedulesManagers from "./ClientSchedulesManagers"; // 👈 NEW
 import ManagerCreateSchedules from "./ManagerCreateSchedules"; // 👈 NEW
+import AllAvailability from "./AllAvailability";
+
 import StaffWorkDayCalendar from "./StaffWorkDayCalendar"; // 👈 NEW
 import ActiveShiftPanel from "./ActiveShiftPanel";
+import CreateTimeOffRequest from "./CreateTimeOffRequest";
+import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
+import BossTimeOff from "./BossTimeOff";
+import Availability from "./Availability";
 
 import MyShifts from "./MyShifts";
 export default function StaffDashboard() {
   const { staff, logout } = useStaff();
+const [timeOffSubTab, setTimeOffSubTab] = useState("create");
+// "create" | "manage"
+const [clockSubTab, setClockSubTab] = useState("timeclock");
+// "timeclock" | "staff"
 
   const [activeTab, setActiveTab] = useState("clock");
   const [clientSubTab, setClientSubTab] = useState("list"); 
@@ -92,6 +102,19 @@ export default function StaffDashboard() {
 >
   🧾 My Shifts
 </button>
+<button
+  onClick={() => {
+    setActiveTab("timeoff");
+    setTimeOffSubTab("create");
+  }}
+  className={`px-4 py-2 font-semibold border-b-2 transition ${
+    activeTab === "timeoff"
+      ? "border-rose-600 text-rose-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  🕒 Time Off
+</button>
 
 
           <button
@@ -153,8 +176,85 @@ export default function StaffDashboard() {
 {activeTab === "workday" && <StaffWorkDayCalendar />}
 {activeTab === "workday" && <ActiveShiftPanel />}
 
+
+{activeTab === "timeoff" && (
+  <div className="flex space-x-4 border-b mb-6 ml-2">
+    <button
+      onClick={() => setTimeOffSubTab("create")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        timeOffSubTab === "create"
+          ? "border-rose-600 text-rose-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      ➕ Request Time Off
+    </button>
+
+    <button
+      onClick={() => setTimeOffSubTab("my")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        timeOffSubTab === "my"
+          ? "border-rose-600 text-rose-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      📄 My Requests
+    </button>
+
+    {staff?.role === "manager" && (
+      <button
+        onClick={() => setTimeOffSubTab("manage")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          timeOffSubTab === "manage"
+            ? "border-rose-600 text-rose-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🧠 Approvals
+      </button>
+    )}
+  </div>
+)}
+{/* CLOCK SUB-TABS */}
+{activeTab === "clock" && (
+  <div className="flex space-x-4 border-b mb-6 ml-2">
+    <button
+      onClick={() => setClockSubTab("timeclock")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        clockSubTab === "timeclock"
+          ? "border-blue-600 text-blue-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      ⏱️ Time Clock
+    </button>
+
+    <button
+      onClick={() => setClockSubTab("staff")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        clockSubTab === "staff"
+          ? "border-indigo-600 text-indigo-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      👥 Staff
+    </button>
+  </div>
+)}
+
+
         {/* Content */}
-        {activeTab === "clock" && <StaffClock />}
+{activeTab === "clock" && (
+  <>
+    {clockSubTab === "timeclock" && <StaffClock />}
+
+    {clockSubTab === "staff" && (
+      <div className="mt-4">
+        <AllAvailability />
+      </div>
+    )}
+  </>
+)}
 
    {activeTab === "clients" && (
   <>
@@ -170,8 +270,30 @@ export default function StaffDashboard() {
   </>
 )}
 
+{/* TIME OFF CONTENT */}
+{activeTab === "timeoff" && (
+  <>
+    {timeOffSubTab === "create" && (
+      <CreateTimeOffRequest />
+    )}
 
-        {activeTab === "profile" && <UserProfile />}
+    {timeOffSubTab === "my" && (
+      <ViewMyTimeOffRequests />
+    )}
+
+    {timeOffSubTab === "manage" && staff?.role === "manager" && (
+      <BossTimeOff />
+    )}
+  </>
+)}
+
+
+{activeTab === "profile" && (
+  <div className="space-y-8">
+    <UserProfile />
+    <Availability />
+  </div>
+)}
 
       </div>
     </div>

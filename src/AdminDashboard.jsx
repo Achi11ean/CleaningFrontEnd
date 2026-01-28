@@ -12,6 +12,11 @@ import ClientSchedulesCalendar from "./ClientSchedulesCalendar";
 import CreateServices from "./CreateServices";
 import ManageServices from "./ManageServices";
 import ManageReviews from "./ManageReviews";
+import CreateTimeOffRequest from "./CreateTimeOffRequest";
+import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
+import BossTimeOff from "./BossTimeOff";
+import ManageAvailability from "./ManageAvailability";
+import Booking from "./Booking";
 
 import AdminShifts from "./AdminShifts";
 export default function AdminDashboard() {
@@ -21,8 +26,13 @@ const [profileSubTab, setProfileSubTab] = useState("me"); // "me" | "all"
  const [clientsSubTab, setClientsSubTab] = useState("list"); 
 const [shiftsSubTab, setShiftsSubTab] = useState("me"); // "me" | "all"
 const [workDaySubTab, setWorkDaySubTab] = useState("workday"); 
-const [servicesSubTab, setServicesSubTab] = useState("create"); 
+const [servicesSubTab, setServicesSubTab] = useState("create");
+const [usersSubTab, setUsersSubTab] = useState("staff"); // "staff" | "admins"
+
 // "create" | "manage"
+const [timeOffSubTab, setTimeOffSubTab] = useState("manage");
+// "create" | "my" | "manage"
+
 
 // "workday" | "staff"
 
@@ -39,6 +49,12 @@ const deactivateStaff = async (id) => {
   await authAxios.patch(`/staff/${id}/deactivate`);
   loadStaff();
 };
+
+useEffect(() => {
+  if (activeTab !== "workday") {
+    setWorkDaySubTab("workday"); // reset to default
+  }
+}, [activeTab]);
 
 const deleteStaff = async (id) => {
   const ok = window.confirm("Are you sure you want to permanently delete this staff user?");
@@ -77,10 +93,7 @@ const deleteStaff = async (id) => {
   };
 
   // Load default tab on mount
-  useEffect(() => {
-    if (activeTab === "staff") loadStaff();
-    if (activeTab === "admins") loadAdmins();
-  }, [activeTab]);
+
 
 
   const updateRole = async (id, role) => {
@@ -158,27 +171,7 @@ const deleteStaff = async (id) => {
   👤 Profile
 </button>
 
-          <button
-            onClick={() => setActiveTab("staff")}
-            className={`px-4 py-2 font-semibold border-b-2 transition ${
-              activeTab === "staff"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Employees
-          </button>
 
-          <button
-            onClick={() => setActiveTab("admins")}
-            className={`px-4 py-2 font-semibold border-b-2 transition ${
-              activeTab === "admins"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Admins
-          </button>
           <button
   onClick={() => setActiveTab("time")}
   className={`px-4 py-2 font-semibold border-b-2 transition ${
@@ -211,6 +204,19 @@ const deleteStaff = async (id) => {
   }`}
 >
   ⭐ Reviews
+</button>
+<button
+  onClick={() => {
+    setActiveTab("timeoff");
+    setTimeOffSubTab("manage");
+  }}
+  className={`px-4 py-2 font-semibold border-b-2 transition ${
+    activeTab === "timeoff"
+      ? "border-rose-600 text-rose-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  🕒 Time Off
 </button>
 
 
@@ -271,7 +277,12 @@ const deleteStaff = async (id) => {
       <ManageClients />
     )}
 {!loading && !error && clientsSubTab === "create" && (
-  <CreateSchedules />
+  <>
+    <CreateSchedules />
+    <br/>
+        <Booking />
+
+  </>
 )}
 
 
@@ -283,6 +294,42 @@ const deleteStaff = async (id) => {
 )}
 
 
+{activeTab === "timeoff" && (
+  <div className="flex space-x-4 border-b mb-6 mt-4">
+    <button
+      onClick={() => setTimeOffSubTab("manage")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        timeOffSubTab === "manage"
+          ? "border-rose-600 text-rose-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      🧠 Approvals
+    </button>
+
+ 
+
+    <button
+      onClick={() => setTimeOffSubTab("create")}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+        timeOffSubTab === "create"
+          ? "border-rose-600 text-rose-600"
+          : "border-transparent text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      ➕ Request Time Off
+    </button>
+  </div>
+)}
+
+{activeTab === "timeoff" && (
+  <>
+    {timeOffSubTab === "manage" && <BossTimeOff />}
+
+
+    {timeOffSubTab === "create" && <CreateTimeOffRequest />}
+  </>
+)}
 
 {activeTab === "services" && (
   <>
@@ -341,6 +388,16 @@ const deleteStaff = async (id) => {
       >
         🟢 Work Day
       </button>
+<button
+  onClick={() => setWorkDaySubTab("employees")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    workDaySubTab === "employees"
+      ? "border-blue-600 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  🗓️ Employees
+</button>
 
       <button
         onClick={() => setWorkDaySubTab("staff")}
@@ -350,7 +407,7 @@ const deleteStaff = async (id) => {
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        👥 Staff
+        👥 Active
       </button>
     </div>
 
@@ -363,6 +420,9 @@ const deleteStaff = async (id) => {
       <AdminWorkDay />
     )}
   </>
+)}
+{!loading && !error && workDaySubTab === "employees" && (
+  <ManageAvailability />
 )}
 
 {activeTab === "shifts" && (
@@ -425,9 +485,70 @@ const deleteStaff = async (id) => {
     >
       👥 All Profiles
     </button>
+        <button
+      onClick={() => {
+        setProfileSubTab("users");
+        setUsersSubTab("staff");
+        loadStaff();
+      }}
+      className={`px-3 py-2 font-semibold border-b-2 ${
+        profileSubTab === "users"
+          ? "border-blue-600 text-blue-600"
+          : "border-transparent text-gray-500"
+      }`}
+    >
+      👥 Users
+    </button>
   </div>
 )}
+
+{activeTab === "profile" && profileSubTab === "users" && (
+  <div className="flex space-x-4 border-b mb-6 mt-2">
+    <button
+      onClick={() => {
+        setUsersSubTab("staff");
+        loadStaff();
+      }}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+        usersSubTab === "staff"
+          ? "border-blue-600 text-blue-600"
+          : "border-transparent text-gray-500"
+      }`}
+    >
+      👷 Employees
+    </button>
+
+    <button
+      onClick={() => {
+        setUsersSubTab("admins");
+        loadAdmins();
+      }}
+      className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+        usersSubTab === "admins"
+          ? "border-blue-600 text-blue-600"
+          : "border-transparent text-gray-500"
+      }`}
+    >
+      🛡️ Admins
+    </button>
+  </div>
+)}
+
 {activeTab === "profile" && profileSubTab === "me" && <UserProfile />}
+{activeTab === "profile" && profileSubTab === "users" && usersSubTab === "staff" && (
+  <StaffTable
+    staff={staff}
+    onActivate={activateStaff}
+    onDeactivate={deactivateStaff}
+    onDelete={deleteStaff}
+    onUpdateRole={updateRole}
+  />
+  
+)}
+
+{activeTab === "profile" && profileSubTab === "users" && usersSubTab === "staff" && (
+  <AdminTable admins={admins} />
+)}
 
 {activeTab === "profile" && profileSubTab === "all" && <AdminAllProfiles />}
 
@@ -441,11 +562,10 @@ const deleteStaff = async (id) => {
 />
 
 )}
+{activeTab === "profile" && profileSubTab === "users" && usersSubTab === "admins" && (
+  <AdminTable admins={admins} />
+)}
 
-
-        {!loading && !error && activeTab === "admins" && (
-          <AdminTable admins={admins} />
-        )}
 
 
         {!loading && !error && activeTab === "time" && (

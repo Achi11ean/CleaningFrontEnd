@@ -1,4 +1,3 @@
-// useAuthorizedAxios.js
 import { useAdmin } from "./AdminContext";
 import { useStaff } from "./StaffContext";
 
@@ -10,8 +9,11 @@ export function useAuthorizedAxios() {
     return { role: "admin", axios: adminAxios };
   }
 
-  if (staff && staff.role === "manager") {
-    return { role: "manager", axios: staffAxios };
+  if (staff) {
+    return {
+      role: staff.role,   // "staff" | "manager"
+      axios: staffAxios,
+    };
   }
 
   return { role: null, axios: null };

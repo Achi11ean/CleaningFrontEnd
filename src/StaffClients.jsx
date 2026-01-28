@@ -11,6 +11,8 @@ export default function StaffClients() {
   
 const [searchTerm, setSearchTerm] = useState("");
 
+const [availableCleaners, setAvailableCleaners] = useState([]);
+const [selectedCleanerId, setSelectedCleanerId] = useState("");
 
 
 
@@ -81,6 +83,44 @@ const fetchClients = async () => {
     );
   }
 };
+const [staffList, setStaffList] = useState([]);
+const [adminList, setAdminList] = useState([]);
+
+useEffect(() => {
+  if (!canEdit) return;
+
+  Promise.all([
+    authAxios.get("/staff/all"),
+    authAxios.get("/admin/all"),
+  ])
+    .then(([staffRes, adminRes]) => {
+      setStaffList(staffRes.data || []);
+      setAdminList(adminRes.data || []);
+    })
+    .catch((err) => {
+      console.error("❌ Failed to load cleaners:", err);
+    });
+}, [canEdit]);
+const assignCleaner = async ({ staff_id = null, admin_id = null }) => {
+  try {
+    await authAxios.post(
+      `/clients/${selectedClient.id}/assign-one`,
+      { staff_id, admin_id }
+    );
+
+    const res = await authAxios.get(
+      `/clients/${selectedClient.id}/assignments`
+    );
+
+    setSelectedClient({
+      ...selectedClient,
+      cleaners: res.data.assignments,
+    });
+  } catch (err) {
+    alert(err.response?.data?.error || "Failed to assign cleaner");
+  }
+};
+
 
 
 const filteredClients = clients.filter((c) => {
@@ -149,7 +189,9 @@ const filteredClients = clients.filter((c) => {
               <div className="font-semibold">
                 {c.first_name} {c.last_name}
               </div>
-              <div className="text-sm text-gray-500">{c.email}</div>
+{canEdit && (
+  <div className="text-sm text-gray-500">{c.email}</div>
+)}
               <div className="text-xs text-gray-400">Status: {c.status}</div>
             </div>
           ))}
@@ -179,23 +221,28 @@ const filteredClients = clients.filter((c) => {
                 placeholder="Last Name"
               />
 
-              <input
-                disabled={!canEdit}
-                className="border p-2 rounded disabled:bg-gray-100"
-                value={selectedClient.email}
-                onChange={(e) => updateClientField("email", e.target.value)}
-                placeholder="Email"
-              />
+ {canEdit && (
+  <>
+    <input
+      className="border p-2 rounded"
+      value={selectedClient.email}
+      onChange={(e) => updateClientField("email", e.target.value)}
+      placeholder="Email"
+    />
 
-              <input
-                disabled={!canEdit}
-                className="border p-2 rounded disabled:bg-gray-100"
-                value={selectedClient.phone || ""}
-                onChange={handlePhoneChange}
-                placeholder="(123) 456-7890"
-                maxLength={14}
-                inputMode="numeric"
-              />
+    <input
+      className="border p-2 rounded"
+      value={selectedClient.phone || ""}
+      onChange={handlePhoneChange}
+      placeholder="(123) 456-7890"
+      maxLength={14}
+      inputMode="numeric"
+    />
+  </>
+)}
+
+
+ 
 
               <input
                 disabled={!canEdit}
@@ -265,6 +312,7 @@ const filteredClients = clients.filter((c) => {
 <div className="mt-6">
   <h3 className="font-bold mb-2">Assigned Cleaners</h3>
 
+  {/* 🧹 Current Assignments */}
   {selectedClient.cleaners && selectedClient.cleaners.length > 0 ? (
     selectedClient.cleaners.map((a) => (
       <div
@@ -282,6 +330,29 @@ const filteredClients = clients.filter((c) => {
             </span>
           )}
         </div>
+
+        {/* ❌ Unassign (manager only) */}
+        {canEdit && (
+          <button
+            onClick={async () => {
+              if (!window.confirm(`Unassign ${a.username}?`)) return;
+
+              try {
+       await authAxios.delete(
+  `/clients/${selectedClient.id}/assignments/${a.assignment_id}`
+);
+
+                fetchClients(); // 🔄 refresh list
+                setSelectedClient(null); // force reselect to refresh panel
+              } catch (err) {
+                alert("Failed to unassign cleaner.");
+              }
+            }}
+            className="text-red-600 hover:text-red-800 font-bold"
+          >
+            ✕
+          </button>
+        )}
       </div>
     ))
   ) : (
@@ -289,7 +360,54 @@ const filteredClients = clients.filter((c) => {
       No cleaners assigned to this client.
     </p>
   )}
+
+  {/* ➕ Assign New Cleaner (manager only) */}
+ {canEdit && (
+  <div className="mt-4 border-t pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <label className="font-semibold">Assign Staff</label>
+      <select
+        className="border p-2 rounded w-full"
+        defaultValue=""
+        onChange={(e) =>
+          assignCleaner({ staff_id: Number(e.target.value) })
+        }
+      >
+        <option value="">Select staff...</option>
+        {staffList
+          .filter((s) => s.is_active)
+          .map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.username} ({s.role})
+            </option>
+          ))}
+      </select>
+    </div>
+
+    <div>
+      <label className="font-semibold">Assign Admin</label>
+      <select
+        className="border p-2 rounded w-full"
+        defaultValue=""
+        onChange={(e) =>
+          assignCleaner({ admin_id: Number(e.target.value) })
+        }
+      >
+        <option value="">Select admin...</option>
+        {adminList
+          .filter((a) => a.is_active)
+          .map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.username}
+            </option>
+          ))}
+      </select>
+    </div>
+  </div>
+)}
+
 </div>
+
 
             </div>
 

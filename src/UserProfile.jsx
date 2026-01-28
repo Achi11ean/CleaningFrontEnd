@@ -33,13 +33,28 @@ export default function UserProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState(null);
+function formatPhone(value) {
+  if (!value) return "";
 
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    bio: "",
-    photo_url: "",
-  });
+  // Strip non-digits
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+
+  const len = digits.length;
+
+  if (len < 4) return digits;
+  if (len < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+const [form, setForm] = useState({
+  first_name: "",
+  last_name: "",
+  phone_number: "",   // 📞 NEW
+  bio: "",
+  photo_url: "",
+});
+
 
   // 🔄 Load profile
   useEffect(() => {
@@ -49,14 +64,16 @@ export default function UserProfile() {
 
         const profile = res.data.profile;
 
-        if (profile) {
-          setForm({
-            first_name: profile.first_name || "",
-            last_name: profile.last_name || "",
-            bio: profile.bio || "",
-            photo_url: profile.photo_url || "",
-          });
-        }
+       if (profile) {
+  setForm({
+    first_name: profile.first_name || "",
+    last_name: profile.last_name || "",
+    phone_number: profile.phone_number || "", // 📞
+    bio: profile.bio || "",
+    photo_url: profile.photo_url || "",
+  });
+}
+
       } catch (err) {
         setError("Failed to load profile");
       } finally {
@@ -68,9 +85,23 @@ export default function UserProfile() {
   }, []);
 
   // ✏️ Form change
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "phone_number") {
+    setForm((prev) => ({
+      ...prev,
+      phone_number: formatPhone(value),
+    }));
+    return;
+  }
+
+  setForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
 
   // ☁️ Upload to Cloudinary
   const uploadToCloudinary = async (file) => {
@@ -210,6 +241,21 @@ export default function UserProfile() {
           />
         </div>
       </div>
+{/* Phone */}
+<div className="mb-6">
+  <label className="block text-sm font-semibold mb-1">
+    Phone Number
+  </label>
+<input
+  type="tel"
+  name="phone_number"
+  value={form.phone_number}
+  onChange={handleChange}
+  placeholder="(555) 123-4567"
+  className="w-full border rounded px-3 py-2"
+/>
+
+</div>
 
       {/* Bio */}
       <div className="mb-6">

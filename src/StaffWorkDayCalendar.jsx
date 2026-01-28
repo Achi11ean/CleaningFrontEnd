@@ -353,33 +353,7 @@ const myWeeklyEvents = useMemo(() => {
                 {selectedEvent.client.last_name}
               </p>
 
-              <p>
-                <strong>Email:</strong>{" "}
-                {selectedEvent.client.email ? (
-                  <a
-                    href={getMailLink(selectedEvent.client.email)}
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    {selectedEvent.client.email}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
-
-              <p>
-                <strong>Phone:</strong>{" "}
-                {selectedEvent.client.phone ? (
-                  <a
-                    href={getTelLink(selectedEvent.client.phone)}
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    {selectedEvent.client.phone}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
+ 
 
               <p>
                 <strong>Address:</strong>{" "}
