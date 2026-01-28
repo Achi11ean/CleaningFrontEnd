@@ -89,13 +89,13 @@ const handleUniversalLogout = () => {
 
       {adminOpen && (
         <div className="absolute top-full mt-2 right-0 bg-white border border-gray-200 rounded-lg shadow-xl w-40 py-2 text-sm z-50">
-          <Link
+          {/* <Link
             to="/admin-signup"
             className="block px-4 py-2 hover:bg-gray-100 transition"
             onClick={() => setAdminOpen(false)}
           >
             Signup
-          </Link>
+          </Link> */}
           <Link
             to="/admin-login"
             className="block px-4 py-2 hover:bg-gray-100 transition"
@@ -217,50 +217,8 @@ const handleUniversalLogout = () => {
   </>
 )}
 
-{!isLoggedIn && (
-  <>
-    {/* Mobile Admin Section */}
-    <li className="border-t pt-3">
-      <div className="text-sm uppercase text-gray-500 mb-2">Admin</div>
-      <div className="flex flex-col space-y-2">
-        <Link to="/admin-signup" onClick={toggleMenu}>
-          Admin Signup
-        </Link>
-        <Link to="/admin-login" onClick={toggleMenu}>
-          Admin Login
-        </Link>
-      </div>
-    </li>
 
-    {/* Mobile Staff Section */}
-    <li className="border-t pt-3">
-      <div className="text-sm uppercase text-gray-500 mb-2">Staff</div>
-      <div className="flex flex-col space-y-2">
-        <Link to="/staff-signup" onClick={toggleMenu}>
-          Staff Signup
-        </Link>
-        <Link to="/staff-login" onClick={toggleMenu}>
-          Staff Login
-        </Link>
-      </div>
-    </li>
-  </>
-)}
-
-
-            {/* 👨‍🔧 Mobile Staff Section */}
-            <li className="border-t pt-3">
-              <div className="text-sm uppercase text-gray-500 mb-2">Staff</div>
-              <div className="flex flex-col space-y-2">
-                <Link to="/staff-signup" onClick={toggleMenu}>
-                  Staff Signup
-                </Link>
-                <Link to="/staff-login" onClick={toggleMenu}>
-                  Staff Login
-                </Link>
-              </div>
-            </li>
-
+         
 <li>
   <Link to="/contact" className="hover:text-blue-600 transition">
     Contact Us
@@ -292,6 +250,37 @@ const handleUniversalLogout = () => {
                 </a>
               </li>
             </div>
+            {!isLoggedIn && (
+  <>
+    {/* Mobile Admin Section */}
+    <li className="border-t pt-3">
+      <div className="text-sm uppercase text-gray-500 mb-2">Admin</div>
+      <div className="flex flex-col space-y-2">
+        {/* <Link to="/admin-signup" onClick={toggleMenu}>
+          Admin Signup
+        </Link> */}
+        <Link to="/admin-login" onClick={toggleMenu}>
+          Admin Login
+        </Link>
+      </div>
+    </li>
+
+    {/* Mobile Staff Section */}
+    <li className="border-t pt-3">
+      <div className="text-sm uppercase text-gray-500 mb-2">Staff</div>
+      <div className="flex flex-col space-y-2">
+        <Link to="/staff-signup" onClick={toggleMenu}>
+          Staff Signup
+        </Link>
+        <Link to="/staff-login" onClick={toggleMenu}>
+          Staff Login
+        </Link>
+      </div>
+    </li>
+  </>
+)}
+
+
           </ul>
         </div>
       )}
