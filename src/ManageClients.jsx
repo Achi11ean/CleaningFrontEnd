@@ -15,6 +15,20 @@ const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const formatDate = (iso) => {
+  if (!iso) return "—";
+
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+};
+
 const formatPhone = (value) => {
   // Remove all non-digits
   const digits = value.replace(/\D/g, "").slice(0, 10); // max 10 digits
@@ -204,14 +218,19 @@ const filteredClients = clients.filter((client) => {
             className="w-full text-left p-4 flex justify-between items-center"
           >
             <div>
-              <div className="font-bold text-lg">
-                {client.first_name} {client.last_name}
-              </div>
-       
-              <div className="text-xs text-gray-400 capitalize">
-                Status: {client.status}
-              </div>
-            </div>
+  <div className="font-bold text-lg">
+    {client.first_name} {client.last_name}
+  </div>
+
+  <div className="text-xs text-gray-400 capitalize">
+    Status: {client.status}
+  </div>
+
+  <div className="text-xs text-gray-400">
+    Created: {formatDate(client.created_at)}
+  </div>
+</div>
+
 
             <span className="text-sm font-semibold text-blue-600">
               {isOpen ? "Close" : "Edit"}

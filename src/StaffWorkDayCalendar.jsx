@@ -95,6 +95,18 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
 export default function StaffWorkDayCalendar() {
 const { authAxios, staff } = useStaff();
 const myStaffId = staff?.id;
+const isMobile = () => window.innerWidth < 640; // tailwind sm breakpoint
+
+const weekDayHeaderFormat = (date, culture, localizer) => {
+  if (isMobile()) {
+    // Mobile: S M T W Th F Sa
+    return format(date, "EEEEE"); // single letter, except Thu = Th
+  }
+
+  // Desktop: Sun Mon Tue Wed Thu Fri Sat
+  return format(date, "EEE");
+};
+
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -204,33 +216,57 @@ const myWeeklyEvents = useMemo(() => {
   return (
     <div className="space-y-4">
 <h2 className="text-2xl font-bold">🗓️ Work Day Schedule</h2>
-
+{/* NEXT SHIFT BANNER */}
 {/* NEXT SHIFT BANNER */}
 {nextShift ? (
-  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-    <div>
-      <p className="text-sm text-green-700 font-semibold">
-        Your next scheduled work shift is:
-      </p>
-      <p className="text-lg font-bold text-green-900">
-        {formatDateTime(nextShift.start)}
-      </p>
-      <p className="text-sm text-green-800">
-        {nextShift.resource.client.first_name}{" "}
-        {nextShift.resource.client.last_name}
-      </p>
-    </div>
+  <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-5">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-    <div className="text-sm text-green-700 font-semibold">
-      {formatTo12Hour(nextShift.resource.start_time)} →{" "}
-      {formatTo12Hour(nextShift.resource.end_time)}
+      {/* Left: Details */}
+      <div>
+        <p className="text-xs sm:text-sm text-green-700 font-semibold">
+          Your next scheduled work shift
+        </p>
+
+        <p className="text-base sm:text-lg font-bold text-green-900 mt-1">
+          {formatDateTime(nextShift.start)}
+        </p>
+
+        <p className="text-sm text-green-800 mt-0.5">
+          {nextShift.resource.client.first_name}{" "}
+          {nextShift.resource.client.last_name}
+        </p>
+      </div>
+
+      {/* Right: Time + Action */}
+      <div className="flex flex-col items-start sm:items-end gap-2">
+
+        <div className="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1.5 rounded-lg">
+          {formatTo12Hour(nextShift.resource.start_time)}{" "}
+          <span className="mx-1">→</span>
+          {formatTo12Hour(nextShift.resource.end_time)}
+        </div>
+
+        {/* ✅ START SHIFT BUTTON */}
+        {isAssignedToMe(nextShift.resource) && (
+          <StartShift
+            schedule={nextShift.resource}
+            compact
+            onStarted={() => {
+              alert("Shift started successfully!");
+            }}
+          />
+        )}
+      </div>
+
     </div>
   </div>
 ) : (
-  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic">
+  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic text-sm">
     You have no upcoming assigned work shifts.
   </div>
 )}
+
 {/* WEEKLY SCHEDULE DROPDOWN */}
 <div className="bg-white border rounded-xl shadow-sm">
 
@@ -253,7 +289,7 @@ const myWeeklyEvents = useMemo(() => {
           onClick={() => setWeekOffset((w) => w - 1)}
           className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm font-semibold"
         >
-          ◀ Previous Week
+          ◀ Previous
         </button>
 
         <div className="font-semibold text-gray-700">
@@ -264,7 +300,7 @@ const myWeeklyEvents = useMemo(() => {
           onClick={() => setWeekOffset((w) => w + 1)}
           className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-sm font-semibold"
         >
-          Next Week ▶
+          Next  ▶
         </button>
       </div>
 
@@ -311,33 +347,38 @@ const myWeeklyEvents = useMemo(() => {
 
 
       <div className="bg-white rounded-xl shadow p-4" style={{ height: 700 }}>
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          defaultView="week"
-          views={["month", "week", "day"]}
-          popup
-          onSelectEvent={(event) => setSelectedEvent(event.resource)}
-       eventPropGetter={(event) => {
-  const assignedToMe = isAssignedToMe(event.resource);
+ <Calendar
+  localizer={localizer}
+  events={events}
+  startAccessor="start"
+  endAccessor="end"
+  defaultView="week"
+  views={["month", "week", "day"]}
+  popup
+  onSelectEvent={(event) => setSelectedEvent(event.resource)}
 
-  return {
-    style: {
-      backgroundColor: assignedToMe ? "#16a34a" : "#2563eb", // 🟩 mine | 🟦 others
-      borderRadius: "6px",
-      color: "white",
-      border: assignedToMe ? "2px solid #14532d" : "none",
-      boxShadow: assignedToMe
-        ? "0 0 8px rgba(22, 163, 74, 0.7)"
-        : "none",
-      fontWeight: assignedToMe ? "700" : "500",
-    },
-  };
-}}
+  formats={{
+    dayFormat: weekDayHeaderFormat,   // 👈 THIS IS THE KEY
+  }}
 
-        />
+  eventPropGetter={(event) => {
+    const assignedToMe = isAssignedToMe(event.resource);
+
+    return {
+      style: {
+        backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
+        borderRadius: "8px",
+        color: "white",
+        border: assignedToMe ? "2px solid #14532d" : "none",
+        boxShadow: assignedToMe
+          ? "0 0 8px rgba(22, 163, 74, 0.6)"
+          : "none",
+        fontWeight: assignedToMe ? "700" : "500",
+      },
+    };
+  }}
+/>
+
       </div>
 
       {/* CLIENT DETAIL MODAL */}

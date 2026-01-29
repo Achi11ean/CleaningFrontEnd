@@ -13,7 +13,7 @@ import CreateTimeOffRequest from "./CreateTimeOffRequest";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
 import Availability from "./Availability";
-
+import ManagerAllStaffProfiles from "./ManagerAllStaffProfiles";
 import MyShifts from "./MyShifts";
 export default function StaffDashboard() {
   const { staff, logout } = useStaff();
@@ -21,14 +21,16 @@ const [timeOffSubTab, setTimeOffSubTab] = useState("create");
 // "create" | "manage"
 const [clockSubTab, setClockSubTab] = useState("timeclock");
 // "timeclock" | "staff"
+const [profileSubTab, setProfileSubTab] = useState("me");
+// "me" | "staff"
 
   const [activeTab, setActiveTab] = useState("clock");
   const [clientSubTab, setClientSubTab] = useState("list"); 
   // "list" | "schedules"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-sky-100 pt-24 px-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 text-center via-white to-sky-100 pt-24 ">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-none border border-gray-200 p-2">
 
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -47,17 +49,17 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
             </p>
           </div>
 
-          <button
-            onClick={logout}
-            className="px-4 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-semibold text-sm"
-          >
-            Logout
-          </button>
+
         </div>
 
         {/* Main Tabs */}
-        <div className="flex space-x-4 border-b mb-6">
-
+<div
+  className="
+    grid grid-cols-3 gap-2
+    md:flex md:gap-3
+    border-b mb-6
+  "
+>
           <button
             onClick={() => setActiveTab("clock")}
             className={`px-4 py-2 font-semibold border-b-2 transition ${
@@ -66,7 +68,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            ⏱️ Clock In / Out
+            Time
           </button>
 <button
   onClick={() => setActiveTab("workday")}
@@ -76,7 +78,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🗓️ Work Day
+  Work
 </button>
 
           <button
@@ -90,7 +92,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            🗂️ Clients
+            Clients
           </button>
           <button
   onClick={() => setActiveTab("myshifts")}
@@ -100,7 +102,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧾 My Shifts
+   Shifts
 </button>
 <button
   onClick={() => {
@@ -113,7 +115,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🕒 Time Off
+   Off
 </button>
 
 
@@ -125,7 +127,7 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            👤 My Profile
+            Profile
           </button>
         </div>
 
@@ -292,10 +294,46 @@ const [clockSubTab, setClockSubTab] = useState("timeclock");
 
 
 {activeTab === "profile" && (
-  <div className="space-y-8">
-    <UserProfile />
-    <Availability />
-  </div>
+  <>
+    {/* PROFILE SUB-TABS */}
+    <div className="flex space-x-4 border-b mb-6 ml-2">
+      <button
+        onClick={() => setProfileSubTab("me")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          profileSubTab === "me"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        👤 My Profile
+      </button>
+
+      {staff?.role === "manager" && (
+        <button
+          onClick={() => setProfileSubTab("staff")}
+          className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+            profileSubTab === "staff"
+              ? "border-indigo-600 text-indigo-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          🗒️ Staff Notes
+        </button>
+      )}
+    </div>
+
+    {/* PROFILE CONTENT */}
+    {profileSubTab === "me" && (
+      <div className="space-y-8">
+        <UserProfile />
+        <Availability />
+      </div>
+    )}
+
+    {profileSubTab === "staff" && staff?.role === "manager" && (
+      <ManagerAllStaffProfiles />
+    )}
+  </>
 )}
 
       </div>

@@ -7,6 +7,21 @@ export default function CreateInventoryItem({ onCreated }) {
 
   const [loading, setLoading] = useState(false);
   const [staffList, setStaffList] = useState([]);
+const [categories, setCategories] = useState([]);
+const [categoryInput, setCategoryInput] = useState("");
+const [showCategoryInput, setShowCategoryInput] = useState(false);
+useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get("/inventory/categories");
+      setCategories(res.data || []);
+    } catch {
+      toast.error("Failed to load categories");
+    }
+  };
+
+  loadCategories();
+}, [axios]);
 
   const [form, setForm] = useState({
     name: "",
@@ -79,6 +94,8 @@ export default function CreateInventoryItem({ onCreated }) {
         image_url: "",
         total_inventory: 0,
       });
+      setCategoryInput("");
+setShowCategoryInput(false);
       setStaffRequirements({});
 
       onCreated?.(res.data);
@@ -102,13 +119,59 @@ export default function CreateInventoryItem({ onCreated }) {
         className="w-full border rounded p-2"
       />
 
+{/* 📂 Category */}
+<div className="space-y-2">
+  <label className="text-sm font-semibold">Category</label>
+
+  {!showCategoryInput ? (
+    <select
+      value={form.category}
+      onChange={(e) => {
+        if (e.target.value === "__new__") {
+          setShowCategoryInput(true);
+          setForm({ ...form, category: "" });
+        } else {
+          setForm({ ...form, category: e.target.value });
+        }
+      }}
+      className="w-full border rounded p-2"
+    >
+      <option value="">Select category…</option>
+
+      {categories.map((cat) => (
+        <option key={cat} value={cat}>
+          {cat}
+        </option>
+      ))}
+
+      <option value="__new__">➕ Create new category</option>
+    </select>
+  ) : (
+    <div className="flex gap-2">
       <input
-        name="category"
-        value={form.category}
-        onChange={handleChange}
-        placeholder="Category"
-        className="w-full border rounded p-2"
+        value={categoryInput}
+        onChange={(e) => {
+          setCategoryInput(e.target.value);
+          setForm({ ...form, category: e.target.value });
+        }}
+        placeholder="New category name"
+        className="flex-1 border rounded p-2"
       />
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowCategoryInput(false);
+          setCategoryInput("");
+        }}
+        className="px-3 rounded border bg-gray-100 hover:bg-gray-200"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+</div>
+
 
       <textarea
         name="description"
