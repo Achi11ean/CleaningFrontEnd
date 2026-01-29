@@ -10,6 +10,13 @@ export default function CreateInventoryItem({ onCreated }) {
 const [categories, setCategories] = useState([]);
 const [categoryInput, setCategoryInput] = useState("");
 const [showCategoryInput, setShowCategoryInput] = useState(false);
+  const [staffRequirements, setStaffRequirements] = useState({});
+
+const assignedTotal = Object.values(staffRequirements)
+  .reduce((sum, qty) => sum + (Number(qty) || 0), 0);
+
+
+
 useEffect(() => {
   const loadCategories = async () => {
     try {
@@ -31,13 +38,13 @@ useEffect(() => {
     total_inventory: 0,
   });
 
-  const [staffRequirements, setStaffRequirements] = useState({});
 
   // 🔐 Only admin or manager allowed
   if (!axios || (role !== "admin" && role !== "manager")) {
     return null;
   }
-
+const remainingInventory =
+  Number(form.total_inventory || 0) - assignedTotal;
   // 🔽 Load staff list
   useEffect(() => {
     const loadStaff = async () => {
@@ -56,32 +63,49 @@ useEffect(() => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleStaffQtyChange = (staffId, qty) => {
-    setStaffRequirements((prev) => ({
-      ...prev,
-      [staffId]: Number(qty),
-    }));
-  };
+const handleStaffQtyChange = (staffId, qty) => {
+  const safeQty = Math.max(0, Number(qty) || 0);
 
-  const submit = async () => {
-    if (!form.name || !form.category) {
-      toast.error("Name and category are required");
-      return;
-    }
+  setStaffRequirements((prev) => ({
+    ...prev,
+    [staffId]: safeQty,
+  }));
+};
 
-    setLoading(true);
+ const submit = async () => {
+  if (!form.name || !form.category) {
+    toast.error("Name and category are required");
+    return;
+  }
+
+  if (Number(form.total_inventory) <= 0) {
+    toast.error("Total inventory must be greater than 0");
+    return;
+  }
+
+  if (assignedTotal > Number(form.total_inventory)) {
+    toast.error(
+      `Assigned quantity (${assignedTotal}) exceeds total inventory (${form.total_inventory})`
+    );
+    return;
+  }
+
+  setLoading(true);
+
+
 
     try {
       const payload = {
-        ...form,
-        total_inventory: Number(form.total_inventory),
-        staff_requirements: Object.entries(staffRequirements)
-          .filter(([, qty]) => qty > 0)
-          .map(([staff_id, required_quantity]) => ({
-            staff_id: Number(staff_id),
-            required_quantity,
-          })),
-      };
+    ...form,
+    total_inventory: remainingInventory,
+    staff_requirements: Object.entries(staffRequirements)
+        .filter(([, qty]) => qty > 0)
+        .map(([staff_id, required_quantity]) => ({
+        staff_id: Number(staff_id),
+        required_quantity,
+        })),
+    };
+
 
       const res = await axios.post("/inventory/items", payload);
 
@@ -197,6 +221,15 @@ setShowCategoryInput(false);
         placeholder="Total inventory on hand"
         className="w-full border rounded p-2"
       />
+<p
+  className={`text-sm ${
+    remainingInventory < 0
+      ? "text-red-600 font-semibold"
+      : "text-gray-500"
+  }`}
+>
+  Remaining inventory after assignment: {remainingInventory}
+</p>
 
       {/* 👥 Staff Requirements */}
       <div className="border-t pt-4">

@@ -19,7 +19,8 @@ import ManageAvailability from "./ManageAvailability";
 import Booking from "./Booking";
 import CreateInventoryItem from "./CreateInventoryItem";
 import ManageInventory from "./ManageInventory";
-
+import ControlStaffInventory from "./ControlStaffInventory";
+import StaffInventoryOverview from "./StaffInventoryOverview";
 import AdminShifts from "./AdminShifts";
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -441,6 +442,10 @@ Profile
     {!loading && !error && workDaySubTab === "workday" && (
       <ClientSchedulesCalendar />
     )}
+
+
+
+
 {!loading && !error && workDaySubTab === "inventory" && (
   <>
     {/* Inventory Sub Tabs */}
@@ -487,12 +492,13 @@ Profile
       <CreateInventoryItem />
     )}
 
+    {inventorySubTab === "staff" && (
+  <ControlStaffInventory />
+)}
 
     {inventorySubTab === "staff" && (
-      <div className="text-gray-500 italic text-center py-10">
-        Staff inventory view coming soon 👷
-      </div>
-    )}
+  <StaffInventoryOverview />
+)}
   </>
 )}
 
