@@ -12,6 +12,8 @@ import ActiveShiftPanel from "./ActiveShiftPanel";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
+import MyInventory from "./MyInventory";
+
 import Availability from "./Availability";
 import ManagerAllStaffProfiles from "./ManagerAllStaffProfiles";
 import MyShifts from "./MyShifts";
@@ -105,6 +107,17 @@ const [profileSubTab, setProfileSubTab] = useState("me");
    Shifts
 </button>
 <button
+  onClick={() => setActiveTab("inventory")}
+  className={`px-4 py-2 font-semibold border-b-2 transition ${
+    activeTab === "inventory"
+      ? "border-emerald-600 text-emerald-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  🧰 Inventory
+</button>
+
+<button
   onClick={() => {
     setActiveTab("timeoff");
     setTimeOffSubTab("create");
@@ -178,6 +191,7 @@ const [profileSubTab, setProfileSubTab] = useState("me");
 {activeTab === "workday" && <StaffWorkDayCalendar />}
 {activeTab === "workday" && <ActiveShiftPanel />}
 
+{activeTab === "inventory" && <MyInventory />}
 
 {activeTab === "timeoff" && (
   <div className="flex space-x-4 border-b mb-6 ml-2">
