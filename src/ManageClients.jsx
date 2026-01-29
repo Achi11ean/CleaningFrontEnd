@@ -15,6 +15,30 @@ const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const deleteClient = async () => {
+  if (!selectedClient) return;
+
+  const confirmed = window.confirm(
+    `⚠️ Are you sure you want to permanently delete ${selectedClient.first_name} ${selectedClient.last_name}?\n\nThis cannot be undone.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await authAxios.delete(`/clients/${selectedClient.id}`);
+
+    setSelectedClient(null);
+    await fetchAll();
+
+    alert("Client deleted successfully");
+  } catch (err) {
+    alert(
+      err.response?.data?.error ||
+      "Failed to delete client"
+    );
+  }
+};
+
   const formatDate = (iso) => {
   if (!iso) return "—";
 
@@ -42,14 +66,6 @@ const formatPhone = (value) => {
 };
 
 
-useEffect(() => {
-  if (
-    selectedClient &&
-    !filteredClients.some(c => c.id === selectedClient.id)
-  ) {
-    setSelectedClient(null);
-  }
-}, [searchTerm]);
 
 const handlePhoneChange = (e) => {
   const formatted = formatPhone(e.target.value);
@@ -130,6 +146,14 @@ const handlePhoneChange = (e) => {
     }
   };
 
+useEffect(() => {
+  if (
+    selectedClient &&
+    !filteredClients.some(c => c.id === selectedClient.id)
+  ) {
+    setSelectedClient(null);
+  }
+}, [searchTerm]);
   const removeAssignment = async (assignmentId) => {
     try {
       await authAxios.delete(
@@ -254,6 +278,27 @@ const filteredClients = clients.filter((client) => {
                 onAssign={assignCleaner}
                 onRemove={removeAssignment}
               />
+                <div className="border-t pt-4">
+      <button
+        onClick={deleteClient}
+        className="
+          w-full
+          bg-red-600
+          text-white
+          py-2
+          rounded-xl
+          font-semibold
+          hover:bg-red-700
+          transition
+        "
+      >
+        🗑️ Delete Client
+      </button>
+
+      <p className="text-xs text-gray-500 mt-2 text-center">
+        This permanently deletes the client, assignments, and schedules.
+      </p>
+    </div>
             </div>
           )}
         </div>
