@@ -186,7 +186,7 @@ const deleteStaff = async (id) => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  📝 Consultations
+  Consults
 </button>
 
 <button
@@ -292,7 +292,7 @@ Profile
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    🧾 Client List
+     Clients
   </button>
 
   <button
@@ -303,7 +303,7 @@ Profile
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    📅 Schedules
+    Schedules
   </button>
 
   <button
@@ -314,7 +314,7 @@ Profile
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    ➕ Create Schedule
+    Create
   </button>
 </div>
 
@@ -354,7 +354,7 @@ Profile
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧠 New
+  Begin
 </button>
 
 <button
@@ -365,7 +365,7 @@ Profile
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  ⚙️ Setup
+  Tools
 </button>
 
 
@@ -377,7 +377,7 @@ Profile
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  📋 All
+  All
 </button>
 
     </div>
@@ -387,10 +387,10 @@ Profile
     {/* PRIMARY SETUP TABS */}
     <div className="flex flex-wrap gap-2 border-b pb-3">
       {[
-  ["consultation", "🧠 Consultation"],
-  ["modules", "🧩 Modules"],       // 👈 NEW
-  ["intensities", "🔥 Intensities"],
-  ["multipliers", "✖️ Multipliers"],
+  ["consultation", "Consultation"],
+  ["modules", "Modules"],     
+  ["intensities", "Intensities"],
+  ["multipliers", "Multipliers"],
 ]
 .map(([key, label]) => (
         <button

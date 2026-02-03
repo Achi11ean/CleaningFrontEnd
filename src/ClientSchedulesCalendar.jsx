@@ -107,6 +107,19 @@ const [selectedTimeOff, setSelectedTimeOff] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+const isMobile = () => window.innerWidth < 640;
+
+const dayFormat = (date, culture, localizer) => {
+  if (isMobile()) {
+    // Mobile: S M T W T F S
+    return format(date, "EEEEE");
+  }
+
+  // Desktop: SUN MON TUE WED THUR FRI SAT
+  return format(date, "EEE").toUpperCase();
+};
+
+
   const getGoogleMapsLink = (address) => {
     if (!address) return null;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -348,7 +361,7 @@ const res = await authAxios.get("/time-off/all");
       )}
 
       <div className="bg-white rounded-xl shadow p-4" style={{ height: 700 }}>
-  <Calendar
+<Calendar
   localizer={localizer}
   events={allEvents}
   startAccessor="start"
@@ -356,29 +369,27 @@ const res = await authAxios.get("/time-off/all");
   defaultView="week"
   views={["month", "week", "day"]}
   popup
-
   selectable
-  onSelectSlot={({ start, end }) => {
-    console.log("📅 Date clicked:", start, end);
 
-    // OPTIONAL: hook this up later
-    // setSelectedDate(start)
-    // openCreateShiftModal(start)
-  }}
-
-onSelectEvent={(event) => {
-  if (event?.resource?.type === "time_off") {
-    setSelectedTimeOff(event.resource);
-    return;
-  }
-
-  // ✅ THIS is what your modal listens to
-  setSelectedEvent(event.resource);
+  formats={{
+  dayFormat,
 }}
 
 
+  onSelectSlot={({ start, end }) => {
+    console.log("📅 Date clicked:", start, end);
+  }}
+
+  onSelectEvent={(event) => {
+    if (event?.resource?.type === "time_off") {
+      setSelectedTimeOff(event.resource);
+      return;
+    }
+
+    setSelectedEvent(event.resource);
+  }}
+
   eventPropGetter={(event) => {
-    // 🔴 Time off styling
     if (event?.resource?.type === "time_off") {
       return {
         style: {
@@ -391,7 +402,6 @@ onSelectEvent={(event) => {
       };
     }
 
-    // 🟢 Schedule styling
     const assignedToMe = isAssignedToMe(event.resource);
     return {
       style: {

@@ -7,10 +7,12 @@ export default function StartShift({ schedule, onStarted }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [distanceError, setDistanceError] = useState(null);
+  const [needsLocationPermission, setNeedsLocationPermission] = useState(false);
 
   const startShift = async () => {
     setError(null);
     setDistanceError(null);
+    setNeedsLocationPermission(false);
 
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this device.");
@@ -21,8 +23,7 @@ export default function StartShift({ schedule, onStarted }) {
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+        const { latitude: lat, longitude: lng } = pos.coords;
 
         try {
           const res = await authAxios.post("/staff/shifts/check-in", {
@@ -32,9 +33,7 @@ export default function StartShift({ schedule, onStarted }) {
             lng,
           });
 
-          // Success
           onStarted?.(res.data.shift);
-
         } catch (err) {
           const data = err?.response?.data;
 
@@ -51,7 +50,15 @@ export default function StartShift({ schedule, onStarted }) {
       },
       (geoErr) => {
         setLoading(false);
-        setError("Unable to get your location. Please allow GPS access.");
+        setNeedsLocationPermission(true);
+
+        if (geoErr.code === geoErr.PERMISSION_DENIED) {
+          setError(
+            "Location access is blocked. Please allow GPS access to continue."
+          );
+        } else {
+          setError("Unable to get your location. Please try again.");
+        }
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -77,17 +84,30 @@ export default function StartShift({ schedule, onStarted }) {
         </div>
       )}
 
+      {/* ACTION BUTTON */}
       <button
         onClick={startShift}
         disabled={loading}
         className={`w-full py-3 rounded-xl font-bold transition ${
           loading
             ? "bg-gray-300 cursor-not-allowed"
+            : needsLocationPermission
+            ? "bg-blue-600 hover:bg-blue-700 text-white"
             : "bg-green-600 hover:bg-green-700 text-white"
         }`}
       >
-        {loading ? "Checking location..." : "📍 Start Shift"}
+        {loading
+          ? "Checking location..."
+          : needsLocationPermission
+          ? "📍 Get My Location"
+          : "📍 Start Shift"}
       </button>
+
+      {needsLocationPermission && (
+        <p className="text-xs text-gray-500 text-center">
+          Tip: When prompted, choose “Allow while using the app”
+        </p>
+      )}
     </div>
   );
 }
