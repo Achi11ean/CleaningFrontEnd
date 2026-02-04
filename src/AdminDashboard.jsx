@@ -35,6 +35,8 @@ import CreateInventoryItem from "./CreateInventoryItem";
 import ManageInventory from "./ManageInventory";
 import ControlStaffInventory from "./ControlStaffInventory";
 import StaffInventoryOverview from "./StaffInventoryOverview";
+import ManagerRequests from "./Requests";
+import axios from "axios";
 import AdminShifts from "./AdminShifts";
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -48,6 +50,17 @@ const [usersSubTab, setUsersSubTab] = useState("staff"); // "staff" | "admins"
 const [consultationsSubTab, setConsultationsSubTab] = useState("create");
 const [inventorySubTab, setInventorySubTab] = useState("create");
 const [activeConsultationId, setActiveConsultationId] = useState(null);
+const [clientsListMode, setClientsListMode] = useState("all"); 
+// "all" | "requests"
+const [newRequestCount, setNewRequestCount] = useState(0);
+
+
+useEffect(() => {
+  authAxios.get("/client-requests").then((res) => {
+    const count = res.data.filter((r) => r.status === "new").length;
+    setNewRequestCount(count);
+  });
+}, []);
 
 const [consultSetupTab, setConsultSetupTab] = useState("consultation");
 // consultation | sections | items | intensities | multipliers
@@ -127,17 +140,25 @@ const deleteStaff = async (id) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-sky-100 pt-24 ">
-      <div className="max-w-6xl text-center mx-auto bg-white rounded-none shadow-2xl border border-gray-200 p-2">
+      <div className="max-w-6xl text-center mx-auto bg-white rounded-none shadow-2xl border border-gray-200">
 
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        {/* Header */}    <h2
+  className="
+    pt-4 text-7xl lg:text-8xl
+    font-extrabold  font-[Aspire] tracking-tight text-center
+    relative
+    bg-gradient-to-br from-blue-600 via-cyan-400 to-blue-600
+text-white
+    drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]
+    border-b-2 border-white/70
+    shadow-[inset_0_2px_4px_rgba(255,255,255,0.35)]
+  "
+>Welcome Back, Amanda!
+</h2>
+
+        <div className="mb-8 mt-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Logged in as <span className="font-semibold">{admin?.username}</span>
-            </p>
+
           </div>
         </div>
 
@@ -145,128 +166,45 @@ const deleteStaff = async (id) => {
 {/* Tabs */}
 <div
   className="
-    grid grid-cols-4 gap-2
-    md:flex md:gap-4
-    border-b mb-6
+    grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 
+    border-b border-gray-200 pb-4 mb-8
   "
 >
+  {[
+    { key: "clients", label: "Clients", color: "blue" },
+    { key: "workday", label: "Work", color: "blue", subTab: "workday" },
+    { key: "consultations", label: "Consults", color: "blue", subTab: "create" },
+    { key: "shifts", label: "Shifts", color: "blue", subTab: "me" },
+    { key: "profile", label: "Profile", color: "blue", subTab: "me" },
+    { key: "time", label: "Time", color: "blue" },
+    { key: "services", label: "Services", color: "blue", subTab: "create" },
+    { key: "reviews", label: "Reviews", color: "blue" },
+    { key: "timeoff", label: "Off", color: "rose", subTab: "manage" },
+  ].map(({ key, label, color, subTab }) => (
+    <button
+      key={key}
+      onClick={() => {
+        setActiveTab(key);
+        if (key === "workday") setWorkDaySubTab(subTab);
+        if (key === "consultations") setConsultationsSubTab(subTab);
+        if (key === "shifts") setShiftsSubTab(subTab);
+        if (key === "profile") setProfileSubTab(subTab);
+        if (key === "services") setServicesSubTab(subTab);
+        if (key === "timeoff") setTimeOffSubTab(subTab);
+      }}
+      className={`w-full px-4 py-1 text-lg font-semibold rounded-xl text-center transition-all duration-200
+        ${
+          activeTab === key
+            ? `bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600 text-white border border-${color}-300 shadow-sm`
+            : "bg-gradient-to-br from-slate-700 via-slate-700 to-black text-white hover:brightness-110"
+        }
+      `}
+    >
+      {label}
+    </button>
+  ))}
+</div>
 
-            <button
-  onClick={() => setActiveTab("clients")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "clients"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Clients
-</button>
-<button
-  onClick={() => {
-    setActiveTab("workday");
-    setWorkDaySubTab("workday"); // default subtab
-  }}
-
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "workday"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Work 
-</button>
-<button
-  onClick={() => {
-    setActiveTab("consultations");
-    setConsultationsSubTab("create");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "consultations"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Consults
-</button>
-
-<button
-  onClick={() => {
-    setActiveTab("shifts");
-    setShiftsSubTab("me");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "shifts"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Shifts
-</button>
-
-            <button
-  onClick={() => {
-    setActiveTab("profile");
-    setProfileSubTab("me");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "profile"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-Profile
-</button>
-
-
-          <button
-  onClick={() => setActiveTab("time")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "time"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Time
-</button>
-<button
-  onClick={() => {
-    setActiveTab("services");
-    setServicesSubTab("create");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "services"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Services
-</button>
-<button
-  onClick={() => setActiveTab("reviews")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "reviews"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Reviews
-</button>
-<button
-  onClick={() => {
-    setActiveTab("timeoff");
-    setTimeOffSubTab("manage");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "timeoff"
-      ? "border-rose-600 text-rose-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  🕦 Off
-</button>
-
-
-        </div>
 
         {/* Content */}
         {loading && (
@@ -319,9 +257,45 @@ Profile
 </div>
 
     {/* Clients Sub Content */}
-    {!loading && !error && clientsSubTab === "list" && (
-      <ManageClients />
-    )}
+   {!loading && !error && clientsSubTab === "list" && (
+  <>
+    {/* Third-level tabs inside Clients > Clients */}
+    <div className="flex space-x-4 border-b mb-4 mt-2">
+      <button
+        onClick={() => setClientsListMode("all")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          clientsListMode === "all"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+       All Clients
+      </button>
+
+<button
+  onClick={() => setClientsListMode("requests")}
+  className={`relative px-3 py-2 text-sm font-semibold border-b-2 transition ${
+    clientsListMode === "requests"
+      ? "border-purple-600 text-purple-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+Requests
+  {newRequestCount > 0 && (
+    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+      {newRequestCount}
+    </span>
+  )}
+</button>
+
+    </div>
+
+    {/* Content for each */}
+    {clientsListMode === "all" && <ManageClients />}
+    {clientsListMode === "requests" && <ManagerRequests />}
+  </>
+)}
+
 {!loading && !error && clientsSubTab === "create" && (
   <>
     <CreateSchedules />

@@ -3,7 +3,6 @@ import { useAdmin } from "./AdminContext";
 import axios from "axios";
 import AssignCleaners from "./AssignCleaners";
 import EditClient from "./EditClient";
-
 export default function ManageClients() {
   const { authAxios } = useAdmin();
 
