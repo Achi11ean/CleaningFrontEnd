@@ -40,7 +40,7 @@ const formatTo12Hour = (timeStr) => {
   "Saturday",
   "Sunday",
 ];
-const [viewImageUrl, setViewImageUrl] = useState(null);
+const [viewImages, setViewImages] = useState([]);
 
 
 const formatDayOfWeek = (num) => {
@@ -193,13 +193,13 @@ const formatDayOfWeek = (num) => {
                 </td>
 
                 {/* PHOTO */}
-               <td className="p-2 border">
-  {s.image_url ? (
+<td className="p-2 border">
+  {Array.isArray(s.image_urls) && s.image_urls.length > 0 ? (
     <button
-      onClick={() => setViewImageUrl(s.image_url)}
+      onClick={() => setViewImages(s.image_urls)}
       className="text-blue-600 hover:underline font-semibold"
     >
-      View
+      View ({s.image_urls.length})
     </button>
   ) : (
     "—"
@@ -207,30 +207,47 @@ const formatDayOfWeek = (num) => {
 </td>
 
 
+
               </tr>
             ))}
           </tbody>
         </table>
-        {viewImageUrl && (
+      {viewImages.length > 0 && (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl shadow-xl p-4 max-w-3xl w-full mx-4 relative">
+    <div className="bg-white rounded-xl shadow-xl p-4 max-w-4xl w-full mx-4 relative">
 
       <button
-        onClick={() => setViewImageUrl(null)}
+        onClick={() => setViewImages([])}
         className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl font-bold"
       >
         ✕
       </button>
 
-      <img
-        src={viewImageUrl}
-        alt="Shift Photo"
-        className="w-full max-h-[80vh] object-contain rounded"
-      />
+      <h3 className="font-semibold mb-3">
+        Shift Photos ({viewImages.length})
+      </h3>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {viewImages.map((url, idx) => (
+          <a
+            key={idx}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={url}
+              alt={`Shift photo ${idx + 1}`}
+              className="h-40 w-full object-cover rounded hover:opacity-90 transition"
+            />
+          </a>
+        ))}
+      </div>
 
     </div>
   </div>
 )}
+
 
       </div>
     </div>

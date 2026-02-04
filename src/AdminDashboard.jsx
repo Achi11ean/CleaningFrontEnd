@@ -28,7 +28,7 @@ import ViewConsultation from "./ViewConsultation";
 import ManageConsults from "./ManageConsults";
 import ManageIntensity from "./ManageIntensity";
 import ManageMultipliers from "./ManageMultipliers";
-
+import AdminWorkShifts from "./AdminWorkShifts";
 import ManageSectionsItems from "./ManageSectionsItems";
 import Booking from "./Booking";
 import CreateInventoryItem from "./CreateInventoryItem";
@@ -755,7 +755,7 @@ Profile
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🙋 My Shifts
+        My Shifts
       </button>
 
       <button
@@ -766,14 +766,27 @@ Profile
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        👥 All Shifts
+       All Shifts
       </button>
+<button
+  onClick={() => setShiftsSubTab("manage")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    shiftsSubTab === "manage"
+      ? "border-purple-600 text-purple-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  Manage
+</button>
 
     </div>
 
     {!loading && !error && shiftsSubTab === "me" && (
       <AdminShifts mode="me" />
     )}
+{!loading && !error && shiftsSubTab === "manage" && (
+  <AdminWorkShifts />
+)}
 
     {!loading && !error && shiftsSubTab === "all" && (
       <AdminShifts mode="all" />

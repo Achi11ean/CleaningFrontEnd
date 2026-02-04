@@ -194,18 +194,24 @@ export default function AdminShifts({ mode = "me" }) {
                 </td>
 
                 {/* PHOTO */}
-                <td className="p-2 border">
-                  {s.image_url ? (
-                    <button
-                      onClick={() => setViewImageUrl(s.image_url)}
-                      className="text-blue-600 hover:underline font-semibold"
-                    >
-                      View
-                    </button>
-                  ) : (
-                    "—"
-                  )}
-                </td>
+              <td className="p-2 border">
+  {s.image_urls && s.image_urls.length > 0 ? (
+    <div className="flex flex-wrap gap-1">
+      {s.image_urls.map((url, i) => (
+        <img
+          key={i}
+          src={url}
+          alt={`Shift photo ${i + 1}`}
+          onClick={() => setViewImageUrl(url)}
+          className="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110"
+        />
+      ))}
+    </div>
+  ) : (
+    "—"
+  )}
+</td>
+
 
               </tr>
             ))}
@@ -213,26 +219,25 @@ export default function AdminShifts({ mode = "me" }) {
         </table>
 
         {/* IMAGE MODAL */}
-        {viewImageUrl && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl p-4 max-w-3xl w-full mx-4 relative">
+     {viewImageUrl && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-xl p-4 max-w-3xl w-full mx-4 relative">
+      <button
+        onClick={() => setViewImageUrl(null)}
+        className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl font-bold"
+      >
+        ✕
+      </button>
 
-              <button
-                onClick={() => setViewImageUrl(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl font-bold"
-              >
-                ✕
-              </button>
+      <img
+        src={viewImageUrl}
+        alt="Shift Photo"
+        className="w-full max-h-[80vh] object-contain rounded"
+      />
+    </div>
+  </div>
+)}
 
-              <img
-                src={viewImageUrl}
-                alt="Shift Photo"
-                className="w-full max-h-[80vh] object-contain rounded"
-              />
-
-            </div>
-          </div>
-        )}
 
       </div>
     </div>

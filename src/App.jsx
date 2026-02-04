@@ -13,6 +13,7 @@ import StaffSignup from "./StaffSignup";
 import StaffLogin from "./StaffLogin";
 import StaffDashboard from "./StaffDashboard";
 import ClientInquiry from "./ClientInquiry";
+import ClientCleaning from "./ClientCleaning";
 const App = () => (
   
   <>
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/staff-signup" element={<StaffSignup/>}/>
             <Route path="/staff-login" element={<StaffLogin/>}/>
             <Route path="/staff-dashboard" element={<StaffDashboard/>}/>
+            <Route path="/cleaning" element={<ClientCleaning/>}/>
 
 
     </Routes>
