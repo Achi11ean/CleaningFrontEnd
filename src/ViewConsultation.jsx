@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PrintConsultation from "./PrintConsultation";
+import EditConsultationEntry from "./EditConsultationEntry";
 
 export default function ViewConsultation({ consultationId }) {
   const { axios } = useAuthorizedAxios();
@@ -184,78 +185,21 @@ const pricingBreakdown = useMemo(() => {
 
           {/* Entries */}
           <div className="divide-y">
-            {section.entries.map((e) => (
-             <div
-  key={e.id}
-  className="px-4 py-3 bg-white hover:bg-gray-50 transition space-y-2"
->
-  {/* Title + points */}
-  <div className="flex justify-between items-start gap-4">
-    <div>
-      <div className="font-medium text-gray-800">
-        {e.item_title}
-      </div>
+          {section.entries.map((e) => (
+  <EditConsultationEntry
+    key={e.id}
+    entry={e}
+    onUpdated={async () => {
+      try {
+        const res = await axios.get(`/consultations/${consultationId}`);
+        setConsultation(res.data);
+      } catch (err) {
+        console.error("Failed to reload consultation", err);
+      }
+    }}
+  />
+))}
 
-      <div className="text-xs text-gray-500">
-        Base: {e.base_points} • Intensity:{" "}
-        <span className="font-semibold text-gray-700">
-          {e.intensity_label}
-        </span>
-      </div>
-    </div>
-
-    <div className="text-right">
-      <div className="text-sm font-bold text-gray-800">
-        {e.calculated_points} pts
-      </div>
-    </div>
-  </div>
-
-  {/* Item notes */}
-  {e.item_notes && (
-    <div className="text-xs text-gray-500 italic">
-      Item notes: {e.item_notes}
-    </div>
-  )}
-
-  {/* Multipliers */}
-  {e.multipliers?.length > 0 && (
-    <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs space-y-1">
-      <div className="font-semibold text-amber-700">
-        Applied Multipliers
-      </div>
-
-      {e.multipliers.map((m) => (
-        <div key={m.id} className="text-amber-800">
-          • {m.label} × {m.multiplier}
-          {m.notes && (
-            <div className="italic text-amber-600 ml-3">
-              {m.notes}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )}
-
-  {/* Entry notes */}
-  {e.entry_notes && (
-    <div className="text-xs italic text-gray-600">
-      Entry notes: “{e.entry_notes}”
-    </div>
-  )}
-
-  {/* Metadata */}
-  <div className="flex justify-between text-[10px] text-gray-400 pt-1">
-    <span>
-      Added by {e.created_by ?? "system"}
-    </span>
-    <span>
-      {new Date(e.created_at).toLocaleString()}
-    </span>
-  </div>
-</div>
-  ))}
           </div>
         </div>
       ))}

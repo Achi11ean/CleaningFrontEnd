@@ -96,146 +96,146 @@ export default function ManageReviews() {
 
       {loading && <p className="text-gray-500">Loading reviews...</p>}
       {error && <p className="text-red-600">{error}</p>}
-
-      {reviews.length === 0 ? (
-        <p className="text-gray-500">No reviews found.</p>
-      ) : (
-        <div className="space-y-4">
-          {reviews.map((r) => (
-            <div
-              key={r.id}
-              className="border rounded-lg p-4 bg-white shadow-sm"
-            >
-              {editingId === r.id ? (
-                <>
-                  <div className="flex gap-2 mb-2">
-                    <input
-                      value={editForm.first_name}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, first_name: e.target.value })
-                      }
-                      className="border rounded px-2 py-1"
-                    />
-                    <input
-                      value={editForm.last_initial}
-                      maxLength={1}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          last_initial: e.target.value,
-                        })
-                      }
-                      className="border rounded px-2 py-1 w-16 text-center uppercase"
-                    />
-                  </div>
-
-                  <select
-                    value={editForm.rating}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, rating: e.target.value })
-                    }
-                    className="border rounded px-2 py-1 mb-2"
-               >
-                    <option value={5}>5 ⭐</option>
-                    <option value={4}>4 ⭐</option>
-                    <option value={3}>3 ⭐</option>
-                    <option value={2}>2 ⭐</option>
-                    <option value={1}>1 ⭐</option>
-                  </select>
-
-                  <textarea
-                    value={editForm.message}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, message: e.target.value })
-                    }
-                    rows={3}
-                    className="w-full border rounded px-2 py-1 mb-2"
-                  />
-
-                  <select
-                    value={editForm.status}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, status: e.target.value })
-                    }
-                    className="border rounded px-2 py-1 mb-3"
-                  >
-                    <option value="pending">pending</option>
-                    <option value="approved">approved</option>
-                    <option value="rejected">rejected</option>
-                  </select>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => saveEdit(r.id)}
-                      className="px-3 py-1 bg-green-600 text-white rounded text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      className="px-3 py-1 bg-gray-200 rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">
-                      {r.first_name} {r.last_initial}. — {r.rating} ⭐
-                    </h3>
-                    <span
-                      className={`text-sm font-semibold ${
-                        r.status === "approved"
-                          ? "text-green-600"
-                          : r.status === "pending"
-                          ? "text-orange-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-gray-700 whitespace-pre-line">
-                    {r.message}
-                  </p>
-
-                  <p className="mt-2 text-xs text-gray-400">
-                    Created: {new Date(r.created_at).toLocaleString()}
-                  </p>
-
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => startEdit(r)}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm"
-                    >
-                      Edit
-                    </button>
-
-                    {r.status !== "approved" && (
-                      <button
-                        onClick={() => approve(r.id)}
-                        className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm"
-                      >
-                        Approve
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => remove(r.id)}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </>
-              )}
+{reviews.length === 0 ? (
+  <p className="text-gray-500">No reviews found.</p>
+) : (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {reviews.map((r) => (
+      <div
+        key={r.id}
+        className="border rounded-xl p-4 bg-white shadow-md flex flex-col justify-between"
+      >
+        {editingId === r.id ? (
+          <>
+            <div className="flex gap-2 mb-2">
+              <input
+                value={editForm.first_name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, first_name: e.target.value })
+                }
+                className="border rounded px-2 py-1 w-full"
+              />
+              <input
+                value={editForm.last_initial}
+                maxLength={1}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    last_initial: e.target.value,
+                  })
+                }
+                className="border rounded px-2 py-1 w-16 text-center uppercase"
+              />
             </div>
-          ))}
-        </div>
-      )}
+
+            <select
+              value={editForm.rating}
+              onChange={(e) =>
+                setEditForm({ ...editForm, rating: e.target.value })
+              }
+              className="border rounded px-2 py-1 mb-2"
+            >
+              <option value={5}>5 ⭐</option>
+              <option value={4}>4 ⭐</option>
+              <option value={3}>3 ⭐</option>
+              <option value={2}>2 ⭐</option>
+              <option value={1}>1 ⭐</option>
+            </select>
+
+            <textarea
+              value={editForm.message}
+              onChange={(e) =>
+                setEditForm({ ...editForm, message: e.target.value })
+              }
+              rows={3}
+              className="w-full border rounded px-2 py-1 mb-2"
+            />
+
+            <select
+              value={editForm.status}
+              onChange={(e) =>
+                setEditForm({ ...editForm, status: e.target.value })
+              }
+              className="border rounded px-2 py-1 mb-3"
+            >
+              <option value="pending">pending</option>
+              <option value="approved">approved</option>
+              <option value="rejected">rejected</option>
+            </select>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => saveEdit(r.id)}
+                className="px-3 py-1 bg-green-600 text-white rounded text-sm"
+              >
+                Save
+              </button>
+              <button
+                onClick={cancelEdit}
+                className="px-3 py-1 bg-gray-200 rounded text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg">
+                {r.first_name} {r.last_initial}. — {r.rating} ⭐
+              </h3>
+              <span
+                className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                  r.status === "approved"
+                    ? "bg-green-100 text-green-700"
+                    : r.status === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {r.status}
+              </span>
+            </div>
+
+            <div className="mt-3 text-gray-700 text-sm whitespace-pre-line max-h-32 overflow-y-auto pr-1">
+              {r.message}
+            </div>
+
+            <p className="mt-3 text-xs text-gray-400">
+              Created: {new Date(r.created_at).toLocaleString()}
+            </p>
+
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => startEdit(r)}
+                className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+              >
+                Edit
+              </button>
+
+              {r.status !== "approved" && (
+                <button
+                  onClick={() => approve(r.id)}
+                  className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
+                >
+                  Approve
+                </button>
+              )}
+
+              <button
+                onClick={() => remove(r.id)}
+                className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
+              >
+                Delete
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
     </div>
   );
 }

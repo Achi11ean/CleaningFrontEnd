@@ -4,105 +4,157 @@ import { useAdmin } from "./AdminContext";
 export default function AdminWorkDay() {
   const { authAxios } = useAdmin();
 
-  const [data, setData] = useState(null);
+  const [allStaff, setAllStaff] = useState([]);
+  const [liveData, setLiveData] = useState({});
+  const [staffProfiles, setStaffProfiles] = useState({}); // key = staff_id
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState({});
 
-  const loadLive = async () => {
+  const loadAll = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await authAxios.get("/admin/reports/live");
-      setData(res.data);
+      const [staffRes, liveRes] = await Promise.all([
+        authAxios.get("/staff/all"),
+        authAxios.get("/admin/reports/live"),
+      ]);
+
+      setAllStaff(staffRes.data);
+
+      // Map live entries
+      const liveMap = {};
+      liveRes.data.active.forEach((entry) => {
+        liveMap[entry.staff_id] = entry;
+      });
+      setLiveData(liveMap);
+
+      // Fetch all staff profiles in parallel
+      const profilePromises = staffRes.data.map((staff) =>
+        authAxios.get(`/admin/staff/${staff.id}/profile`).then((res) => ({
+          staff_id: staff.id,
+          profile: res.data.profile,
+        }))
+      );
+
+      const resolved = await Promise.all(profilePromises);
+      const profileMap = {};
+      resolved.forEach(({ staff_id, profile }) => {
+        profileMap[staff_id] = profile;
+      });
+      setStaffProfiles(profileMap);
     } catch (err) {
-      setError("Failed to load live workday data");
+      setError("Failed to load workday data.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadLive();
-
-    const interval = setInterval(() => {
-      loadLive();
-    }, 30000); // refresh every 30s
-
+    loadAll();
+    const interval = setInterval(loadAll, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const formatDuration = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
+    return `${h}h ${m}m`;
+  };
 
-    return `${h}h ${m}m ${s}s`;
+  const handleClock = async (staffId, action) => {
+    setActionLoading((prev) => ({ ...prev, [staffId]: true }));
+    try {
+      if (action === "in") {
+        await authAxios.post("/admin/staff-clock-in", { staff_id: staffId });
+      } else {
+        await authAxios.post("/admin/staff-clock-out", { staff_id: staffId });
+      }
+      await loadAll(); // Refresh view
+    } catch (err) {
+      console.error("Clock action failed", err);
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [staffId]: false }));
+    }
+  };
+
+  const getDisplayName = (staff) => {
+    const profile = staffProfiles[staff.id];
+    if (profile && (profile.first_name || profile.last_name)) {
+      return `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+    }
+    return staff.username;
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        🟢 Live Work Day
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">🟢 Live Work Day</h2>
 
-      {loading && (
+      {loading ? (
         <div className="py-10 text-gray-500 font-semibold">
           Loading live clock data...
         </div>
-      )}
+      ) : error ? (
+        <div className="py-6 text-red-600 font-semibold">{error}</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {allStaff.map((staff) => {
+            const live = liveData[staff.id];
+            const clockedIn = !!live;
 
-      {error && (
-        <div className="py-6 text-red-600 font-semibold">
-          {error}
+            return (
+              <div
+                key={staff.id}
+                className={`rounded-xl border p-4 shadow-sm ${
+                  clockedIn
+                    ? "bg-emerald-50 border-emerald-300"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <div className="font-semibold text-gray-800 mb-1">
+                  {getDisplayName(staff)}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Status:{" "}
+                  <span
+                    className={`font-bold ${
+                      clockedIn ? "text-emerald-700" : "text-gray-500"
+                    }`}
+                  >
+                    {clockedIn ? "Clocked In" : "Not Clocked In"}
+                  </span>
+                </div>
+                {clockedIn && (
+                  <>
+                    <div className="text-xs mt-1 text-gray-500">
+                      ⏰ {new Date(live.clock_in_at).toLocaleTimeString()}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Duration: {formatDuration(live.current_seconds)}
+                    </div>
+                  </>
+                )}
+
+                <button
+                  onClick={() =>
+                    handleClock(staff.id, clockedIn ? "out" : "in")
+                  }
+                  disabled={actionLoading[staff.id]}
+                  className={`mt-3 w-full text-sm font-semibold px-3 py-2 rounded ${
+                    clockedIn
+                      ? "bg-red-100 text-red-600 hover:bg-red-200"
+                      : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+                  } transition`}
+                >
+                  {actionLoading[staff.id]
+                    ? "Updating..."
+                    : clockedIn
+                    ? "Clock Out"
+                    : "Clock In"}
+                </button>
+              </div>
+            );
+          })}
         </div>
-      )}
-
-      {!loading && !error && data && (
-        <>
-          <div className="mb-4 text-gray-600">
-            Active employees:{" "}
-            <span className="font-semibold">
-              {data.active_count}
-            </span>
-          </div>
-
-          {data.active_count === 0 ? (
-            <div className="py-10 text-gray-500 font-semibold text-center">
-              No employees are currently clocked in.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
-                <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Employee</th>
-                    <th className="px-4 py-3 text-left">Clocked In At</th>
-                    <th className="px-4 py-3 text-left">Time Worked</th>
-                    <th className="px-4 py-3 text-left">Hours</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {data.active.map((row) => (
-                    <tr key={row.entry_id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-semibold">
-                        {row.username}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {new Date(row.clock_in_at).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        {formatDuration(row.current_seconds)}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
-                        {row.current_hours}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </>
       )}
     </div>
   );

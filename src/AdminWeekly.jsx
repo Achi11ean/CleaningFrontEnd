@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAdmin } from "./AdminContext";
+import WeeklyTimeCards from "./WeeklyTimeCards";
 
 export default function AdminWeekly() {
   const { authAxios } = useAdmin();
@@ -9,29 +10,27 @@ export default function AdminWeekly() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Load all available weeks
+  // Load available weeks
   useEffect(() => {
     const loadWeeks = async () => {
       try {
         const res = await authAxios.get("/admin/reports/weeks");
         setWeeks(res.data || []);
-
-        if (res.data && res.data.length > 0) {
-          setSelectedWeek(res.data[0]); // default to most recent week
+        if (res.data?.length > 0) {
+          setSelectedWeek(res.data[0]);
         }
-      } catch (err) {
+      } catch {
         setError("Failed to load weeks");
       }
     };
-
     loadWeeks();
   }, []);
 
-  // Load report when week changes
+  // Load report for selected week
   useEffect(() => {
     if (!selectedWeek) return;
-
     const loadReport = async () => {
       setLoading(true);
       setError(null);
@@ -40,15 +39,22 @@ export default function AdminWeekly() {
           params: { start: selectedWeek.week_start },
         });
         setReport(res.data);
-      } catch (err) {
+      } catch {
         setError("Failed to load weekly report");
       } finally {
         setLoading(false);
       }
     };
-
     loadReport();
   }, [selectedWeek]);
+
+  const filteredStaff = useMemo(() => {
+    if (!report?.staff_totals) return [];
+    return report.staff_totals.filter((row) => {
+      const name = (row.full_name || row.username || "").toLowerCase();
+      return name.includes(searchTerm.toLowerCase());
+    });
+  }, [report, searchTerm]);
 
   return (
     <div>
@@ -57,19 +63,18 @@ export default function AdminWeekly() {
       </h2>
 
       {/* Week Selector */}
-      <div className="mb-6">
-        <label className="block text-sm font-semibold text-gray-600 mb-2">
+      <div className="mb-4">
+        <label className="block text-sm font-semibold text-gray-600 mb-1">
           Select Week
         </label>
         <select
           value={selectedWeek?.week_start || ""}
-          onChange={(e) => {
-            const wk = weeks.find(
-              (w) => w.week_start === e.target.value
-            );
-            setSelectedWeek(wk);
-          }}
-          className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400"
+          onChange={(e) =>
+            setSelectedWeek(
+              weeks.find((w) => w.week_start === e.target.value)
+            )
+          }
+          className="w-full sm:max-w-xs px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400"
         >
           {weeks.map((w) => (
             <option key={w.week_start} value={w.week_start}>
@@ -77,6 +82,17 @@ export default function AdminWeekly() {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by employee name..."
+          className="w-full sm:max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+        />
       </div>
 
       {/* Loading */}
@@ -88,51 +104,17 @@ export default function AdminWeekly() {
 
       {/* Error */}
       {error && (
-        <div className="py-6 text-red-600 font-semibold">
-          {error}
-        </div>
+        <div className="py-6 text-red-600 font-semibold">{error}</div>
       )}
 
-      {/* Report Table */}
-      {!loading && !error && report && (
-        <div className="overflow-x-auto">
-          <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
-            <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
-              <tr>
-                <th className="px-4 py-3 text-left">Employee</th>
-                <th className="px-4 py-3 text-left">Total Hours</th>
-                <th className="px-4 py-3 text-left">Total Seconds</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {report.staff_totals.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-6 text-center text-gray-500"
-                  >
-                    No time entries for this week.
-                  </td>
-                </tr>
-              )}
+      {/* Cards */}
+     {!loading && !error && (
+  <WeeklyTimeCards
+    staffList={filteredStaff}
+    weekStart={selectedWeek?.week_start}
+  />
+)}
 
-              {report.staff_totals.map((row) => (
-                <tr key={row.staff_id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold">
-                    {row.username}
-                  </td>
-                  <td className="px-4 py-3">
-                    {row.total_hours} hrs
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {row.total_seconds}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

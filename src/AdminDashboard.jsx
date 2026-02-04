@@ -37,7 +37,12 @@ import ControlStaffInventory from "./ControlStaffInventory";
 import StaffInventoryOverview from "./StaffInventoryOverview";
 import ManagerRequests from "./Requests";
 import axios from "axios";
+import "./App.css";
+import CreatePurchase from "./CreatePurchase";
+import ManagePurchases from "./ManagePurchases";
 import AdminShifts from "./AdminShifts";
+import ManualTimeEntry from "./ManualTimeEntry";
+
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
 const [activeTab, setActiveTab] = useState("clients");
@@ -51,8 +56,16 @@ const [consultationsSubTab, setConsultationsSubTab] = useState("create");
 const [inventorySubTab, setInventorySubTab] = useState("create");
 const [activeConsultationId, setActiveConsultationId] = useState(null);
 const [clientsListMode, setClientsListMode] = useState("all"); 
-// "all" | "requests"
+const [newClientCount, setNewClientCount] = useState(0);
+const [purchaseSubTab, setPurchaseSubTab] = useState("history"); // "create" | "history"
+
 const [newRequestCount, setNewRequestCount] = useState(0);
+useEffect(() => {
+  authAxios.get("/clients").then((res) => {
+    const count = res.data.filter((c) => c.status === "new").length;
+    setNewClientCount(count);
+  });
+}, []);
 
 
 useEffect(() => {
@@ -63,12 +76,17 @@ useEffect(() => {
 }, []);
 
 const [consultSetupTab, setConsultSetupTab] = useState("consultation");
-// consultation | sections | items | intensities | multipliers
+const [timeSubTab, setTimeSubTab] = useState("weekly"); // weekly | manual
 
 const [consultSetupMode, setConsultSetupMode] = useState("create");
 // create | manage
 
 const [timeOffSubTab, setTimeOffSubTab] = useState("manage");
+useEffect(() => {
+  if (activeTab !== "time") {
+    setTimeSubTab("weekly");
+  }
+}, [activeTab]);
 
 
   const [staff, setStaff] = useState([]);
@@ -138,14 +156,17 @@ const deleteStaff = async (id) => {
   loadStaff();
 };
 
+
+
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-sky-100 pt-24 ">
+    <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-24 ">
       <div className="max-w-6xl text-center mx-auto bg-white rounded-none shadow-2xl border border-gray-200">
 
         {/* Header */}    <h2
   className="
     pt-4 text-7xl lg:text-8xl
-    font-extrabold  font-[Aspire] tracking-tight text-center
+    font-extrabold font-[Aspire]   tracking-tight text-center
     relative
     bg-gradient-to-br from-blue-600 via-cyan-400 to-blue-600
 text-white
@@ -153,17 +174,18 @@ text-white
     border-b-2 border-white/70
     shadow-[inset_0_2px_4px_rgba(255,255,255,0.35)]
   "
->Welcome Back, Amanda!
+>Welcome Back, {" "} Amanda!
 </h2>
 
-        <div className="mb-8 mt-6 flex items-center justify-between">
+        <div className="mb-8  flex items-center justify-between">
           <div>
 
           </div>
         </div>
 
-        {/* Tabs */}
-{/* Tabs */}
+
+
+<div className="px-2 py-2">
 <div
   className="
     grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 
@@ -261,16 +283,22 @@ text-white
   <>
     {/* Third-level tabs inside Clients > Clients */}
     <div className="flex space-x-4 border-b mb-4 mt-2">
-      <button
-        onClick={() => setClientsListMode("all")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          clientsListMode === "all"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-       All Clients
-      </button>
+<button
+  onClick={() => setClientsListMode("all")}
+  className={`relative px-3 py-2 text-sm font-semibold border-b-2 transition ${
+    clientsListMode === "all"
+      ? "border-blue-600 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  All Clients
+  {newClientCount > 0 && (
+    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+      {newClientCount}
+    </span>
+  )}
+</button>
+
 
 <button
   onClick={() => setClientsListMode("requests")}
@@ -688,6 +716,14 @@ Requests
       >
         👥 Staff
       </button>
+      <button
+        onClick={() => setInventorySubTab("purchases")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          inventorySubTab === "purchases" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        💰 Purchases
+      </button>
     </div>
 {inventorySubTab === "manage" && (
   <ManageInventory />
@@ -705,9 +741,40 @@ Requests
     {inventorySubTab === "staff" && (
   <StaffInventoryOverview />
 )}
+
+{inventorySubTab === "purchases" && (
+      <div className="mt-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+        {/* Purchase Nested Sub-Tabs */}
+        <div className="flex space-x-8 mb-6 justify-center">
+          <button
+            onClick={() => setPurchaseSubTab("create")}
+            className={`flex items-center gap-2 pb-2 text-sm font-bold uppercase tracking-wider transition ${
+              purchaseSubTab === "create" ? "text-emerald-700 border-b-2 border-emerald-700" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            🛒 Add Purchase
+          </button>
+          <button
+            onClick={() => setPurchaseSubTab("history")}
+            className={`flex items-center gap-2 pb-2 text-sm font-bold uppercase tracking-wider transition ${
+              purchaseSubTab === "history" ? "text-emerald-700 border-b-2 border-emerald-700" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            📜 Purchase History
+          </button>
+        </div>
+
+        {/* Render actual components */}
+        {purchaseSubTab === "create" && (
+          <CreatePurchase onPurchaseAdded={() => setPurchaseSubTab("history")} />
+        )}
+        {purchaseSubTab === "history" && (
+          <ManagePurchases />
+        )}
+      </div>
+    )}
   </>
 )}
-
 
     {!loading && !error && workDaySubTab === "staff" && (
       <AdminWorkDay />
@@ -874,10 +941,45 @@ Requests
 
 
 
-        {!loading && !error && activeTab === "time" && (
-  <AdminWeekly />
+{activeTab === "time" && (
+  <>
+    {/* Time Sub Tabs */}
+    <div className="flex space-x-4 border-b mb-6 mt-4">
+      <button
+        onClick={() => setTimeSubTab("weekly")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          timeSubTab === "weekly"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        📊 Weekly
+      </button>
+
+      <button
+        onClick={() => setTimeSubTab("manual")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          timeSubTab === "manual"
+            ? "border-emerald-600 text-emerald-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        ✍️ Manual
+      </button>
+    </div>
+
+    {/* Time Sub Content */}
+    {!loading && !error && timeSubTab === "weekly" && (
+      <AdminWeekly />
+    )}
+
+    {!loading && !error && timeSubTab === "manual" && (
+      <ManualTimeEntry />
+    )}
+  </>
 )}
 
+</div>
       </div>
     </div>
   );

@@ -97,7 +97,7 @@ const handleStaffQtyChange = (staffId, qty) => {
     try {
       const payload = {
     ...form,
-    total_inventory: remainingInventory,
+total_inventory: Number(form.total_inventory),
     staff_requirements: Object.entries(staffRequirements)
         .filter(([, qty]) => qty > 0)
         .map(([staff_id, required_quantity]) => ({

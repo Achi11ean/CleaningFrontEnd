@@ -3,13 +3,10 @@ import { useAdmin } from "./AdminContext";
 import { format } from "date-fns";
 
 export default function AdminShifts({ mode = "me" }) {
-  // mode: "me" | "all"
   const { authAxios } = useAdmin();
-
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [viewImageUrl, setViewImageUrl] = useState(null);
-
   const loadShifts = async () => {
     try {
       setLoading(true);
@@ -93,7 +90,6 @@ export default function AdminShifts({ mode = "me" }) {
               <th className="p-2 border text-left">Client</th>
               <th className="p-2 border text-left">Assigned Team</th>
               <th className="p-2 border text-left">Schedule</th>
-
               <th className="p-2 border text-left">Check In</th>
               <th className="p-2 border text-left">Check Out</th>
               <th className="p-2 border text-left">Duration</th>

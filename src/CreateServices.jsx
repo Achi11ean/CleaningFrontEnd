@@ -91,7 +91,7 @@ export default function CreateServices() {
   };
 
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="max-w-full py-4 px-2 space-y-6">
       <h2 className="text-2xl font-bold">➕ Create Service</h2>
 
       {message && <p className="text-green-600 font-semibold">{message}</p>}
