@@ -1,434 +1,145 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
+import ManagerClients from "./ManagerClients";
 
 export default function StaffClients() {
   const { authAxios, staff } = useStaff();
+  const canEdit = staff?.role === "manager";
 
   const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-const [searchTerm, setSearchTerm] = useState("");
 
-const [availableCleaners, setAvailableCleaners] = useState([]);
-const [selectedCleanerId, setSelectedCleanerId] = useState("");
-
-
-
-
-
-  const canEdit = staff?.role === "manager"; // 🔐 permission gate
-
-  const formatPhone = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 10);
-    const len = digits.length;
-    if (len === 0) return "";
-    if (len < 4) return `(${digits}`;
-    if (len < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const res = await authAxios.get("/staff/clients");
+      setClients(res.data || []);
+    } catch {
+      setError("Failed to load clients");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const handlePhoneChange = (e) => {
-    if (!canEdit) return;
-    const formatted = formatPhone(e.target.value);
-    setSelectedClient({ ...selectedClient, phone: formatted });
-  };
-
-const fetchClients = async () => {
-  try {
-    setLoading(true);
-    const res = await authAxios.get("/staff/clients"); // 👈 FIXED
-    setClients(res.data || []);
-  } catch (err) {
-    setError("Failed to load clients");
-  } finally {
-    setLoading(false);
-  }
-};
 
   useEffect(() => {
     fetchClients();
   }, []);
 
-  const updateClientField = (field, value) => {
-    if (!canEdit) return;
-    setSelectedClient({ ...selectedClient, [field]: value });
-  };
+  const filteredClients = clients.filter((c) => {
+    if (!canEdit && c.status === "new") return false;
 
- const saveClient = async () => {
-  if (!canEdit) {
-    alert("Only managers can edit clients.");
-    return;
-  }
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
 
-  try {
-    await authAxios.patch(`/clients/${selectedClient.id}`, {
-      first_name: selectedClient.first_name,
-      last_name: selectedClient.last_name,
-      email: selectedClient.email,
-      phone: selectedClient.phone,
-      address: selectedClient.address,
-      message: selectedClient.message,
-      general_notes: selectedClient.general_notes,
-      cleaning_notes: selectedClient.cleaning_notes,
-      status: selectedClient.status,
-    });
-
-    fetchClients();
-    alert("Client updated");
-  } catch (err) {
-    alert(
-      err.response?.data?.error || "Failed to update client"
+    return (
+      `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
+      (c.email || "").toLowerCase().includes(q)
     );
-  }
-};
-const [staffList, setStaffList] = useState([]);
-const [adminList, setAdminList] = useState([]);
+  });
 
-useEffect(() => {
-  if (!canEdit) return;
-
-  Promise.all([
-    authAxios.get("/staff/all"),
-    authAxios.get("/admin/all"),
-  ])
-    .then(([staffRes, adminRes]) => {
-      setStaffList(staffRes.data || []);
-      setAdminList(adminRes.data || []);
-    })
-    .catch((err) => {
-      console.error("❌ Failed to load cleaners:", err);
-    });
-}, [canEdit]);
-const assignCleaner = async ({ staff_id = null, admin_id = null }) => {
-  try {
-    await authAxios.post(
-      `/clients/${selectedClient.id}/assign-one`,
-      { staff_id, admin_id }
-    );
-
-    const res = await authAxios.get(
-      `/clients/${selectedClient.id}/assignments`
-    );
-
-    setSelectedClient({
-      ...selectedClient,
-      cleaners: res.data.assignments,
-    });
-  } catch (err) {
-    alert(err.response?.data?.error || "Failed to assign cleaner");
-  }
-};
-
-
-
-const filteredClients = clients.filter((c) => {
-  // 🚫 Hide NEW inquiries from non-managers
-  if (!canEdit && c.status === "new") {
-    return false;
-  }
-
-  const q = searchTerm.toLowerCase().trim();
-
-  if (!q) return true;
-
-  const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
-  const email = (c.email || "").toLowerCase();
-  const phone = (c.phone || "").toLowerCase();
-  const address = (c.address || "").toLowerCase();
-
-  return (
-    fullName.includes(q) ||
-    email.includes(q) ||
-    phone.includes(q) ||
-    address.includes(q)
-  );
-});
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <p className="p-6">Loading clients…</p>;
   if (error) return <p className="p-6 text-red-600">{error}</p>;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-   <h1 className="text-3xl font-bold mb-6">
-  Client Directory{" "}
-  <span className="text-sm font-normal text-gray-500">
-    {canEdit ? "(Manager – Editable)" : "(Staff – View Only)"}
-  </span>
-</h1>
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold">
+        Client Directory{" "}
+        <span className="text-sm font-normal text-gray-500">
+          {canEdit ? "(Manager)" : "(Staff – View Only)"}
+        </span>
+      </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* CLIENT LIST */}
-       <div className="border rounded-lg p-4 overflow-y-auto max-h-[600px]">
-  <h2 className="font-bold mb-2">Clients</h2>
+      {/* SEARCH */}
+      <input
+        type="text"
+        placeholder="Search clients…"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full max-w-md px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+      />
 
-  {/* 🔍 SEARCH BAR */}
-  <input
-    type="text"
-    placeholder="Search by name, email, phone, or address..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="w-full mb-4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-  />
+      {/* CLIENT CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredClients.map((client) => {
+          const isOpen = expandedId === client.id;
 
-  {filteredClients.length === 0 && (
-    <p className="text-sm text-gray-500 italic">
-      No clients match your search.
-    </p>
-  )}
-
-  {filteredClients.map((c) => (
-
+          return (
             <div
-              key={c.id}
-              onClick={() => setSelectedClient(c)}
-              className={`p-3 rounded cursor-pointer mb-2 border hover:bg-blue-50 ${
-                selectedClient?.id === c.id ? "bg-blue-100" : ""
-              }`}
+              key={client.id}
+              className="border rounded-xl bg-white shadow-sm hover:shadow-md transition"
             >
-              <div className="font-semibold">
-                {c.first_name} {c.last_name}
-              </div>
-{canEdit && (
-  <div className="text-sm text-gray-500">{c.email}</div>
-)}
-              <div className="text-xs text-gray-400">Status: {c.status}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* CLIENT VIEW PANEL */}
-        {selectedClient && (
-          <div className="md:col-span-2 border rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">
-              Client: {selectedClient.first_name} {selectedClient.last_name}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                disabled={!canEdit}
-                className="border p-2 rounded disabled:bg-gray-100"
-                value={selectedClient.first_name}
-                onChange={(e) => updateClientField("first_name", e.target.value)}
-                placeholder="First Name"
-              />
-
-              <input
-                disabled={!canEdit}
-                className="border p-2 rounded disabled:bg-gray-100"
-                value={selectedClient.last_name}
-                onChange={(e) => updateClientField("last_name", e.target.value)}
-                placeholder="Last Name"
-              />
-
- {canEdit && (
-  <>
-    <input
-      className="border p-2 rounded"
-      value={selectedClient.email}
-      onChange={(e) => updateClientField("email", e.target.value)}
-      placeholder="Email"
-    />
-
-    <input
-      className="border p-2 rounded"
-      value={selectedClient.phone || ""}
-      onChange={handlePhoneChange}
-      placeholder="(123) 456-7890"
-      maxLength={14}
-      inputMode="numeric"
-    />
-  </>
-)}
-
-
- 
-
-              <input
-                disabled={!canEdit}
-                className="border p-2 rounded md:col-span-2 disabled:bg-gray-100"
-                value={selectedClient.address || ""}
-                onChange={(e) => updateClientField("address", e.target.value)}
-                placeholder="Address"
-              />
-
-              <select
-                disabled={!canEdit}
-                className="border p-2 rounded disabled:bg-gray-100"
-                value={selectedClient.status}
-                onChange={(e) => updateClientField("status", e.target.value)}
-              >
-                <option value="new">New</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="paused">Paused</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-
-            <div className="mt-4">
-              <label className="block font-semibold mb-1">Inquiry Message</label>
-              <textarea
-                disabled={!canEdit}
-                className="border p-2 rounded w-full disabled:bg-gray-100"
-                rows={4}
-                value={selectedClient.message}
-                onChange={(e) => updateClientField("message", e.target.value)}
-              />
-            </div>
-
-            {/* NOTES */}
-            <div className="mt-6 grid grid-cols-1 gap-4">
-              <div>
-                <label className="block font-semibold mb-1">
-                  📝 General Notes
-                </label>
-                <textarea
-                  disabled={!canEdit}
-                  className="border p-2 rounded w-full disabled:bg-gray-100"
-                  rows={3}
-                  value={selectedClient.general_notes || ""}
-                  onChange={(e) =>
-                    updateClientField("general_notes", e.target.value)
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">
-                  🧹 Cleaning Notes
-                </label>
-                <textarea
-                  disabled={!canEdit}
-                  className="border p-2 rounded w-full disabled:bg-gray-100"
-                  rows={3}
-                  value={selectedClient.cleaning_notes || ""}
-                  onChange={(e) =>
-                    updateClientField("cleaning_notes", e.target.value)
-                  }
-                />
-              </div>
-              {/* ASSIGNED CLEANERS */}
-<div className="mt-6">
-  <h3 className="font-bold mb-2">Assigned Cleaners</h3>
-
-  {/* 🧹 Current Assignments */}
-  {selectedClient.cleaners && selectedClient.cleaners.length > 0 ? (
-    selectedClient.cleaners.map((a) => (
-      <div
-        key={a.assignment_id}
-        className="border p-2 rounded mb-2 flex justify-between items-center bg-gray-50"
-      >
-        <div>
-          <span className="font-semibold">
-            {a.type === "staff" ? "Staff" : "Admin"}:
-          </span>{" "}
-          {a.username}
-          {a.role && (
-            <span className="ml-2 text-xs text-gray-500">
-              ({a.role})
-            </span>
-          )}
-        </div>
-
-        {/* ❌ Unassign (manager only) */}
-        {canEdit && (
-          <button
-            onClick={async () => {
-              if (!window.confirm(`Unassign ${a.username}?`)) return;
-
-              try {
-       await authAxios.delete(
-  `/clients/${selectedClient.id}/assignments/${a.assignment_id}`
-);
-
-                fetchClients(); // 🔄 refresh list
-                setSelectedClient(null); // force reselect to refresh panel
-              } catch (err) {
-                alert("Failed to unassign cleaner.");
-              }
-            }}
-            className="text-red-600 hover:text-red-800 font-bold"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-    ))
-  ) : (
-    <p className="text-sm text-gray-500 italic">
-      No cleaners assigned to this client.
-    </p>
-  )}
-
-  {/* ➕ Assign New Cleaner (manager only) */}
- {canEdit && (
-  <div className="mt-4 border-t pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label className="font-semibold">Assign Staff</label>
-      <select
-        className="border p-2 rounded w-full"
-        defaultValue=""
-        onChange={(e) =>
-          assignCleaner({ staff_id: Number(e.target.value) })
-        }
-      >
-        <option value="">Select staff...</option>
-        {staffList
-          .filter((s) => s.is_active)
-          .map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.username} ({s.role})
-            </option>
-          ))}
-      </select>
-    </div>
-
-    <div>
-      <label className="font-semibold">Assign Admin</label>
-      <select
-        className="border p-2 rounded w-full"
-        defaultValue=""
-        onChange={(e) =>
-          assignCleaner({ admin_id: Number(e.target.value) })
-        }
-      >
-        <option value="">Select admin...</option>
-        {adminList
-          .filter((a) => a.is_active)
-          .map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.username}
-            </option>
-          ))}
-      </select>
-    </div>
-  </div>
-)}
-
-</div>
-
-
-            </div>
-
-            {/* SAVE ONLY FOR MANAGERS */}
-            {canEdit && (
+              {/* CARD HEADER */}
               <button
-                onClick={saveClient}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={() =>
+                  setExpandedId(isOpen ? null : client.id)
+                }
+                className="w-full text-left p-4 flex justify-between items-center"
               >
-                Save Changes
-              </button>
-            )}
+                <div>
+                  <p className="font-semibold text-lg">
+                    {client.first_name} {client.last_name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {client.email || "No email"}
+                  </p>
+                </div>
 
-            {!canEdit && (
-              <p className="mt-4 text-sm text-gray-500 italic">
-                View-only mode. Contact a manager to make changes.
-              </p>
-            )}
-          </div>
-        )}
+                <span
+                  className={`text-xs font-bold px-2 py-1 rounded ${
+                    client.status === "active"
+                      ? "bg-green-100 text-green-700"
+                      : client.status === "paused"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : client.status === "inactive"
+                      ? "bg-gray-200 text-gray-600"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {client.status}
+                </span>
+              </button>
+
+              {/* EXPANDED CONTENT */}
+              {isOpen && (
+                <div className="border-t p-4 bg-gray-50 space-y-4">
+                  {canEdit ? (
+                    <ManagerClients
+                      client={client}
+                      onClientUpdated={() => {
+                        fetchClients();
+                        setExpandedId(null);
+                      }}
+                    />
+                  ) : (
+                    <div className="space-y-2 text-sm">
+                      <p>
+                        <strong>Address:</strong>{" "}
+                        {client.address || "—"}
+                      </p>
+                      <p>
+                        <strong>Notes:</strong>{" "}
+                        {client.general_notes || "—"}
+                      </p>
+                      <p className="italic text-gray-500">
+                        View-only. Contact a manager to make changes.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
+
+      {filteredClients.length === 0 && (
+        <p className="text-gray-500 italic">
+          No clients match your search.
+        </p>
+      )}
     </div>
   );
 }

@@ -19,6 +19,27 @@ const getCleanerName = (c) => {
   }
   return c.username;
 };
+const [search, setSearch] = useState("");
+const normalizedSearch = search.trim().toLowerCase();
+
+const dayMatches = (schedule) => {
+  if (schedule.day_of_week == null) return false;
+  const dayName = DAY_NAMES[schedule.day_of_week]?.toLowerCase();
+  return dayName?.includes(normalizedSearch);
+};
+
+const clientMatches = (schedule) => {
+  const name = `${schedule.client?.first_name || ""} ${schedule.client?.last_name || ""}`
+    .toLowerCase();
+  return name.includes(normalizedSearch);
+};
+
+const cleanerMatches = (schedule) => {
+  return schedule.client?.cleaners?.some((c) => {
+    const name = getCleanerName(c).toLowerCase();
+    return name.includes(normalizedSearch);
+  });
+};
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -110,9 +131,32 @@ const getCleanerName = (c) => {
           No schedules created yet.
         </p>
       )}
+<input
+  type="text"
+  placeholder="Search by client, cleaner, or day (e.g. Monday)…"
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="
+    w-full max-w-md
+    px-4 py-2
+    border rounded-lg
+    focus:ring-2 focus:ring-blue-500
+    focus:outline-none
+  "
+/>
 
 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-  {schedules.map((s) => (
+{schedules
+  .filter((s) => {
+    if (!normalizedSearch) return true;
+
+    return (
+      clientMatches(s) ||
+      cleanerMatches(s) ||
+      dayMatches(s)
+    );
+  })
+  .map((s) => (
     <div
       key={s.id}
       className="rounded-2xl border bg-white shadow-sm p-4 space-y-3 hover:shadow-md transition"

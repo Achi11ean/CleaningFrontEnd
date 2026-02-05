@@ -242,7 +242,6 @@ export default function PrintConsultation({
     {section.section_name}
   </Text>
   {" — "}
-  {section.total_points} pts
 </Text>
 
 
@@ -258,12 +257,11 @@ export default function PrintConsultation({
     {/* Title + points */}
     <View style={styles.entryTitleRow}>
       <Text>{e.item_title}</Text>
-      <Text>{e.calculated_points} pts</Text>
     </View>
 
     {/* Base + intensity */}
     <Text style={styles.entryMeta}>
-      Base: {e.base_points} • Intensity: {e.intensity_label}
+     • Intensity: {e.intensity_label}
     </Text>
 
     {/* Item notes BOX */}
@@ -308,15 +306,7 @@ export default function PrintConsultation({
         <View style={styles.pricingBox}>
           <Text style={styles.sectionTitle}>Pricing Breakdown</Text>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Total points</Text>
-            <Text>{pricing.totalPoints}</Text>
-          </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Price per point</Text>
-            <Text>${pricing.pricePerPoint.toFixed(2)}</Text>
-          </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Base estimate</Text>

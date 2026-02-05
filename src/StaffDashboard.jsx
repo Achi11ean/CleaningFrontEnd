@@ -26,9 +26,11 @@ import Availability from "./Availability";
 import ManageReviews from "./ManageReviews";
 import ManageAvailability from "./ManageAvailability";
 import ManagerAllStaffProfiles from "./ManagerAllStaffProfiles";
+import CreateGallery from "./CreateGallery";
+import ManageGallery from "./ManageGallery";
 import MyShifts from "./MyShifts";
 export default function StaffDashboard() {
-  const { staff, logout } = useStaff();
+const { staff, authAxios } = useStaff();
 const [timeOffSubTab, setTimeOffSubTab] = useState("create");
 // "create" | "manage"
 const [clockSubTab, setClockSubTab] = useState("timeclock");
@@ -39,8 +41,47 @@ const [clientsListMode, setClientsListMode] = useState("all");
 // "all" | "requests"
 const [servicesSubTab, setServicesSubTab] = useState("create");
 // "create" | "manage"
+const [newRequestCount, setNewRequestCount] = useState(0);
+const [pendingTimeOffCount, setPendingTimeOffCount] = useState(0);
+const [pendingReviewCount, setPendingReviewCount] = useState(0);
+const [inventoryShortageAlert, setInventoryShortageAlert] = useState(false);
 
+useEffect(() => {
+  if (staff?.role !== "manager") return;
 
+  authAxios.get("/client-requests")
+    .then(res => {
+      const count = res.data.filter(r => r.status === "new").length;
+      setNewRequestCount(count);
+    })
+    .catch(console.error);
+}, [staff]);
+useEffect(() => {
+  if (staff?.role !== "manager") return;
+
+  authAxios.get("/time-off/all?status=pending")
+    .then(res => setPendingTimeOffCount(res.data.length))
+    .catch(console.error);
+}, [staff]);
+useEffect(() => {
+  if (staff?.role !== "manager") return;
+
+  authAxios.get("/admin/reviews?status=pending")
+    .then(res => setPendingReviewCount(res.data.length))
+    .catch(console.error);
+}, [staff]);
+useEffect(() => {
+  if (staff?.role !== "manager") return;
+
+  authAxios.get("/inventory/staff")
+    .then(res => {
+      const hasShortage = res.data.some(staff =>
+        staff.items.some(i => i.quantity < i.required_quantity)
+      );
+      setInventoryShortageAlert(hasShortage);
+    })
+    .catch(console.error);
+}, [staff]);
 
 
   const [activeTab, setActiveTab] = useState("clock");
@@ -53,15 +94,24 @@ useEffect(() => {
   }
 }, [clientSubTab]);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 text-center via-white to-sky-100 pt-24 ">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-none border border-gray-200 p-2">
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-600 via-black to-slate-700  text-center  pt-20">
+      <div className="max-w-6xl mx-auto bg-white pb-4 rounded-none shadow-none border border-gray-200 ">
+      <h2
+          className="
+    pt-4 text-7xl lg:text-8xl
+    font-extrabold font-[Aspire]   tracking-tight text-center
+    relative
+    bg-gradient-to-br from-blue-600 via-cyan-400 to-blue-600
+text-white
+    drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]
+    border-b-2 border-white/70
+    shadow-[inset_0_2px_4px_rgba(255,255,255,0.35)]
+  "
+        >              Staff Dashboard
+            </h2>
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Staff Dashboard
-            </h1>
+        <div className="mb-8 flex  items-center justify-between">
+  
             <p className="text-gray-500 text-sm mt-1">
               Logged in as{" "}
               <span className="font-semibold">
@@ -74,126 +124,110 @@ useEffect(() => {
           </div>
 
 
-        </div>
 
         {/* Main Tabs */}
 <div
   className="
-    grid grid-cols-3 gap-2
-    md:flex md:gap-3
-    border-b mb-6
+    grid grid-cols-3 gap-3
+    border-b border-gray-200 pb-4 mb-8
   "
 >
-          <button
-            onClick={() => setActiveTab("clock")}
-            className={`px-4 py-2 font-semibold border-b-2 transition ${
-              activeTab === "clock"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Time
-          </button>
-<button
-  onClick={() => setActiveTab("workday")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "workday"
-      ? "border-blue-600 text-blue-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  Work
-</button>
+  {[
+    { key: "clock", label: "Time", color: "cyan" },
+    { key: "workday", label: "Work", color: "cyan" },
 
-          <button
-            onClick={() => {
-              setActiveTab("clients");
-              setClientSubTab("list"); // default sub-tab
-            }}
-            className={`px-4 py-2 font-semibold border-b-2 transition ${
-              activeTab === "clients"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Clients
-          </button>
-          <button
-  onClick={() => setActiveTab("myshifts")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "myshifts"
-      ? "border-purple-600 text-purple-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-   Shifts
-</button>
-<button
-  onClick={() => setActiveTab("inventory")}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "inventory"
-      ? "border-emerald-600 text-emerald-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-   Inventory
-</button>
+    {
+      key: "clients",
+      color: "cyan",
+      label: (
+        <span className="relative">
+          Clients
+          {newRequestCount > 0 && (
+            <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+              {newRequestCount}
+            </span>
+          )}
+        </span>
+      ),
+    },
 
-<button
-  onClick={() => {
-    setActiveTab("timeoff");
-    setTimeOffSubTab("create");
-  }}
-  className={`px-4 py-2 font-semibold border-b-2 transition ${
-    activeTab === "timeoff"
-      ? "border-rose-600 text-rose-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-   Off
-</button>
+    { key: "myshifts", label: "Shifts", color: "emerald" },
 
+    {
+      key: "inventory",
+      color: "emerald",
+      label: (
+        <span className="relative">
+          Inventory
+          {inventoryShortageAlert && (
+            <span className="absolute -top-2 -right-4 bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+              !
+            </span>
+          )}
+        </span>
+      ),
+    },
 
+    {
+      key: "timeoff",
+      color: "emerald",
+      label: (
+        <span className="relative">
+          Off
+          {pendingTimeOffCount > 0 && (
+            <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+              {pendingTimeOffCount}
+            </span>
+          )}
+        </span>
+      ),
+    },
 
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`px-4 py-2 font-semibold border-b-2 transition ${
-              activeTab === "profile"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Profile
-          </button>
-          {staff?.role === "manager" && (
-  <button
-    onClick={() => {
-      setActiveTab("services");
-      setServicesSubTab("create");
-    }}
-    className={`px-4 py-2 font-semibold border-b-2 transition ${
-      activeTab === "services"
-        ? "border-blue-600 text-blue-600"
-        : "border-transparent text-gray-500 hover:text-gray-700"
-    }`}
-  >
-    🧰 Services
-  </button>
-)}
-{staff?.role === "manager" && (
-  <button
-    onClick={() => setActiveTab("reviews")}
-    className={`px-4 py-2 font-semibold border-b-2 transition ${
-      activeTab === "reviews"
-        ? "border-blue-600 text-blue-600"
-        : "border-transparent text-gray-500 hover:text-gray-700"
-    }`}
-  >
-    ⭐ Reviews
-  </button>
-)}
+    { key: "profile", label: "Profile", color: "cyan" },
 
-        </div>
+    ...(staff?.role === "manager"
+      ? [
+          { key: "services", label: "Services", color: "cyan" },
+          {
+            key: "reviews",
+            color: "cyan",
+            label: (
+              <span className="relative">
+                Reviews
+                {pendingReviewCount > 0 && (
+                  <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+                    {pendingReviewCount}
+                  </span>
+                )}
+              </span>
+            ),
+          },
+        ]
+      : []),
+  ].map(({ key, label, color }) => (
+    <button
+      key={key}
+      onClick={() => {
+        setActiveTab(key);
+        if (key === "clients") setClientSubTab("list");
+        if (key === "timeoff") setTimeOffSubTab("create");
+        if (key === "services") setServicesSubTab("create");
+      }}
+      className={`
+        w-full px-4 py-2 text-sm sm:text-base font-semibold rounded-xl
+        text-center transition-all duration-200
+        ${
+          activeTab === key
+            ? `bg-gradient-to-br from-${color}-400 via-${color}-500 to-${color}-600 text-white shadow-md`
+            : "bg-gradient-to-br from-slate-800 via-slate-800 to-black text-white hover:brightness-110"
+        }
+      `}
+    >
+      {label}
+    </button>
+  ))}
+</div>
+
 
         {/* CLIENT SUB-TABS */}
   {activeTab === "clients" && (
@@ -273,35 +307,61 @@ useEffect(() => {
 )}
 {activeTab === "services" && staff?.role === "manager" && (
   <>
-    <div className="flex space-x-4 border-b mb-6 ml-2">
+    <div className="flex flex-wrap gap-3 border-b mb-6 ml-2">
       <button
         onClick={() => setServicesSubTab("create")}
-        className={`px-3 py-2 font-semibold border-b-2 transition ${
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
           servicesSubTab === "create"
             ? "border-blue-600 text-blue-600"
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        ➕ Create
+        ➕ Create Service
       </button>
 
       <button
         onClick={() => setServicesSubTab("manage")}
-        className={`px-3 py-2 font-semibold border-b-2 transition ${
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
           servicesSubTab === "manage"
             ? "border-blue-600 text-blue-600"
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🛠️ Manage
+        🛠️ Manage Services
+      </button>
+
+      <button
+        onClick={() => setServicesSubTab("gallery-create")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          servicesSubTab === "gallery-create"
+            ? "border-cyan-600 text-cyan-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🖼️ Gallery +
+      </button>
+
+      <button
+        onClick={() => setServicesSubTab("gallery-manage")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          servicesSubTab === "gallery-manage"
+            ? "border-cyan-600 text-cyan-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🗂️ Manage Gallery
       </button>
     </div>
 
-    {/* Content */}
+    {/* Services Content */}
     {servicesSubTab === "create" && <CreateServices />}
     {servicesSubTab === "manage" && <ManageServices />}
+
+    {servicesSubTab === "gallery-create" && <CreateGallery />}
+    {servicesSubTab === "gallery-manage" && <ManageGallery />}
   </>
 )}
+
 {activeTab === "myshifts" && <MyShifts mode="staff" />}
 
 {activeTab === "workday" && <StaffWorkDayCalendar />}
@@ -426,7 +486,7 @@ useEffect(() => {
 )}
 
 {activeTab === "timeoff" && (
-  <div className="flex space-x-4 border-b mb-6 ml-2">
+  <div className="flex space-x-2 border-b mb-6 ml-2">
     <button
       onClick={() => setTimeOffSubTab("create")}
       className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
@@ -435,7 +495,7 @@ useEffect(() => {
           : "border-transparent text-gray-500 hover:text-gray-700"
       }`}
     >
-      ➕ Request Time Off
+      ➕ Request 
     </button>
 
     <button
@@ -446,7 +506,7 @@ useEffect(() => {
           : "border-transparent text-gray-500 hover:text-gray-700"
       }`}
     >
-      📄 My Requests
+      📄 Requests
     </button>
 
     {staff?.role === "manager" && (

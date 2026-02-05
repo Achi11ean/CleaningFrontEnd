@@ -36,6 +36,8 @@ import ManageInventory from "./ManageInventory";
 import ControlStaffInventory from "./ControlStaffInventory";
 import StaffInventoryOverview from "./StaffInventoryOverview";
 import ManagerRequests from "./Requests";
+import CreateGallery from "./CreateGallery";
+import ManageGallery from "./ManageGallery";
 import axios from "axios";
 import "./App.css";
 import CreatePurchase from "./CreatePurchase";
@@ -652,38 +654,72 @@ text-white
           {activeTab === "services" && (
             <>
               {/* Services Sub Tabs */}
-              <div className="flex space-x-4 border-b mb-6 mt-4">
-                <button
-                  onClick={() => setServicesSubTab("create")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    servicesSubTab === "create"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  ➕ Create
-                </button>
+     {/* Services Sub Tabs */}
+<div className="flex flex-wrap gap-4 border-b mb-6 mt-4">
+  <button
+    onClick={() => setServicesSubTab("create")}
+    className={`px-3 py-2 font-semibold border-b-2 transition ${
+      servicesSubTab === "create"
+        ? "border-blue-600 text-blue-600"
+        : "border-transparent text-gray-500 hover:text-gray-700"
+    }`}
+  >
+    ➕ Create Service
+  </button>
 
-                <button
-                  onClick={() => setServicesSubTab("manage")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    servicesSubTab === "manage"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  🛠️ Manage
-                </button>
-              </div>
+  <button
+    onClick={() => setServicesSubTab("manage")}
+    className={`px-3 py-2 font-semibold border-b-2 transition ${
+      servicesSubTab === "manage"
+        ? "border-blue-600 text-blue-600"
+        : "border-transparent text-gray-500 hover:text-gray-700"
+    }`}
+  >
+    🛠️ Manage Services
+  </button>
+
+  <button
+    onClick={() => setServicesSubTab("gallery")}
+    className={`px-3 py-2 font-semibold border-b-2 transition ${
+      servicesSubTab === "gallery"
+        ? "border-purple-600 text-purple-600"
+        : "border-transparent text-gray-500 hover:text-gray-700"
+    }`}
+  >
+    🖼️ Gallery +
+  </button>
+
+  <button
+    onClick={() => setServicesSubTab("manage-gallery")}
+    className={`px-3 py-2 font-semibold border-b-2 transition ${
+      servicesSubTab === "manage-gallery"
+        ? "border-purple-600 text-purple-600"
+        : "border-transparent text-gray-500 hover:text-gray-700"
+    }`}
+  >
+    🗂️ Manage Gallery
+  </button>
+</div>
+
 
               {/* Services Sub Content */}
-              {!loading && !error && servicesSubTab === "create" && (
-                <CreateServices />
-              )}
+         {/* Services Sub Content */}
+{!loading && !error && servicesSubTab === "create" && (
+  <CreateServices />
+)}
 
-              {!loading && !error && servicesSubTab === "manage" && (
-                <ManageServices />
-              )}
+{!loading && !error && servicesSubTab === "manage" && (
+  <ManageServices />
+)}
+
+{!loading && !error && servicesSubTab === "gallery" && (
+  <CreateGallery />
+)}
+
+{!loading && !error && servicesSubTab === "manage-gallery" && (
+  <ManageGallery />
+)}
+
             </>
           )}
 

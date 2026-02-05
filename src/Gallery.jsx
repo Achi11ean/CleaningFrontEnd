@@ -1,85 +1,187 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Gallery = () => {
+  const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Static gallery images
-  const photos = [
-    { id: 1, image_url: "/slider1.jpeg", caption: "Fresh Start", category: "Residential" },
-    { id: 2, image_url: "/slider2.jpeg", caption: "Sparkling Kitchen", category: "Kitchen" },
-    { id: 3, image_url: "/slider3.jpeg", caption: "Relaxed Living", category: "Living Room" },
-    { id: 4, image_url: "/slider4.jpeg", caption: "Fresh Bathroom", category: "Bathroom" },
-    { id: 5, image_url: "/slider5.jpeg", caption: "Kitchen", category: "Floors" },
-    { id: 6, image_url: "/slider6.jpeg", caption: "Office Care", category: "Commercial" },
-    { id: 7, image_url: "/slider7.jpeg", caption: "Faucets", category: "Stainless Steel" },
-    { id: 8, image_url: "/slider8.jpeg", caption: "Showers", category: "Green Clean" },
-  ];
+  useEffect(() => {
+    axios
+      .get("https://cleaningback.onrender.com/gallery/public")
+      .then((res) => {
+        setPhotos(res.data || []);
+      })
+      .catch((err) => {
+        console.error("Failed to load gallery", err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  return (
-    <div className="relative min-h-screen bg-gradient-to-b from-slate-900 via-blue-950 to-black overflow-hidden text-gray-100">
-      {/* Title */}
-      <div className="relative z-10 py-12 mt-12  text-center">
-        <h1 className="text-4xl border-b-4 border-yellow-400 pb-4 sm:text-5xl md:text-6xl font-extrabold drop-shadow-lg text-blue-400 animate-fade-in">
-          ✨ Photo Gallery ✨
-        </h1>
-        <p className="mt-4 text-gray-300 max-w-2xl mx-auto text-lg">
-          A showcase of our residential, commercial, and eco-friendly cleaning services.
-        </p>
+ return (
+  <div className="relative min-h-screen bg-gradient-to-b from-[#0b0f14] via-[#0f172a] to-black text-gray-100 overflow-hidden">
+
+    {/* Decorative glow */}
+    <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-cyan-500/10 blur-[160px]" />
+    </div>
+
+    {/* HERO */}
+    <section className="relative pt-32 pb-20 px-6 text-center">
+      <span className="uppercase tracking-[0.35em] text-xs text-cyan-300/70">
+        Portfolio
+      </span>
+
+      <h1 className="
+        mt-6 text-4xl sm:text-5xl md:text-6xl xl:text-7xl
+        font-extrabold tracking-tight
+        bg-gradient-to-br from-white via-slate-200 to-cyan-300
+        text-transparent bg-clip-text
+      ">
+        Our Cleaning Gallery
+      </h1>
+
+      <p className="mt-8 max-w-3xl mx-auto text-lg md:text-xl text-gray-300 leading-relaxed">
+        A curated collection of real spaces we’ve transformed —  
+        crafted with precision, care, and uncompromising attention to detail.
+      </p>
+
+      <div className="mt-10 flex justify-center">
+        <div className="h-px w-40 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
       </div>
+    </section>
 
-      {/* Gallery Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-6 pb-16">
+    {/* STATES */}
+    {loading && (
+      <div className="text-center text-gray-400 py-24 text-lg tracking-wide">
+        Loading gallery…
+      </div>
+    )}
+
+    {!loading && photos.length === 0 && (
+      <div className="text-center text-gray-400 py-24 text-lg tracking-wide">
+        No gallery images yet.
+      </div>
+    )}
+
+    {/* GALLERY */}
+    <section className="relative max-w-[90rem] mx-auto px-6 pb-32">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
         {photos.map((photo) => (
-          <div
+          <article
             key={photo.id}
-            className="relative group rounded border-2 overflow-hidden shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-blue-500/30 cursor-pointer"
             onClick={() => setSelectedPhoto(photo)}
+            className="
+              group cursor-pointer
+              relative overflow-hidden
+              rounded-[28px]
+              bg-white/5
+              border border-white/10
+              shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+              transition-all duration-500
+              hover:-translate-y-1 hover:shadow-cyan-400/20
+            "
           >
+            {/* Image */}
             <img
               src={photo.image_url}
-              alt={photo.caption}
-              className="w-full h-56 object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+              alt={photo.title}
+              loading="lazy"
+              className="
+                w-full h-[18rem] object-cover
+                transition-transform duration-[900ms] ease-out
+                group-hover:scale-[1.05]
+              "
             />
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-500 flex items-end justify-start p-4">
-              <div>
-                <p className="text-lg font-bold text-white">{photo.caption}</p>
-                <p className="text-sm text-blue-300">{photo.category}</p>
+            {/* Fade overlay */}
+            <div className="
+              absolute inset-0
+              bg-gradient-to-t from-black/90 via-black/30 to-transparent
+              opacity-0 group-hover:opacity-100
+              transition-opacity duration-500
+              flex items-end
+            ">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold tracking-tight text-white">
+                  {photo.title}
+                </h3>
+
+                {photo.description && (
+                  <p className="mt-2 text-sm text-gray-300 leading-snug line-clamp-2">
+                    {photo.description}
+                  </p>
+                )}
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
+    </section>
 
-      {/* Modal */}
-      {selectedPhoto && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 px-4">
-          <div className="relative max-w-4xl w-full bg-gradient-to-b from-slate-800 to-black rounded-lg shadow-2xl p-6">
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedPhoto(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold"
-            >
-              ×
-            </button>
+    {/* MODAL */}
+    {selectedPhoto && (
+      <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center px-6">
+        <div className="
+          relative w-full max-w-6xl
+          rounded-[32px]
+          bg-gradient-to-b from-[#0f172a] to-black
+          border border-white/10
+          shadow-[0_40px_120px_rgba(0,0,0,0.85)]
+          overflow-hidden
+        ">
+          {/* Close */}
+          <button
+            onClick={() => setSelectedPhoto(null)}
+            className="
+              absolute top-2 bg-red-700 rounded-full right-6 z-10
+              text-white/60 hover:text-white
+              text-4xl font-light
+              transition px-1
+            "
+          >
+            ×
+          </button>
 
-            <div className="flex flex-col items-center">
+          <div className="flex flex-col lg:flex-row">
+            {/* Image */}
+            <div className="lg:w-2/3 bg-black flex items-center justify-center">
               <img
                 src={selectedPhoto.image_url}
-                alt={selectedPhoto.caption}
-                className="w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+                alt={selectedPhoto.title}
+                className="max-h-[85vh] w-full object-contain"
               />
-              <div className="mt-4 text-center">
-                <h2 className="text-2xl font-bold text-blue-400">{selectedPhoto.caption}</h2>
+            </div>
 
-              </div>
+            {/* Details */}
+            <div className="lg:w-1/3 p-10 flex flex-col justify-center">
+              <span className="uppercase text-xs tracking-widest text-cyan-300/70">
+                Gallery Entry
+              </span>
+
+              <h2 className="mt-4 text-3xl xl:text-4xl font-extrabold tracking-tight text-white">
+                {selectedPhoto.title}
+              </h2>
+
+              <div className="mt-6 h-px w-16 bg-gradient-to-r from-cyan-400/60 to-transparent" />
+
+              {selectedPhoto.description && (
+                <p className="mt-6 text-gray-300 text-base leading-relaxed">
+                  {selectedPhoto.description}
+                </p>
+              )}
+
+              <p className="mt-10 text-xs tracking-wider uppercase text-gray-500">
+                Added {new Date(selectedPhoto.created_at).toLocaleDateString()}
+              </p>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default Gallery;
