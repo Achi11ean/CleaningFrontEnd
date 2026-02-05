@@ -5,6 +5,7 @@ import ClientViewConsults from "./ClientViewConsults";
 import ClientRequestForm from "./ClientRequestForm";
 import ClientShifts from "./ClientShifts";
 import CreateReview from "./CreateReview";
+import ClientCompletedChecklists from "./ClientCompletedChecklists";
 
 export default function ClientCleaning() {
   const [lastName, setLastName] = useState("");
@@ -12,8 +13,11 @@ export default function ClientCleaning() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
 const [showConsults, setShowConsults] = useState(false);
 const [showReviewModal, setShowReviewModal] = useState(false);
+const [assignments, setAssignments] = useState([]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,10 +27,19 @@ const [showReviewModal, setShowReviewModal] = useState(false);
 
     try {
       const res = await axios.post("https://cleaningback.onrender.com/cleaning", {
-        last_name: lastName,
-        last4: last4,
-      });
-      setResult(res.data);
+  last_name: lastName,
+  last4: last4,
+});
+setResult(res.data);
+
+// Fetch assignments
+const assignmentRes = await axios.get(
+  `https://cleaningback.onrender.com/public/clients/${res.data.client.id}/assignments`
+);
+setAssignments(assignmentRes.data.assignments);
+
+
+      
     } catch (err) {
       setError(
         err.response?.data?.error || "Something went wrong. Please try again."
@@ -111,6 +124,51 @@ const [showReviewModal, setShowReviewModal] = useState(false);
           <h2 className="text-2xl font-bold text-emerald-800">
             Hello, {result.client.first_name}! 👋
           </h2>
+{assignments.length > 0 && (
+ <section>
+  <h3 className="text-xl font-semibold mb-4">🧹 Assigned Cleaners</h3>
+
+  {assignments.filter((a) => a.type === "staff").length > 0 ? (
+    <ul className="space-y-4">
+      {assignments
+        .filter((a) => a.type === "staff")
+        .map((a) => (
+          <li
+            key={a.assignment_id}
+            className="bg-white border border-gray-200 rounded-xl shadow p-4 text-sm flex items-center gap-4"
+          >
+            {/* {a.profile?.photo_url && (
+              <img
+                src={a.profile.photo_url}
+                alt={`${a.username}'s profile`}
+                className="w-12 h-12 rounded-full object-cover border border-gray-300"
+              />
+            )} */}
+
+            <div className="space-y-1">
+             <div>
+  <strong>Name:</strong>{" "}
+  <span className="font-medium">
+    {a.profile?.first_name && a.profile?.last_name
+      ? `${a.profile.first_name} ${a.profile.last_name.charAt(0)}.`
+      : a.username}
+  </span>
+</div>
+
+              <div>
+                <strong>Role:</strong> {a.role}
+              </div>
+           
+            </div>
+          </li>
+        ))}
+    </ul>
+  ) : (
+    <p className="text-gray-600 italic">No cleaners have been assigned yet.</p>
+  )}
+</section>
+
+)}
 
           {/* Consultation */}
           <section>
@@ -200,10 +258,18 @@ const [showReviewModal, setShowReviewModal] = useState(false);
           )}
 
           {/* Shifts */}
-          <section>
-            <h3 className="text-xl font-semibold mb-4">🧾 Recent Shifts</h3>
-            <ClientShifts shifts={result.shifts} />
-          </section>
+        {/* Shifts */}
+<section>
+  <h3 className="text-xl font-semibold mb-4">🧾 Recent Shifts</h3>
+  <ClientShifts shifts={result.shifts} />
+</section>
+
+{/* Completed Checklists */}
+<section>
+  <h3 className="text-xl font-semibold mt-12 mb-4">✅ Completed Checklists</h3>
+  <ClientCompletedChecklists checklists={result.completed_checklists} />
+</section>
+
 
           {/* Requests */}
           <ClientRequestForm clientId={result.client.id} />

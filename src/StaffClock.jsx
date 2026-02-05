@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
 
-export default function StaffClock() {
+export default function StaffClock({ onRequestInventory }) {
   const { authAxios } = useStaff();
 
   const [loading, setLoading] = useState(true);
@@ -65,16 +65,22 @@ export default function StaffClock() {
     try {
       setError(null);
       const res = await authAxios.post("/staff/clock-out");
+
+      const duration = (res.data.duration_seconds / 3600).toFixed(2);
+      const goToInventory = window.confirm(
+        `Clocked out.\nSession: ${duration} hours\n\nDo you need to report items used?`
+      );
+
       setClockedIn(false);
       setEntry(null);
-      alert(
-        `Clocked out.\nSession: ${(res.data.duration_seconds / 3600).toFixed(2)} hours`
-      );
+
+      if (goToInventory && typeof onRequestInventory === "function") {
+        onRequestInventory();
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to clock out");
     }
   };
-
   // 🧮 Current session duration
   let currentSeconds = 0;
   if (clockedIn && entry?.clock_in_at) {

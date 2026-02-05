@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
+import ConsultationChecklist from "./ConsultationChecklist";
 
 export default function ActiveShiftPanel() {
   const { authAxios } = useStaff();
@@ -231,6 +232,11 @@ const UPLOAD_PRESET = "karaoke";
           {new Date(shift.check_in_at).toLocaleString()}
         </p>
       </div>
+ {client?.id && (
+  <div className="mt-6">
+    <ConsultationChecklist clientId={client.id} label="Shift Checklist" />
+  </div>
+)}
 
       {/* Photo URL */}
        {/* PHOTO UPLOAD / CAMERA */}

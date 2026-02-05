@@ -262,7 +262,9 @@ const [profileSubTab, setProfileSubTab] = useState("me");
         {/* Content */}
 {activeTab === "clock" && (
   <>
-    {clockSubTab === "timeclock" && <StaffClock />}
+{clockSubTab === "timeclock" && (
+  <StaffClock onRequestInventory={() => setActiveTab("inventory")} />
+)}
 
     {clockSubTab === "staff" && (
       <div className="mt-4">

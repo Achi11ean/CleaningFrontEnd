@@ -14,7 +14,6 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useAdmin } from "./AdminContext";
 import AdminStartShift from "./AdminStartShift";
 import AdminActiveShiftPanel from "./AdminActiveShiftPanel";
-
 import enUS from "date-fns/locale/en-US";
 
 const locales = {
@@ -521,6 +520,7 @@ const res = await authAxios.get("/time-off/all");
           </div>
         </div>
       )}
+
       {!loading && <AdminActiveShiftPanel />}
 {selectedTimeOff && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

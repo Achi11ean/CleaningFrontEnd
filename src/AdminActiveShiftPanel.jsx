@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
+import ConsultationChecklist from "./ConsultationChecklist";
 
 export default function AdminActiveShiftPanel() {
   const { authAxios } = useAdmin();
@@ -244,6 +245,14 @@ function formatDateTime12(isoString) {
           {new Date(shift.check_in_at).toLocaleString()}
         </p>
       </div>
+{/* ✅ Consultation Checklist */}
+{client?.id && (
+  <div>
+    <h4 className="text-md font-semibold mb-2">✅ Cleaning Checklist</h4>
+    <ConsultationChecklist clientId={client.id} />
+  </div>
+)}
+
 
       {/* 📸 PHOTO UPLOAD */}
       <div className="space-y-2">
