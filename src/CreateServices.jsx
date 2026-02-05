@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 
 const CLOUD_NAME = "dcw0wqlse";
 const UPLOAD_PRESET = "karaoke";
 
 export default function CreateServices() {
-  const { authAxios } = useAdmin();
+const { axios, role } = useAuthorizedAxios();
 
   const [form, setForm] = useState({
     title: "",
@@ -74,7 +74,7 @@ export default function CreateServices() {
     try {
       setLoading(true);
 
-      await authAxios.post("/admin/services", form);
+    await axios.post("/admin/services", form);
 
       setMessage("Service created successfully!");
       setForm({
@@ -89,6 +89,14 @@ export default function CreateServices() {
       setLoading(false);
     }
   };
+
+  if (!axios || (role !== "admin" && role !== "manager")) {
+  return (
+    <p className="text-red-600 font-semibold">
+      You do not have permission to create services.
+    </p>
+  );
+}
 
   return (
     <div className="max-w-full py-4 px-2 space-y-6">

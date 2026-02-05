@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 
 export default function ManageServices() {
-  const { authAxios } = useAdmin();
+  const { role, axios } = useAuthorizedAxios();
 
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -10,10 +10,19 @@ export default function ManageServices() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
+  // 🔐 Only admin or manager
+  if (!axios || (role !== "admin" && role !== "manager")) {
+    return (
+      <div className="p-6 text-center text-red-600 font-semibold">
+        You do not have permission to manage services.
+      </div>
+    );
+  }
+
   const loadServices = async () => {
     try {
       setLoading(true);
-      const res = await authAxios.get("/admin/services");
+      const res = await axios.get("/admin/services");
       setServices(res.data || []);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load services");
@@ -23,8 +32,9 @@ export default function ManageServices() {
   };
 
   useEffect(() => {
+    if (!axios) return;
     loadServices();
-  }, []);
+  }, [axios]);
 
   const startEdit = (s) => {
     setEditingId(s.id);
@@ -44,7 +54,7 @@ export default function ManageServices() {
 
   const saveEdit = async (id) => {
     try {
-      await authAxios.patch(`/admin/services/${id}`, editForm);
+      await axios.patch(`/admin/services/${id}`, editForm);
       setEditingId(null);
       loadServices();
     } catch (err) {
@@ -56,7 +66,7 @@ export default function ManageServices() {
     const ok = window.confirm("Delete this service?");
     if (!ok) return;
 
-    await authAxios.delete(`/admin/services/${id}`);
+    await axios.delete(`/admin/services/${id}`);
     loadServices();
   };
 
@@ -69,18 +79,17 @@ export default function ManageServices() {
     if (!swapWith) return;
 
     try {
-      // swap positions in backend
       await Promise.all([
-        authAxios.patch(`/admin/services/${current.id}`, {
+        axios.patch(`/admin/services/${current.id}`, {
           position: swapWith.position,
         }),
-        authAxios.patch(`/admin/services/${swapWith.id}`, {
+        axios.patch(`/admin/services/${swapWith.id}`, {
           position: current.position,
         }),
       ]);
 
       loadServices();
-    } catch (err) {
+    } catch {
       alert("Failed to reorder services");
     }
   };
@@ -106,24 +115,22 @@ export default function ManageServices() {
                 <button
                   disabled={index === 0}
                   onClick={() => moveService(index, "up")}
-                  className={`px-2 py-1 rounded text-sm border 
-                    ${
-                      index === 0
-                        ? "text-gray-300 border-gray-200 cursor-not-allowed"
-                        : "text-blue-600 border-blue-200 hover:bg-blue-50"
-                    }`}
+                  className={`px-2 py-1 rounded text-sm border ${
+                    index === 0
+                      ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                      : "text-blue-600 border-blue-200 hover:bg-blue-50"
+                  }`}
                 >
                   ▲
                 </button>
                 <button
                   disabled={index === services.length - 1}
                   onClick={() => moveService(index, "down")}
-                  className={`px-2 py-1 rounded text-sm border 
-                    ${
-                      index === services.length - 1
-                        ? "text-gray-300 border-gray-200 cursor-not-allowed"
-                        : "text-blue-600 border-blue-200 hover:bg-blue-50"
-                    }`}
+                  className={`px-2 py-1 rounded text-sm border ${
+                    index === services.length - 1
+                      ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                      : "text-blue-600 border-blue-200 hover:bg-blue-50"
+                  }`}
                 >
                   ▼
                 </button>
@@ -161,6 +168,32 @@ export default function ManageServices() {
                       rows={3}
                       className="w-full border rounded px-2 py-1"
                     />
+{/* IMAGE URL */}
+<div className="space-y-1">
+  <label className="text-xs font-semibold text-gray-500">
+    Image URL
+  </label>
+
+  <input
+    value={editForm.image_url || ""}
+    onChange={(e) =>
+      setEditForm({ ...editForm, image_url: e.target.value })
+    }
+    placeholder="https://example.com/image.jpg"
+    className="w-full border rounded px-2 py-1 text-sm"
+  />
+
+  {editForm.image_url && (
+    <img
+      src={editForm.image_url}
+      alt="Preview"
+      className="mt-2 w-24 h-24 object-cover rounded border"
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+    />
+  )}
+</div>
 
                     <div className="flex items-center gap-2">
                       <input

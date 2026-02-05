@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import { toast } from "react-toastify";
-import { useAdmin } from "./AdminContext";
 
 const DAYS = [
   "monday",
@@ -22,23 +21,24 @@ function to12Hour(time24) {
 }
 
 export default function ManageAvailability() {
-const { authAxios: axios, admin } = useAdmin();
+  const { role, axios } = useAuthorizedAxios();
 
-if (!admin) {
-  return <p className="text-red-600">Admins only</p>;
-}
+  // 🔐 Admins + Managers only
+  if (!axios || (role !== "admin" && role !== "manager")) {
+    return <p className="text-red-600">Unauthorized</p>;
+  }
 
-const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
-const [search, setSearch] = useState("");
-const normalizedSearch = search.trim().toLowerCase();
+  const [search, setSearch] = useState("");
 
-const matchedDay =
-  normalizedSearch.length > 0
-    ? DAYS.find((day) => day.startsWith(normalizedSearch))
-    : null;
+  const normalizedSearch = search.trim().toLowerCase();
 
+  const matchedDay =
+    normalizedSearch.length > 0
+      ? DAYS.find((day) => day.startsWith(normalizedSearch))
+      : null;
 
   const load = async () => {
     try {
@@ -53,7 +53,7 @@ const matchedDay =
   };
 
   useEffect(() => {
-    if (axios) load();
+    load();
   }, [axios]);
 
   const updateSlot = (rowId, day, field, value) => {
@@ -78,11 +78,10 @@ const matchedDay =
   const saveAvailability = async (row) => {
     try {
       setSavingId(row.id);
-     await axios.patch(
-  `/admin/staff/${row.owner.id}/availability`,
-  { weekly: row.weekly }
-);
-
+      await axios.patch(
+        `/admin/staff/${row.owner.id}/availability`,
+        { weekly: row.weekly }
+      );
       toast.success("Availability updated");
       load();
     } catch (err) {
@@ -120,79 +119,63 @@ const matchedDay =
     load();
   };
 
-  if (!axios) {
-    return <p className="text-red-600">Unauthorized</p>;
-  }
-
   if (loading) {
     return <p className="italic text-gray-500">Loading availability…</p>;
   }
 
-const daysToRender = matchedDay ? [matchedDay] : DAYS;
+  const filteredRows = rows.filter((row) => {
+    if (!normalizedSearch) return true;
 
+    const nameMatch =
+      row.owner.display_name?.toLowerCase().includes(normalizedSearch) ||
+      row.owner.username?.toLowerCase().includes(normalizedSearch);
 
-const filteredRows = rows.filter((row) => {
-  if (!normalizedSearch) return true;
+    if (matchedDay) {
+      const slot = row.weekly?.[matchedDay];
+      return Boolean(slot && slot.start && slot.end);
+    }
 
-  // 👤 NAME SEARCH
-  const nameMatch =
-    row.owner.display_name?.toLowerCase().includes(normalizedSearch) ||
-    row.owner.username?.toLowerCase().includes(normalizedSearch);
-
-  // 📅 DAY SEARCH (ONLY show if available that day)
-  if (matchedDay) {
-    const slot = row.weekly?.[matchedDay];
-
-    // must exist AND have a time range
-    return Boolean(slot && slot.start && slot.end);
-  }
-
-  return nameMatch;
-});
-
-const isSearchingDay = Boolean(matchedDay);
-
+    return nameMatch;
+  });
 
   return (
     <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+        <h2 className="text-2xl font-bold">👥 Employee Availability</h2>
+
+        <input
+          type="text"
+          placeholder="Search by name or day (e.g. monday)…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:w-80 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+      </div>
 
       {/* GLOBAL CONTROLS */}
- 
-<div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-  <h2 className="text-2xl font-bold">👥 Employee Availability</h2>
-
-  <input
-    type="text"
-    placeholder="Search by name or day (e.g. monday)…"
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    className="w-full md:w-80 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-  />
-</div>
-     <div className="flex justify-between items-center">
-
-        <div className="flex gap-3">
-          <button
-            onClick={lockAll}
-            className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700"
-          >
-            🔒 Lock All
-          </button>
-          <button
-            onClick={unlockAll}
-            className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700"
-          >
-            🔓 Unlock All
-          </button>
-        </div>
+      <div className="flex gap-3">
+        <button
+          onClick={lockAll}
+          className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700"
+        >
+          🔒 Lock All
+        </button>
+        <button
+          onClick={unlockAll}
+          className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700"
+        >
+          🔓 Unlock All
+        </button>
       </div>
-      {filteredRows.length === 0 && (
-  <p className="text-center text-gray-500 italic">
-    No availability matches your search.
-  </p>
-)}
 
-{filteredRows.map((row) => (
+      {filteredRows.length === 0 && (
+        <p className="text-center text-gray-500 italic">
+          No availability matches your search.
+        </p>
+      )}
+
+      {filteredRows.map((row) => (
         <div
           key={row.id}
           className={`border rounded-xl p-4 shadow ${
@@ -203,27 +186,10 @@ const isSearchingDay = Boolean(matchedDay);
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-semibold">{row.owner.display_name}</p>
-                {isSearchingDay &&
-    row.weekly?.[matchedDay]?.start &&
-    row.weekly?.[matchedDay]?.end && (
-      <p className="text-xs text-blue-600 font-semibold">
-        Available on{" "}
-        {matchedDay.charAt(0).toUpperCase() + matchedDay.slice(1)}
-      </p>
-  )}
               <p className="text-xs text-gray-500">
                 {row.owner.type.toUpperCase()}
                 {row.owner.role ? ` • ${row.owner.role}` : ""}
               </p>
-
-              {row.owner.phone_number && (
-                <p className="text-xs text-blue-600 mt-1">
-                  📞{" "}
-                  <a href={`tel:${row.owner.phone_number}`}>
-                    {row.owner.phone_number}
-                  </a>
-                </p>
-              )}
             </div>
 
             {row.owner.type === "staff" && (
@@ -242,7 +208,7 @@ const isSearchingDay = Boolean(matchedDay);
 
           {/* WEEKLY GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-{(matchedDay ? [matchedDay] : DAYS).map((day) => {
+            {(matchedDay ? [matchedDay] : DAYS).map((day) => {
               const slot = row.weekly?.[day];
 
               return (
@@ -282,7 +248,6 @@ const isSearchingDay = Boolean(matchedDay);
             })}
           </div>
 
-          {/* SAVE */}
           {!row.is_locked && (
             <div className="flex justify-end mt-4">
               <button
