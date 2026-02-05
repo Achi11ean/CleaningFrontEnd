@@ -131,6 +131,39 @@ const getDisplayName = (assignment) => {
           }
         />
       </div>
+{/* CLIENT STATUS */}
+<div className="flex items-center gap-4 bg-slate-50 border rounded-lg p-3">
+  <label className="text-sm font-semibold text-gray-700">
+    Client Status
+  </label>
+
+  <select
+    className={`
+      px-3 py-2 rounded-md border font-semibold text-sm
+      ${
+        localClient.status === "new"
+          ? "bg-blue-50 text-blue-700 border-blue-300"
+          : localClient.status === "active"
+          ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+          : localClient.status === "paused"
+          ? "bg-yellow-50 text-yellow-700 border-yellow-300"
+          : localClient.status === "inactive"
+          ? "bg-gray-100 text-gray-600 border-gray-300"
+          : "bg-red-50 text-red-700 border-red-300"
+      }
+    `}
+    value={localClient.status || "new"}
+    onChange={(e) =>
+      updateField("status", e.target.value)
+    }
+  >
+    <option value="new">🆕 New</option>
+    <option value="active">✅ Active</option>
+    <option value="paused">⏸️ Paused</option>
+    <option value="inactive">⚠️ Inactive</option>
+    <option value="archived">🗄️ Archived</option>
+  </select>
+</div>
 
       {/* NOTES */}
       <textarea

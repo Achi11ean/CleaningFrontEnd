@@ -82,9 +82,7 @@ export default function StaffClients() {
                   <p className="font-semibold text-lg">
                     {client.first_name} {client.last_name}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {client.email || "No email"}
-                  </p>
+               
                 </div>
 
                 <span
