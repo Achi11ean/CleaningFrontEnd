@@ -205,26 +205,33 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-24 ">
-      <div className="max-w-6xl text-center mx-auto bg-white rounded-none shadow-2xl border border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-20 lg:pt-24 ">
+      <div className="max-w-6xl text-center mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200">
         {/* Header */}{" "}
-        <h2
-          className="
-    pt-4 text-7xl lg:text-8xl
-    font-extrabold font-[Aspire]   tracking-tight text-center
-    relative
-    bg-gradient-to-br from-blue-600 via-cyan-400 to-blue-600
-text-white
-    drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]
-    border-b-2 border-white/70
-    shadow-[inset_0_2px_4px_rgba(255,255,255,0.35)]
-  "
-        >
-          Welcome Back, Amanda!
-        </h2>
-        <div className="mb-8  flex items-center justify-between">
-          <div></div>
-        </div>
+<header className="relative overflow-hidden rounded-none bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 px-6 py-5 shadow-2xl">
+  {/* Subtle background accents */}
+  <div className="pointer-events-none absolute inset-0">
+    <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
+    <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
+  </div>
+
+  {/* Content */}
+  <div className="relative z-10 max-w-5xl mx-auto text-center">
+    <p className="mb-3 text-sm uppercase tracking-[0.25em] text-cyan-300/80">
+      Dashboard
+    </p>
+
+    <h1 className="font-[Aspire] text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white">
+      Welcome back,
+        Amanda
+    </h1>
+
+    <p className="mt-4 max-w-xl mx-auto text-base sm:text-lg text-blue-100/80">
+      Everything is up to date and running smoothly.
+    </p>
+  </div>
+</header>
+
         <div className="px-2 py-2">
           <div
             className="

@@ -238,31 +238,43 @@ const res = await authAxios.get("/time-off/all");
       <h2 className="text-2xl font-bold">🗓️ Cleaning Schedule Calendar</h2>
 
       {/* NEXT ADMIN SHIFT BANNER */}
-      {nextShift ? (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-green-700 font-semibold">
-              Your next scheduled admin shift is:
-            </p>
-            <p className="text-lg font-bold text-green-900">
-              {formatDateTime(nextShift.start)}
-            </p>
-            <p className="text-sm text-green-800">
-              {nextShift.resource.client.first_name}{" "}
-              {nextShift.resource.client.last_name}
-            </p>
-          </div>
+     {/* NEXT ADMIN SHIFT BANNER */}
+{nextShift ? (
+  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    {/* Left: Shift Info */}
+    <div>
+      <p className="text-sm text-green-700 font-semibold">
+        Your next scheduled admin shift is:
+      </p>
 
-          <div className="text-sm text-green-700 font-semibold">
-            {formatTo12Hour(nextShift.resource.start_time)} →{" "}
-            {formatTo12Hour(nextShift.resource.end_time)}
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic">
-          You have no upcoming assigned admin shifts.
-        </div>
-      )}
+      <p className="text-lg font-bold text-green-900">
+        {formatDateTime(nextShift.start)}
+      </p>
+
+      <p className="text-sm text-green-800">
+        {nextShift.resource.client.first_name}{" "}
+        {nextShift.resource.client.last_name}
+      </p>
+
+      <p className="text-sm text-green-700 font-semibold">
+        {formatTo12Hour(nextShift.resource.start_time)} →{" "}
+        {formatTo12Hour(nextShift.resource.end_time)}
+      </p>
+    </div>
+
+    {/* Right: Start Shift */}
+    <AdminStartShift
+      schedule={nextShift.resource}
+      onStarted={() => {
+        alert("Admin shift started successfully!");
+      }}
+    />
+  </div>
+) : (
+  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic">
+    You have no upcoming assigned admin shifts.
+  </div>
+)}
 
       {/* WEEKLY SCHEDULE DROPDOWN */}
       <div className="bg-white border rounded-xl shadow-sm">

@@ -223,7 +223,7 @@ function formatDateTime12(isoString) {
   const { client, schedule, shift } = activeShift;
 
   return (
-    <div className="bg-green-50 border border-green-200 rounded-xl p-6 space-y-4">
+    <div className="bg-green-50 border border-green-200 rounded-xl p-1 space-y-4">
       <h3 className="text-lg font-bold text-green-800">
         🟢 Active Admin Work Shift
       </h3>
@@ -248,7 +248,6 @@ function formatDateTime12(isoString) {
 {/* ✅ Consultation Checklist */}
 {client?.id && (
   <div>
-    <h4 className="text-md font-semibold mb-2">✅ Cleaning Checklist</h4>
     <ConsultationChecklist clientId={client.id} />
   </div>
 )}
