@@ -44,6 +44,7 @@ import CreatePurchase from "./CreatePurchase";
 import ManagePurchases from "./ManagePurchases";
 import AdminShifts from "./AdminShifts";
 import ManualTimeEntry from "./ManualTimeEntry";
+import AdminChecklistOverview from "./AdminChecklistOverview";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -782,12 +783,26 @@ export default function AdminDashboard() {
                     </span>
                   )}
                 </button>
+                <button
+  onClick={() => setWorkDaySubTab("checklists")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    workDaySubTab === "checklists"
+      ? "border-blue-600 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+   Checklists
+</button>
+
               </div>
 
               {/* Work Day Sub Content */}
               {!loading && !error && workDaySubTab === "workday" && (
                 <ClientSchedulesCalendar />
               )}
+{!loading && !error && workDaySubTab === "checklists" && (
+  <AdminChecklistOverview />
+)}
 
               {!loading && !error && workDaySubTab === "inventory" && (
                 <>
