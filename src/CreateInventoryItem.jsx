@@ -269,14 +269,17 @@ setShowCategoryInput(false);
   </div>
 
   {/* ☁️ Upload Image */}
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) =>
-      uploadImageToCloudinary(e.target.files?.[0])
-    }
-    className="w-full text-sm"
-  />
+<input
+  key={form.image_url} // 👈 forces reset after upload
+  type="file"
+  accept="image/*"
+  disabled={uploadingImage}
+  onChange={(e) =>
+    uploadImageToCloudinary(e.target.files?.[0])
+  }
+  className="w-full text-sm disabled:opacity-50"
+/>
+
 
   {uploadingImage && (
     <p className="text-xs text-gray-500">
