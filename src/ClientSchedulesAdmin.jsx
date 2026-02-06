@@ -20,6 +20,11 @@ const getCleanerName = (c) => {
   }
   return c.username;
 };
+const formatLocalDate = (dateStr) => {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-");
+  return new Date(year, month - 1, day).toLocaleDateString();
+};
 
 
   const [schedules, setSchedules] = useState([]);
@@ -179,7 +184,8 @@ const filteredSchedules = schedules.filter((s) => {
         <div>
           📆{" "}
           {s.start_date
-            ? new Date(s.start_date).toLocaleDateString()
+            ? formatLocalDate(s.start_date)
+
             : "No start date"}
         </div>
         <div>
