@@ -50,19 +50,51 @@ export default function ManageSectionsItems() {
   /* ───────────────────────────────
      Save / Delete
      ─────────────────────────────── */
-  async function saveSection(id) {
-    await axios.patch(`/consultation/sections/${id}`, form);
-    setEditingSection(null);
-    setForm({});
-    window.location.reload();
-  }
+async function saveSection(id) {
+  const res = await axios.patch(
+    `/consultation/sections/${id}`,
+    form
+  );
 
-  async function saveItem(id) {
-    await axios.patch(`/consultation/items/${id}`, form);
-    setEditingItem(null);
-    setForm({});
-    window.location.reload();
-  }
+  setSections((prev) =>
+    prev.map((section) =>
+      section.id === id
+        ? {
+            ...section,        // ✅ keep items
+            ...res.data,       // ✅ update name/description
+          }
+        : section
+    )
+  );
+
+  setEditingSection(null);
+  setForm({});
+}
+
+
+async function saveItem(sectionId, itemId) {
+  const res = await axios.patch(
+    `/consultation/items/${itemId}`,
+    form
+  );
+
+  setSections((prev) =>
+    prev.map((section) =>
+      section.id === sectionId
+        ? {
+            ...section,
+            items: section.items.map((item) =>
+              item.id === itemId ? res.data : item
+            ),
+          }
+        : section
+    )
+  );
+
+  setEditingItem(null);
+  setForm({});
+}
+
 
   async function deleteSection(id) {
     if (!window.confirm("Delete this section and all items?")) return;
@@ -70,11 +102,25 @@ export default function ManageSectionsItems() {
     setSections((p) => p.filter((s) => s.id !== id));
   }
 
-  async function deleteItem(id) {
-    if (!window.confirm("Delete this item?")) return;
-    await axios.delete(`/consultation/items/${id}`);
-    window.location.reload();
-  }
+async function deleteItem(sectionId, itemId) {
+  if (!window.confirm("Delete this item?")) return;
+
+  await axios.delete(`/consultation/items/${itemId}`);
+
+  setSections((prev) =>
+    prev.map((section) =>
+      section.id === sectionId
+        ? {
+            ...section,
+            items: section.items.filter(
+              (item) => item.id !== itemId
+            ),
+          }
+        : section
+    )
+  );
+}
+
 
   if (!axios) return null;
 
@@ -212,12 +258,13 @@ export default function ManageSectionsItems() {
                           }
                         />
                         <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => saveItem(item.id)}
-                            className="bg-green-600 text-white px-3 py-1 rounded"
-                          >
-                            Save
-                          </button>
+            <button
+  onClick={() => saveItem(section.id, item.id)}
+  className="bg-green-600 text-white px-3 py-1 rounded"
+>
+  Save
+</button>
+
                           <button
                             onClick={() => setEditingItem(null)}
                             className="text-gray-600"
@@ -254,12 +301,13 @@ export default function ManageSectionsItems() {
                             >
                               ✏️ Edit
                             </button>
-                            <button
-                              onClick={() => deleteItem(item.id)}
-                              className="text-red-600 hover:underline"
-                            >
-                              🗑 Delete
-                            </button>
+                           <button
+  onClick={() => deleteItem(section.id, item.id)}
+  className="text-red-600 hover:underline"
+>
+  🗑 Delete
+</button>
+
                           </div>
                         )}
                       </>
