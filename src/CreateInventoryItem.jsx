@@ -11,6 +11,46 @@ const [categories, setCategories] = useState([]);
 const [categoryInput, setCategoryInput] = useState("");
 const [showCategoryInput, setShowCategoryInput] = useState(false);
   const [staffRequirements, setStaffRequirements] = useState({});
+const CLOUD_NAME = "dcw0wqlse";       // your cloud
+const UPLOAD_PRESET = "karaoke";     // unsigned preset
+const [uploadingImage, setUploadingImage] = useState(false);
+const uploadImageToCloudinary = async (file) => {
+  if (!file) return;
+
+  setUploadingImage(true);
+
+  const data = new FormData();
+  data.append("file", file);
+  data.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    const json = await res.json();
+
+    if (!json.secure_url) {
+      throw new Error("Upload failed");
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      image_url: json.secure_url,
+    }));
+
+    toast.success("Image uploaded");
+  } catch (err) {
+    console.error(err);
+    toast.error("Image upload failed");
+  } finally {
+    setUploadingImage(false);
+  }
+};
 
 const assignedTotal = Object.values(staffRequirements)
   .reduce((sum, qty) => sum + (Number(qty) || 0), 0);
@@ -205,13 +245,70 @@ setShowCategoryInput(false);
         className="w-full border rounded p-2"
       />
 
-      <input
-        name="image_url"
-        value={form.image_url}
-        onChange={handleChange}
-        placeholder="Image URL (optional)"
-        className="w-full border rounded p-2"
+<div className="space-y-2">
+  <label className="text-sm font-semibold">
+    Item Image
+  </label>
+
+  {/* 🌐 Paste Image URL */}
+  <input
+    name="image_url"
+    value={form.image_url}
+    onChange={(e) =>
+      setForm((prev) => ({
+        ...prev,
+        image_url: e.target.value,
+      }))
+    }
+    placeholder="Paste image URL (optional)"
+    className="w-full border rounded p-2 text-sm"
+  />
+
+  <div className="text-center text-xs text-gray-400">
+    — OR —
+  </div>
+
+  {/* ☁️ Upload Image */}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) =>
+      uploadImageToCloudinary(e.target.files?.[0])
+    }
+    className="w-full text-sm"
+  />
+
+  {uploadingImage && (
+    <p className="text-xs text-gray-500">
+      Uploading image…
+    </p>
+  )}
+
+  {/* 🖼️ Preview */}
+  {form.image_url && (
+    <div className="pt-2">
+      <img
+        src={form.image_url}
+        alt="Preview"
+        className="h-32 rounded-lg border object-cover"
       />
+
+      <button
+        type="button"
+        onClick={() =>
+          setForm((prev) => ({
+            ...prev,
+            image_url: "",
+          }))
+        }
+        className="mt-2 text-xs text-red-600 hover:underline"
+      >
+        Remove image
+      </button>
+    </div>
+  )}
+</div>
+
 
       <input
         type="number"
