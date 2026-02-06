@@ -184,8 +184,7 @@ const filteredSchedules = schedules.filter((s) => {
         <div>
           📆{" "}
           {s.start_date
-            ? formatLocalDate(s.start_date)
-
+            ? new Date(s.start_date).toLocaleDateString()
             : "No start date"}
         </div>
         <div>

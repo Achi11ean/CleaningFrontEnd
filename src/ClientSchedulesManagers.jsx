@@ -21,6 +21,11 @@ const getCleanerName = (c) => {
 };
 const [search, setSearch] = useState("");
 const normalizedSearch = search.trim().toLowerCase();
+const formatLocalDate = (dateStr) => {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-");
+  return new Date(year, month - 1, day).toLocaleDateString();
+};
 
 const dayMatches = (schedule) => {
   if (schedule.day_of_week == null) return false;
@@ -176,8 +181,9 @@ const cleanerMatches = (schedule) => {
         <div>
           📆{" "}
           {s.start_date
-            ? new Date(s.start_date).toLocaleDateString()
-            : "No start date"}
+  ? formatLocalDate(s.start_date)
+  : "No start date"}
+
         </div>
         <div>
           🗓️{" "}

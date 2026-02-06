@@ -130,6 +130,25 @@ const getDisplayName = (assignment) => {
             updateField("phone", e.target.value)
           }
         />
+        <div className="md:col-span-2">
+  <label className="block text-sm font-semibold mb-1">
+    Address
+  </label>
+
+  <textarea
+    className="
+      border p-2 rounded w-full
+      focus:ring-2 focus:ring-blue-500
+    "
+    rows={2}
+    value={localClient.address || ""}
+    onChange={(e) =>
+      updateField("address", e.target.value)
+    }
+    placeholder="Street, City, State, Zip"
+  />
+</div>
+
       </div>
 {/* CLIENT STATUS */}
 <div className="flex items-center gap-4 bg-slate-50 border rounded-lg p-3">

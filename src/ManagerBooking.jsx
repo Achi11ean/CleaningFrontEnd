@@ -22,12 +22,16 @@ function formatTime(time) {
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString(undefined, {
+
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 }
+
 function getDayLabel(schedule) {
   // If backend already provided day_of_week, use it
   if (schedule.day_of_week !== null && schedule.day_of_week !== undefined) {
