@@ -5,7 +5,7 @@ const ServiceArea = () => {
     <section className="relative bg-gradient-to-b from-black via-gray-900 to-black py-12 text-gray-100 overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 text-center">
         {/* Header */}
-        <h2 className="text-3xl sm:text-5xl font-extrabold text-blue-400 drop-shadow mb-6 uppercase tracking-wide border-b-2 border-blue-500 pb-2 inline-block">
+        <h2 className="text-3xl font-serif sm:text-5xl font-extrabold text-blue-400 drop-shadow mb-6 uppercase tracking-wide border-b-2 border-blue-500 pb-2 inline-block">
           Our Service Area
         </h2>
 
