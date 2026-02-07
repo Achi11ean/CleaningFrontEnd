@@ -88,7 +88,7 @@ const HomePage = () => {
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.30),transparent_60%)] pointer-events-none" />
 
   {/* Content */}
-  <div className="relative z-10 flex h-full items-center justify-center px-2">
+  <div className="relative z-10 flex h-full items-center  justify-center ">
     <div className="max-w-4xl text-center">
       <h1 className="font-poppins text-2xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-xl">
         Transform Your Space with:
