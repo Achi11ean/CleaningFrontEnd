@@ -95,7 +95,7 @@ const HomePage = () => {
       </h1>
 
       <div className="mt-4">
-        <span className="inline-block w-full border-white border py-2 rounded-full bg-black/70 font-[Aspire] text-4xl md:text-6xl lg:text-7xl text-cyan-300 tracking-wide drop-shadow-2xl">
+        <span className="inline-block w-full border-white border py-2 rounded-full bg-black/70 font-[serif] text-4xl md:text-6xl lg:text-7xl text-cyan-300 tracking-wide drop-shadow-2xl">
           A Breath of Fresh Air 🫧
         </span>
       </div>
