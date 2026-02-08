@@ -16,6 +16,10 @@ export default function CreateSchedules() {
     description: "",
   });
 
+  const [clientQuery, setClientQuery] = useState("");
+const [showClientDropdown, setShowClientDropdown] = useState(false);
+
+
 const deriveDayOfWeek = (dateStr) => {
   if (!dateStr) return "";
 
@@ -160,33 +164,71 @@ const handleChange = (e) => {
     }
   };
 
+
+  const filteredClients = clients.filter((c) => {
+  const q = clientQuery.toLowerCase();
+  return (
+    c.first_name.toLowerCase().includes(q) ||
+    c.last_name.toLowerCase().includes(q) ||
+    c.email.toLowerCase().includes(q)
+  );
+});
+
+
   return (
     <div className="max-w-3xl mx-auto border rounded-xl p-6 shadow-sm">
       <h2 className="text-2xl font-bold mb-4">📅 Create Client Schedule</h2>
 
       {/* Client Selector */}
-      <div className="mb-4">
-        <label className="block font-semibold mb-1">Client</label>
-     <select
-  value={selectedClientId}
-  onChange={(e) => {
-    const id = Number(e.target.value);
-    setSelectedClientId(id);
+    {/* Client Selector */}
+<div className="mb-4 relative">
+  <label className="block font-semibold mb-1">Client</label>
 
-    const fullClient = clients.find((c) => c.id === id);
-    setSelectedClient(fullClient || null);
-  }}
-  className="w-full border rounded p-2"
->
+  <input
+    type="text"
+    value={clientQuery}
+    onChange={(e) => {
+      setClientQuery(e.target.value);
+      setShowClientDropdown(true);
+    }}
+    onFocus={() => setShowClientDropdown(true)}
+    placeholder="Search client by name or email…"
+    className="w-full border rounded p-2"
+  />
 
-          <option value="">-- Select a client --</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.first_name} {c.last_name} — {c.email}
-            </option>
-          ))}
-        </select>
-      </div>
+  {showClientDropdown && filteredClients.length > 0 && (
+    <div className="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto rounded border bg-white shadow-lg">
+      {filteredClients.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => {
+            setSelectedClientId(c.id);
+            setSelectedClient(c);
+            setClientQuery(`${c.first_name} ${c.last_name} — ${c.email}`);
+            setShowClientDropdown(false);
+          }}
+          className="
+            w-full text-left px-3 py-2 text-sm
+            hover:bg-blue-50
+            border-b last:border-b-0
+          "
+        >
+          <div className="font-semibold">
+            {c.first_name} {c.last_name}
+          </div>
+          <div className="text-xs text-gray-500">{c.email}</div>
+        </button>
+      ))}
+    </div>
+  )}
+
+  {showClientDropdown && filteredClients.length === 0 && (
+    <div className="absolute z-20 mt-1 w-full rounded border bg-white p-3 text-sm text-gray-500 shadow">
+      No clients found
+    </div>
+  )}
+</div>
 
       <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
