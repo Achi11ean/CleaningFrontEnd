@@ -299,6 +299,14 @@ const filteredSchedules = schedules.filter((s) => {
             <h3 className="text-xl font-bold">
               ✏️ Edit Schedule
             </h3>
+            {editing?.client && (
+    <p className="mt-1 text-sm text-gray-600">
+      Client:{" "}
+      <span className="font-semibold text-gray-800">
+        {editing.client.first_name} {editing.client.last_name}
+      </span>
+    </p>
+  )}
 {editing?.client && (
   <div className="border rounded-lg p-4 bg-slate-50">
     <h4 className="text-sm font-bold text-slate-700 mb-3">
