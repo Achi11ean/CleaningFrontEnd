@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
 import SchedulesMiniCalendar from "./SchedulesMiniCalendar";
+import AdminAssignClients from "./AdminAssignClients";
 
 const DAY_NAMES = [
   "Monday",
@@ -277,6 +278,42 @@ const filteredSchedules = schedules.filter((s) => {
             <h3 className="text-xl font-bold">
               ✏️ Edit Schedule
             </h3>
+{editing?.client && (
+  <div className="border rounded-lg p-4 bg-slate-50">
+    <h4 className="text-sm font-bold text-slate-700 mb-3">
+      👥 Assign Cleaners
+    </h4>
+
+    <AdminAssignClients
+      client={editing.client}
+      onUpdated={(updatedCleaners) => {
+        // ✅ update modal instantly
+        setEditing((prev) => ({
+          ...prev,
+          client: {
+            ...prev.client,
+            cleaners: updatedCleaners,
+          },
+        }));
+
+        // ✅ update cards + calendar instantly
+        setSchedules((prev) =>
+          prev.map((s) =>
+            s.id === editing.id
+              ? {
+                  ...s,
+                  client: {
+                    ...s.client,
+                    cleaners: updatedCleaners,
+                  },
+                }
+              : s
+          )
+        );
+      }}
+    />
+  </div>
+)}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
