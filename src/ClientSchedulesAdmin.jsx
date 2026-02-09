@@ -183,9 +183,8 @@ const filteredSchedules = schedules.filter((s) => {
       <div className="text-sm text-gray-700 space-y-1">
         <div>
           📆{" "}
-          {s.start_date
-            ? new Date(s.start_date).toLocaleDateString()
-            : "No start date"}
+        {s.start_date ? formatLocalDate(s.start_date) : "No start date"}
+
         </div>
         <div>
           🗓️{" "}

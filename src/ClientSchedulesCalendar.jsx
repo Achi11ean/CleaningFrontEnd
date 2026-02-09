@@ -35,7 +35,13 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
   schedules.forEach((s) => {
     if (s.status !== "active") return;
 
-    const startDate = new Date(s.start_date);
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d); // local midnight
+};
+
+const startDate = parseLocalDate(s.start_date);
 
     const [sh, sm] = s.start_time.split(":").map(Number);
     const [eh, em] = s.end_time.split(":").map(Number);
@@ -95,6 +101,16 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
 export default function ClientSchedulesCalendar() {
   const { authAxios, admin } = useAdmin();
   const myAdminId = admin?.id;
+const formatScheduleType = (t) => {
+  if (!t) return "—";
+  const map = {
+    one_time: "One Time",
+    weekly: "Weekly",
+    bi_weekly: "Bi-Weekly",
+    monthly: "Monthly",
+  };
+  return map[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
 
   const [showWeekly, setShowWeekly] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0); // 0 = this week
@@ -458,14 +474,11 @@ const res = await authAxios.get("/time-off/all");
                   "—"
                 )}
               </p>
-              <p>
-                <strong>Schedule Type:</strong> {selectedEvent.schedule_type}
-              </p>
-              <p>
-                <strong>Time:</strong>{" "}
-                {formatTo12Hour(selectedEvent.start_time)} →{" "}
-                {formatTo12Hour(selectedEvent.end_time)}
-              </p>
+      
+       <p>
+  <strong>Schedule Type:</strong> {formatScheduleType(selectedEvent.schedule_type)}
+</p>
+
             </div>
 
             <div>
