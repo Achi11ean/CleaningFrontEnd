@@ -68,6 +68,8 @@ export default function EditClient({
           }
         >
           <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
           <option value="paused">Paused</option>
