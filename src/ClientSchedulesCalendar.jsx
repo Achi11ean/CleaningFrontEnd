@@ -118,6 +118,8 @@ const formatScheduleType = (t) => {
   const [timeOffRows, setTimeOffRows] = useState([]); // raw TimeOffRequest rows
   const [timeOffLoading, setTimeOffLoading] = useState(false);
 const [selectedTimeOff, setSelectedTimeOff] = useState(null);
+const [activeShift, setActiveShift] = useState(null);
+const [checkingActiveShift, setCheckingActiveShift] = useState(true);
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -245,6 +247,27 @@ const res = await authAxios.get("/time-off/all");
     }
   }
 };
+useEffect(() => {
+  const loadActiveShift = async () => {
+    try {
+      setCheckingActiveShift(true);
+      const res = await authAxios.get("/admin/shifts/active");
+
+      if (res.data?.active) {
+        setActiveShift(res.data.shift);
+      } else {
+        setActiveShift(null);
+      }
+    } catch (err) {
+      console.error("Failed to load active shift", err);
+      setActiveShift(null);
+    } finally {
+      setCheckingActiveShift(false);
+    }
+  };
+
+  loadActiveShift();
+}, [authAxios]);
 
 
   if (loading) return <p className="p-6">Loading calendar...</p>;
@@ -255,9 +278,8 @@ const res = await authAxios.get("/time-off/all");
 
       {/* NEXT ADMIN SHIFT BANNER */}
      {/* NEXT ADMIN SHIFT BANNER */}
-{nextShift ? (
+{!checkingActiveShift && !activeShift && nextShift && (
   <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    {/* Left: Shift Info */}
     <div>
       <p className="text-sm text-green-700 font-semibold">
         Your next scheduled admin shift is:
@@ -278,19 +300,10 @@ const res = await authAxios.get("/time-off/all");
       </p>
     </div>
 
-    {/* Right: Start Shift */}
-    <AdminStartShift
-      schedule={nextShift.resource}
-      onStarted={() => {
-        alert("Admin shift started successfully!");
-      }}
-    />
-  </div>
-) : (
-  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic">
-    You have no upcoming assigned admin shifts.
+    <AdminStartShift schedule={nextShift.resource} />
   </div>
 )}
+
 
       {/* WEEKLY SCHEDULE DROPDOWN */}
       <div className="bg-white border rounded-xl shadow-sm">
