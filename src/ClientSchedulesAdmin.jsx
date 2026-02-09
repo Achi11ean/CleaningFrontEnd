@@ -273,8 +273,8 @@ const filteredSchedules = schedules.filter((s) => {
 
       {/* EDIT MODAL */}
       {editing && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg space-y-4">
+<div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+<div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-auto p-1 flex flex-col">
             <h3 className="text-xl font-bold">
               ✏️ Edit Schedule
             </h3>
