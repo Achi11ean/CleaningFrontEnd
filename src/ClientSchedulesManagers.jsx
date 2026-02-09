@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
+import SchedulesMiniCalendar from "./SchedulesMiniCalendar";
 
 const DAY_NAMES = [
   "Monday",
@@ -121,6 +122,15 @@ const cleanerMatches = (schedule) => {
       alert(err.response?.data?.error || "Failed to delete schedule");
     }
   };
+const filteredSchedules = schedules.filter((s) => {
+  if (!normalizedSearch) return true;
+
+  return (
+    clientMatches(s) ||
+    cleanerMatches(s) ||
+    dayMatches(s)
+  );
+});
 
   if (loading) return <p className="p-6">Loading schedules...</p>;
   if (error) return <p className="p-6 text-red-600">{error}</p>;
@@ -130,13 +140,7 @@ const cleanerMatches = (schedule) => {
       <h2 className="text-2xl font-bold text-gray-800">
         📅 Client Schedules (Manager)
       </h2>
-
-      {schedules.length === 0 && (
-        <p className="text-gray-500 italic">
-          No schedules created yet.
-        </p>
-      )}
-<input
+      <input
   type="text"
   placeholder="Search by client, cleaner, or day (e.g. Monday)…"
   value={search}
@@ -149,6 +153,18 @@ const cleanerMatches = (schedule) => {
     focus:outline-none
   "
 />
+
+<SchedulesMiniCalendar
+  schedules={filteredSchedules}
+  onEdit={startEdit}
+  onDelete={deleteSchedule}
+/>
+
+      {schedules.length === 0 && (
+        <p className="text-gray-500 italic">
+          No schedules created yet.
+        </p>
+      )}
 
 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 {schedules

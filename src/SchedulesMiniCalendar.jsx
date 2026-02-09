@@ -1,0 +1,123 @@
+import { useMemo, useState } from "react";
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  format,
+  isSameMonth,
+  isSameDay,
+} from "date-fns";
+
+export default function SchedulesMiniCalendar({
+  schedules,
+  onEdit,
+  onDelete,
+}) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+
+    const days = [];
+    let d = start;
+    while (d <= end) {
+      days.push(d);
+      d = addDays(d, 1);
+    }
+    return days;
+  }, [currentMonth]);
+
+  const schedulesByDate = useMemo(() => {
+    const map = {};
+    schedules.forEach((s) => {
+      if (!s.start_date) return;
+      map[s.start_date] = map[s.start_date] || [];
+      map[s.start_date].push(s);
+    });
+    return map;
+  }, [schedules]);
+
+  return (
+    <div className="rounded-2xl border bg-white shadow p-4 space-y-3">
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <button
+          onClick={() =>
+            setCurrentMonth(
+              new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+            )
+          }
+          className="px-2 py-1 rounded hover:bg-gray-100"
+        >
+          ◀
+        </button>
+
+        <h3 className="font-bold text-lg">
+          {format(currentMonth, "MMMM yyyy")}
+        </h3>
+
+        <button
+          onClick={() =>
+            setCurrentMonth(
+              new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+            )
+          }
+          className="px-2 py-1 rounded hover:bg-gray-100"
+        >
+          ▶
+        </button>
+      </div>
+
+      {/* DAYS */}
+      <div className="grid grid-cols-7 text-xs font-semibold text-gray-500">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+          <div key={d} className="text-center">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      {/* GRID */}
+      <div className="grid grid-cols-7 gap-1 text-xs">
+        {calendarDays.map((day) => {
+          const dateKey = format(day, "yyyy-MM-dd");
+          const daySchedules = schedulesByDate[dateKey] || [];
+
+          return (
+            <div
+              key={day.toISOString()}
+              className={`
+                min-h-[90px] rounded-lg border p-1
+                ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
+                ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
+              `}
+            >
+              <div className="font-bold text-[11px] mb-1">
+                {format(day, "d")}
+              </div>
+
+              <div className="space-y-1">
+                {daySchedules.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => onEdit(s)}
+                    className="
+                      cursor-pointer rounded bg-blue-100 text-blue-800
+                      px-1 py-0.5 truncate hover:bg-blue-200
+                    "
+                    title={`${s.client?.first_name} ${s.client?.last_name}`}
+                  >
+                    {s.client?.first_name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
