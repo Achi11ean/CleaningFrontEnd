@@ -305,10 +305,23 @@ const filteredSchedules = schedules.filter((s) => {
       👥 Assign Cleaners
     </h4>
 
-    <AssignClients
-      client={editing.client}
-      onUpdated={loadSchedules}
-    />
+<AssignClients
+  client={editing.client}
+  onUpdated={(updatedCleaners) => {
+    // 🔥 update modal state immediately
+    setEditing((prev) => ({
+      ...prev,
+      client: {
+        ...prev.client,
+        cleaners: updatedCleaners,
+      },
+    }));
+
+    // 🔁 refresh calendar + cards
+    loadSchedules();
+  }}
+/>
+
   </div>
 )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
