@@ -5,6 +5,11 @@ import {
   startOfWeek,
   endOfWeek,
   addDays,
+    addWeeks,
+  addMonths,
+  isAfter,
+  isBefore,
+  parseISO,
   format,
   isSameMonth,
   isSameDay,
@@ -30,15 +35,50 @@ export default function SchedulesMiniCalendar({
     return days;
   }, [currentMonth]);
 
-  const schedulesByDate = useMemo(() => {
-    const map = {};
-    schedules.forEach((s) => {
-      if (!s.start_date) return;
-      map[s.start_date] = map[s.start_date] || [];
-      map[s.start_date].push(s);
-    });
-    return map;
-  }, [schedules]);
+ const schedulesByDate = useMemo(() => {
+  const map = {};
+
+  const rangeStart = startOfMonth(currentMonth);
+  const rangeEnd = endOfMonth(currentMonth);
+
+  schedules.forEach((s) => {
+    if (!s.start_date) return;
+
+    const start = parseISO(s.start_date);
+
+    // ONE-TIME
+    if (s.schedule_type === "one_time") {
+      const key = format(start, "yyyy-MM-dd");
+      map[key] = map[key] || [];
+      map[key].push(s);
+      return;
+    }
+
+    // RECURRING
+    let cursor = start;
+
+    while (!isAfter(cursor, rangeEnd)) {
+      if (!isBefore(cursor, rangeStart)) {
+        const key = format(cursor, "yyyy-MM-dd");
+        map[key] = map[key] || [];
+        map[key].push(s);
+      }
+
+      if (s.schedule_type === "weekly") {
+        cursor = addWeeks(cursor, 1);
+      } else if (s.schedule_type === "bi_weekly") {
+        cursor = addWeeks(cursor, 2);
+      } else if (s.schedule_type === "monthly") {
+        cursor = addMonths(cursor, 1);
+      } else {
+        break;
+      }
+    }
+  });
+
+  return map;
+}, [schedules, currentMonth]);
+
 
   return (
     <div className="rounded-2xl border bg-white shadow p-4 space-y-3">
