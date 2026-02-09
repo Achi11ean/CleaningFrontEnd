@@ -35,7 +35,14 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
   schedules.forEach((s) => {
     if (s.status !== "active") return;
 
-    const startDate = new Date(s.start_date);
+const parseLocalDate = (dateStr) => {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d); // ✅ local midnight
+};
+
+const startDate = parseLocalDate(s.start_date);
+if (!startDate) return;
 
     const [sh, sm] = s.start_time.split(":").map(Number);
     const [eh, em] = s.end_time.split(":").map(Number);
@@ -48,8 +55,8 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
       end.setHours(eh, em, 0, 0);
 
       events.push({
-        id: `${s.id}-${date.toISOString()}`,
-        title: `${s.client.first_name} ${s.client.last_name}`,
+id: `${s.id}-${start.toISOString()}`
+,        title: `${s.client.first_name} ${s.client.last_name}`,
         start,
         end,
         resource: s,
@@ -105,6 +112,16 @@ const weekDayHeaderFormat = (date, culture, localizer) => {
 
   // Desktop: Sun Mon Tue Wed Thu Fri Sat
   return format(date, "EEE");
+};
+const formatScheduleType = (t) => {
+  if (!t) return "—";
+  const map = {
+    one_time: "One Time",
+    weekly: "Weekly",
+    bi_weekly: "Bi-Weekly",
+    monthly: "Monthly",
+  };
+  return map[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
 
@@ -413,8 +430,8 @@ const myWeeklyEvents = useMemo(() => {
               </p>
 
               <p>
-                <strong>Schedule Type:</strong>{" "}
-                {selectedEvent.schedule_type}
+             <strong>Schedule Type:</strong> {formatScheduleType(selectedEvent.schedule_type)}
+
               </p>
 
               <p>
