@@ -23,6 +23,11 @@ const emptyForm = {
   image_urls: [], // ✅ NEW
 };
 
+const localDateTimeToUTCISOString = (localValue) => {
+  if (!localValue) return null;
+  const localDate = new Date(localValue);
+  return localDate.toISOString(); // ✅ converts local → UTC
+};
 
   const [form, setForm] = useState(emptyForm);
 const openCloudinary = () => {
@@ -80,6 +85,14 @@ const load = async () => {
     load();
 }, [role, axios]);
 
+const utcToLocalInputValue = (utc) => {
+  if (!utc) return "";
+  const d = new Date(utc);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+};
+
   /* ───────────────────────────────
      Handlers
      ─────────────────────────────── */
@@ -112,8 +125,11 @@ if (form.check_in_at && yearOf(form.check_in_at) < 2000) {
   const payload = {
   client_id: form.client_id,
   schedule_id: form.schedule_id || null,
-  check_in_at: form.check_in_at,
-  check_out_at: form.check_out_at || null,
+ check_in_at: localDateTimeToUTCISOString(form.check_in_at),
+check_out_at: form.check_out_at
+  ? localDateTimeToUTCISOString(form.check_out_at)
+  : null,
+
   message: form.message || null,
 
   staff_id:
@@ -175,8 +191,9 @@ const editShift = (shift) => {
     admin_id: shift.admin_id || "",
     client_id: shift.client_id,
     schedule_id: shift.schedule_id || "",
-    check_in_at: shift.check_in_at?.slice(0, 16),
-    check_out_at: shift.check_out_at?.slice(0, 16) || "",
+   check_in_at: utcToLocalInputValue(shift.check_in_at),
+check_out_at: utcToLocalInputValue(shift.check_out_at),
+
     message: shift.message || "",
     image_urls: Array.isArray(shift.image_urls) ? shift.image_urls : [],
   });

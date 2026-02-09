@@ -34,6 +34,8 @@ export default function AdminStartShift({ schedule, onStarted }) {
           });
 
           onStarted?.(res.data.shift);
+          window.location.reload();
+
         } catch (err) {
           const data = err?.response?.data;
 
