@@ -179,6 +179,7 @@ const getDisplayName = (assignment) => {
     <option value="new">🆕 New</option>
     <option value="active">✅ Active</option>
         <option value="contacted">📞 Contacted</option>
+        <option value="unresponsive">🚫 Unresponsive</option>
 
     <option value="paused">⏸️ Paused</option>
     <option value="inactive">⚠️ Inactive</option>

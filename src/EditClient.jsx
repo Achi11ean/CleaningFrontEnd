@@ -69,6 +69,7 @@ export default function EditClient({
         >
           <option value="new">New</option>
                     <option value="contacted">Contacted</option>
+                    <option value="unresponsive">Unresponsive</option>
 
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
