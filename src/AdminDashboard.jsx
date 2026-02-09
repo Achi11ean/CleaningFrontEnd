@@ -45,6 +45,7 @@ import ManagePurchases from "./ManagePurchases";
 import AdminShifts from "./AdminShifts";
 import ManualTimeEntry from "./ManualTimeEntry";
 import AdminChecklistOverview from "./AdminChecklistOverview";
+import ClientInquiry from "./ClientInquiry";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -357,6 +358,16 @@ export default function AdminDashboard() {
                 >
                   Clients
                 </button>
+<button
+  onClick={() => setClientsSubTab("new")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    clientsSubTab === "new"
+      ? "border-green-600 text-green-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  New
+</button>
 
                 <button
                   onClick={() => setClientsSubTab("schedules")}
@@ -380,6 +391,11 @@ export default function AdminDashboard() {
                   Create
                 </button>
               </div>
+{!loading && !error && clientsSubTab === "new" && (
+  <div className="mt-6">
+    <ClientInquiry />
+  </div>
+)}
 
               {/* Clients Sub Content */}
               {!loading && !error && clientsSubTab === "list" && (

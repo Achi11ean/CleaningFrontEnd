@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
+import SchedulesMiniCalendar from "./SchedulesMiniCalendar";
 
 const DAY_NAMES = [
   "Monday",
@@ -144,6 +145,11 @@ const filteredSchedules = schedules.filter((s) => {
     "
   />
 </div>
+<SchedulesMiniCalendar
+  schedules={filteredSchedules}
+  onEdit={startEdit}
+  onDelete={deleteSchedule}
+/>
 
       {schedules.length === 0 && (
         <p className="text-gray-500 italic">
