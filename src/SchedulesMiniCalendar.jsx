@@ -38,12 +38,14 @@ const { canceledMap, replacementMap } = useMemo(() => {
         replacements[ex.replacement_date] =
           replacements[ex.replacement_date] || [];
 
-     replacements[ex.replacement_date].push({
-  ...s,
-  _isException: true,
-  _originalDate: ex.original_date,
-  _exceptionId: ex.id,          // ✅ THIS IS CRITICAL
+   replacements[ex.replacement_date].push({
+  schedule: s,                 // 👈 keep the real schedule intact
+  occurrenceDate: ex.replacement_date,
+  isException: true,
+  exceptionId: ex.id,
+  originalDate: ex.original_date,
 });
+
 
       }
     });
@@ -184,26 +186,26 @@ const [actionCtx, setActionCtx] = useState(null);
 
               <div className="space-y-1">
                 {daySchedules.map((s) => (
-                  <div
-                    key={s.id}
-onClick={() =>
-  onEdit({
-    schedule: s,
-    occurrenceDate: dateKey,
-    isException: s._isException,
-    exceptionId: s._exceptionId,
-  })
-}
+  <div
+    key={s.id}
+    onClick={() =>
+      onEdit({
+        schedule: s,
+        occurrenceDate: dateKey,
+        isException: s._isException,
+        exceptionId: s._exceptionId,
+      })
+    }
+    className="
+      cursor-pointer rounded bg-blue-100 text-blue-800
+      px-1 py-0.5 truncate hover:bg-blue-200
+    "
+    title={`${s.client?.first_name} ${s.client?.last_name}`}
+  >
+    {s.client?.first_name}
+  </div>
+))}
 
-                    className="
-                      cursor-pointer rounded bg-blue-100 text-blue-800
-                      px-1 py-0.5 truncate hover:bg-blue-200
-                    "
-                    title={`${s.client?.first_name} ${s.client?.last_name}`}
-                  >
-                    {s.client?.first_name}
-                  </div>
-                ))}
               </div>
             </div>
           );
