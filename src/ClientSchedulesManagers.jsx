@@ -159,49 +159,106 @@ const filteredSchedules = schedules.filter((s) => {
   "
 />
 {actionCtx && (
-  <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
-    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-4 space-y-4">
-      <h3 className="text-lg font-bold">
-        {actionCtx.schedule.client?.first_name}{" "}
-        {actionCtx.schedule.client?.last_name}
-      </h3>
+  <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
 
-      <p className="text-sm text-gray-600">
-        Date: {actionCtx.occurrenceDate}
-      </p>
+      {/* HEADER */}
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <h3 className="text-xl font-bold tracking-wide">
+          📅 Modify Scheduled Cleaning
+        </h3>
 
-      <div className="space-y-2">
-<button
-  onClick={() => {
-    startEdit(actionCtx.schedule);   // ✅ fills editForm correctly
-    setActionCtx(null);
-  }}
-  className="w-full px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
->
-  ✏️ Edit Entire Schedule
-</button>
+        <p className="text-sm text-blue-100 mt-1">
+          {actionCtx.schedule.client?.first_name}{" "}
+          {actionCtx.schedule.client?.last_name}
+        </p>
+      </div>
 
+      {/* BODY */}
+      <div className="px-6 py-5 space-y-5">
 
+        {/* DATE CONTEXT */}
+        <div className="bg-slate-50 border rounded-xl px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+            Selected Date
+          </p>
+          <p className="text-base font-bold text-gray-800 mt-1">
+            {actionCtx.occurrenceDate}
+          </p>
+        </div>
+
+        <p className="text-sm font-semibold text-gray-700">
+          What would you like to do?
+        </p>
+
+        {/* ACTIONS */}
+        <div className="space-y-3">
+
+          {/* EDIT ENTIRE SCHEDULE */}
+          <button
+            onClick={() => {
+              startEdit(actionCtx.schedule);
+              setActionCtx(null);
+            }}
+            className="
+              w-full flex items-start gap-3
+              rounded-xl border px-4 py-3
+              bg-blue-50 hover:bg-blue-100
+              text-blue-700 transition
+            "
+          >
+            <div className="text-lg">✏️</div>
+            <div className="text-left">
+              <div className="font-semibold">
+                Edit Entire Schedule
+              </div>
+              <div className="text-xs text-blue-600">
+                Update recurrence, time, or details
+              </div>
+            </div>
+          </button>
+
+          {/* MODIFY SINGLE DATE */}
+          <button
+            onClick={() => {
+              setExceptionCtx(actionCtx);
+              setActionCtx(null);
+            }}
+            className="
+              w-full flex items-start gap-3
+              rounded-xl border px-4 py-3
+              bg-amber-50 hover:bg-amber-100
+              text-amber-700 transition
+            "
+          >
+            <div className="text-lg">📅</div>
+            <div className="text-left">
+              <div className="font-semibold">
+                Modify This Date Only
+              </div>
+              <div className="text-xs text-amber-600">
+                Cancel or reschedule just this occurrence
+              </div>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-6 py-4 border-t bg-gray-50">
         <button
-          onClick={() => {
-            setExceptionCtx(actionCtx);       // single occurrence
-            setActionCtx(null);
-          }}
-          className="w-full px-4 py-2 rounded bg-amber-500 text-white hover:bg-amber-600"
+          onClick={() => setActionCtx(null)}
+          className="w-full text-sm font-semibold text-gray-500 hover:text-gray-700"
         >
-          📅 Modify This Date Only
+          Cancel
         </button>
       </div>
 
-      <button
-        onClick={() => setActionCtx(null)}
-        className="block w-full text-sm text-gray-500 underline pt-2"
-      >
-        Cancel
-      </button>
     </div>
   </div>
 )}
+
 
 <SchedulesMiniCalendar
   schedules={filteredSchedules}
