@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
 import SchedulesMiniCalendar from "./SchedulesMiniCalendar";
 import AdminAssignClients from "./AdminAssignClients";
-
+import Exceptions from "./Exceptions";
 const DAY_NAMES = [
   "Monday",
   "Tuesday",
@@ -32,7 +32,8 @@ const formatLocalDate = (dateStr) => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+const [actionCtx, setActionCtx] = useState(null);
+const [exceptionCtx, setExceptionCtx] = useState(null);
   const [editing, setEditing] = useState(null); // schedule being edited
   const [editForm, setEditForm] = useState({});
 
@@ -133,6 +134,50 @@ const filteredSchedules = schedules.filter((s) => {
       <h2 className="text-2xl font-bold text-gray-800">
         📅 Client Schedules
       </h2>
+      {actionCtx && (
+  <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-4 space-y-4">
+      <h3 className="text-lg font-bold">
+        {actionCtx.schedule.client?.first_name}{" "}
+        {actionCtx.schedule.client?.last_name}
+      </h3>
+
+      <p className="text-sm text-gray-600">
+        Date: {actionCtx.occurrenceDate}
+      </p>
+
+      <div className="space-y-2">
+        <button
+          onClick={() => {
+            startEdit(actionCtx.schedule);
+            setActionCtx(null);
+          }}
+          className="w-full px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          ✏️ Edit Entire Schedule
+        </button>
+
+        <button
+          onClick={() => {
+            setExceptionCtx(actionCtx);
+            setActionCtx(null);
+          }}
+          className="w-full px-4 py-2 rounded bg-amber-500 text-white hover:bg-amber-600"
+        >
+          📅 Modify This Date Only
+        </button>
+      </div>
+
+      <button
+        onClick={() => setActionCtx(null)}
+        className="block w-full text-sm text-gray-500 underline pt-2"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
 <div className="max-w-md">
   <input
     type="text"
@@ -148,9 +193,29 @@ const filteredSchedules = schedules.filter((s) => {
 </div>
 <SchedulesMiniCalendar
   schedules={filteredSchedules}
-  onEdit={startEdit}
+  onEdit={(ctx) => {
+    // 🚫 One-time schedules cannot have exceptions
+    if (ctx.schedule.schedule_type === "one_time") {
+      startEdit(ctx.schedule);
+      return;
+    }
+
+    // 🔁 Recurring schedules → show choice modal
+    setActionCtx(ctx);
+  }}
   onDelete={deleteSchedule}
 />
+
+{exceptionCtx && (
+  <Exceptions
+    schedule={exceptionCtx.schedule}
+    occurrenceDate={exceptionCtx.occurrenceDate}
+    exceptionId={exceptionCtx.exceptionId}
+    isException={exceptionCtx.isException}
+    onClose={() => setExceptionCtx(null)}
+    onSuccess={loadSchedules}
+  />
+)}
 
       {schedules.length === 0 && (
         <p className="text-gray-500 italic">

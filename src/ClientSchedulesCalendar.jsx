@@ -35,52 +35,79 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
   schedules.forEach((s) => {
     if (s.status !== "active") return;
 
-const parseLocalDate = (dateStr) => {
-  if (!dateStr) return null;
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d); // local midnight
-};
+    const hasExceptions =
+      Array.isArray(s.exceptions) && s.schedule_type !== "one_time";
 
-const startDate = parseLocalDate(s.start_date);
+    const canceledDates = new Set();
+    const replacementsByDate = {};
 
-    const [sh, sm] = s.start_time.split(":").map(Number);
-    const [eh, em] = s.end_time.split(":").map(Number);
+    if (hasExceptions) {
+      s.exceptions.forEach((ex) => {
+        if (ex.original_date) {
+          canceledDates.add(ex.original_date);
+        }
 
-    const makeEvent = (date) => {
+        if (ex.replacement_date) {
+          replacementsByDate[ex.replacement_date] = ex;
+        }
+      });
+    }
+
+    const parseLocalDate = (dateStr) => {
+      if (!dateStr) return null;
+      const [y, m, d] = dateStr.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    };
+
+    const startDate = parseLocalDate(s.start_date);
+    if (!startDate) return;
+
+    const makeEvent = (date, ex = null) => {
       const start = new Date(date);
-      start.setHours(sh, sm, 0, 0);
-
       const end = new Date(date);
+
+      const startTime = ex?.start_time ?? s.start_time;
+      const endTime = ex?.end_time ?? s.end_time;
+
+      const [sh, sm] = startTime.split(":").map(Number);
+      const [eh, em] = endTime.split(":").map(Number);
+
+      start.setHours(sh, sm, 0, 0);
       end.setHours(eh, em, 0, 0);
 
       events.push({
-        id: `${s.id}-${date.toISOString()}`,
+        id: `${s.id}-${format(start, "yyyy-MM-dd")}`,
         title: `${s.client.first_name} ${s.client.last_name}`,
         start,
         end,
         resource: s,
+        isException: Boolean(ex),
+        exceptionId: ex?.id ?? null,
       });
     };
 
-    // ONE TIME
+    // 🟢 ONE-TIME
     if (s.schedule_type === "one_time") {
       makeEvent(startDate);
       return;
     }
 
-    // RECURRING
+    // 🔁 RECURRING
     let cursor = new Date(startDate);
 
-    // Align cursor to first correct weekday
     if (s.day_of_week !== null) {
-      while (cursor.getDay() !== (s.day_of_week + 1) % 7) {
+      while (cursor.getDay() !== ((s.day_of_week + 1) % 7)) {
         cursor = addDays(cursor, 1);
       }
     }
 
     while (!isAfter(cursor, rangeEnd)) {
+      const dateKey = format(cursor, "yyyy-MM-dd");
+
       if (!isAfter(rangeStart, cursor)) {
-        makeEvent(cursor);
+        if (!canceledDates.has(dateKey)) {
+          makeEvent(cursor);
+        }
       }
 
       if (s.schedule_type === "weekly") {
@@ -93,10 +120,21 @@ const startDate = parseLocalDate(s.start_date);
         break;
       }
     }
+
+    // ➕ Inject reschedules
+    Object.entries(replacementsByDate).forEach(([dateStr, ex]) => {
+      const d = parseLocalDate(dateStr);
+      if (!d) return;
+
+      if (d >= rangeStart && d <= rangeEnd) {
+        makeEvent(d, ex);
+      }
+    });
   });
 
   return events;
 }
+
 
 export default function ClientSchedulesCalendar() {
   const { authAxios, admin } = useAdmin();
