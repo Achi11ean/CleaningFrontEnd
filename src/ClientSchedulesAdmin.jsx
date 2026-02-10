@@ -271,170 +271,191 @@ const filteredSchedules = schedules.filter((s) => {
 </div>
 
 
-      {/* EDIT MODAL */}
-      {editing && (
-<div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
-<div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-auto p-1 flex flex-col">
-            <h3 className="text-xl font-bold">
-              ✏️ Edit Schedule
-            </h3>
-            {editing?.client && (
-    <p className="mt-1 text-sm text-gray-600">
-      Client:{" "}
-      <span className="font-semibold text-gray-800">
-        {editing.client.first_name} {editing.client.last_name}
-      </span>
-    </p>
-  )}
-{editing?.client && (
-  <div className="border rounded-lg p-4 bg-slate-50">
-    <h4 className="text-sm font-bold text-slate-700 mb-3">
-      👥 Assign Cleaners
-    </h4>
+     {/* EDIT MODAL */}
+{editing && (
+  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
+    <div className="w-full max-w-xl max-h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
 
-    <AdminAssignClients
-      client={editing.client}
-      onUpdated={(updatedCleaners) => {
-        // ✅ update modal instantly
-        setEditing((prev) => ({
-          ...prev,
-          client: {
-            ...prev.client,
-            cleaners: updatedCleaners,
-          },
-        }));
+      {/* HEADER */}
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <h3 className="text-xl font-bold flex items-center gap-2">
+          ✏️ Edit Schedule
+        </h3>
 
-        // ✅ update cards + calendar instantly
-        setSchedules((prev) =>
-          prev.map((s) =>
-            s.id === editing.id
-              ? {
-                  ...s,
+        {editing?.client && (
+          <p className="mt-1 text-sm text-blue-100">
+            Client:&nbsp;
+            <span className="font-semibold text-white">
+              {editing.client.first_name} {editing.client.last_name}
+            </span>
+          </p>
+        )}
+      </div>
+
+      {/* SCROLLABLE CONTENT */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+
+        {/* SCHEDULE DETAILS */}
+        <div className="bg-slate-50 rounded-xl p-4 border space-y-4">
+          <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+            Schedule Details
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Schedule Type
+              </label>
+              <select
+                value={editForm.schedule_type}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, schedule_type: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="one_time">One Time</option>
+                <option value="weekly">Weekly</option>
+                <option value="bi_weekly">Bi-Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={editForm.start_date}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, start_date: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Start Time
+              </label>
+              <input
+                type="time"
+                value={editForm.start_time}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, start_time: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                End Time
+              </label>
+              <input
+                type="time"
+                value={editForm.end_time}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, end_time: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Description
+              </label>
+              <textarea
+                rows={3}
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, description: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Status
+              </label>
+              <select
+                value={editForm.status}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, status: e.target.value })
+                }
+                className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="ended">Ended</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ASSIGN CLEANERS */}
+        {editing?.client && (
+          <div className="bg-slate-50 rounded-xl p-4 border">
+            <h4 className="text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">
+              👥 Assigned Cleaners
+            </h4>
+
+            <AdminAssignClients
+              client={editing.client}
+              onUpdated={(updatedCleaners) => {
+                setEditing((prev) => ({
+                  ...prev,
                   client: {
-                    ...s.client,
+                    ...prev.client,
                     cleaners: updatedCleaners,
                   },
-                }
-              : s
-          )
-        );
-      }}
-    />
+                }));
+
+                setSchedules((prev) =>
+                  prev.map((s) =>
+                    s.id === editing.id
+                      ? {
+                          ...s,
+                          client: {
+                            ...s.client,
+                            cleaners: updatedCleaners,
+                          },
+                        }
+                      : s
+                  )
+                );
+              }}
+            />
+          </div>
+        )}
+
+      </div>
+
+      {/* FOOTER */}
+      <div className="border-t bg-white px-6 py-4 flex justify-end gap-3">
+        <button
+          onClick={cancelEdit}
+          className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-semibold"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={saveEdit}
+          className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+        >
+          Save Changes
+        </button>
+      </div>
+
+    </div>
   </div>
 )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Schedule Type
-                </label>
-                <select
-                  value={editForm.schedule_type}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, schedule_type: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                >
-                  <option value="one_time">One Time</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="bi_weekly">Bi-Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={editForm.start_date}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, start_date: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  value={editForm.start_time}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, start_time: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  value={editForm.end_time}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, end_time: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold mb-1">
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Status
-                </label>
-                <select
-                  value={editForm.status}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, status: e.target.value })
-                  }
-                  className="w-full border rounded p-2"
-                >
-                  <option value="active">Active</option>
-                  <option value="paused">Paused</option>
-                  <option value="ended">Ended</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                onClick={cancelEdit}
-                className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={saveEdit}
-                className="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

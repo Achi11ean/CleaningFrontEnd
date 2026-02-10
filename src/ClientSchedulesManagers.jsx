@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
 import SchedulesMiniCalendar from "./SchedulesMiniCalendar";
 import AssignClients from "./AssignClients";
+import Exceptions from "./Exceptions";
 
 const DAY_NAMES = [
   "Monday",
@@ -22,6 +23,9 @@ const getCleanerName = (c) => {
   return c.username;
 };
 const [search, setSearch] = useState("");
+const [exceptionCtx, setExceptionCtx] = useState(null);
+const [actionCtx, setActionCtx] = useState(null);
+
 const normalizedSearch = search.trim().toLowerCase();
 const formatLocalDate = (dateStr) => {
   if (!dateStr) return "";
@@ -154,12 +158,77 @@ const filteredSchedules = schedules.filter((s) => {
     focus:outline-none
   "
 />
+{actionCtx && (
+  <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+    <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-4 space-y-4">
+      <h3 className="text-lg font-bold">
+        {actionCtx.schedule.client?.first_name}{" "}
+        {actionCtx.schedule.client?.last_name}
+      </h3>
+
+      <p className="text-sm text-gray-600">
+        Date: {actionCtx.occurrenceDate}
+      </p>
+
+      <div className="space-y-2">
+<button
+  onClick={() => {
+    startEdit(actionCtx.schedule);   // ✅ fills editForm correctly
+    setActionCtx(null);
+  }}
+  className="w-full px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+>
+  ✏️ Edit Entire Schedule
+</button>
+
+
+        <button
+          onClick={() => {
+            setExceptionCtx(actionCtx);       // single occurrence
+            setActionCtx(null);
+          }}
+          className="w-full px-4 py-2 rounded bg-amber-500 text-white hover:bg-amber-600"
+        >
+          📅 Modify This Date Only
+        </button>
+      </div>
+
+      <button
+        onClick={() => setActionCtx(null)}
+        className="block w-full text-sm text-gray-500 underline pt-2"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
 
 <SchedulesMiniCalendar
   schedules={filteredSchedules}
-  onEdit={startEdit}
+  onEdit={(ctx) => {
+    // 🚫 One-time schedules cannot use exceptions
+    if (ctx.schedule.schedule_type === "one_time") {
+      startEdit(ctx.schedule); // 👈 auto-open edit modal
+      return;
+    }
+
+    // 🔁 Recurring schedules get options modal
+    setActionCtx(ctx);
+  }}
   onDelete={deleteSchedule}
 />
+
+{exceptionCtx && (
+<Exceptions
+  schedule={exceptionCtx.schedule}
+  occurrenceDate={exceptionCtx.occurrenceDate}
+  exceptionId={exceptionCtx.exceptionId}   // 👈 ADD
+  isException={exceptionCtx.isException}   // 👈 ADD
+  onClose={() => setExceptionCtx(null)}
+  onSuccess={loadSchedules}
+/>
+
+)}
 
       {schedules.length === 0 && (
         <p className="text-gray-500 italic">

@@ -21,6 +21,37 @@ export default function SchedulesMiniCalendar({
   onDelete,
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+const { canceledMap, replacementMap } = useMemo(() => {
+  const canceled = {};
+  const replacements = {};
+
+  schedules.forEach((s) => {
+    if (!s.exceptions) return;
+
+    s.exceptions.forEach((ex) => {
+      // ❌ cancel original occurrence
+      const cancelKey = `${s.id}-${ex.original_date}`;
+      canceled[cancelKey] = true;
+
+      // ➡️ add replacement occurrence
+      if (ex.replacement_date) {
+        replacements[ex.replacement_date] =
+          replacements[ex.replacement_date] || [];
+
+     replacements[ex.replacement_date].push({
+  ...s,
+  _isException: true,
+  _originalDate: ex.original_date,
+  _exceptionId: ex.id,          // ✅ THIS IS CRITICAL
+});
+
+      }
+    });
+  });
+
+  return { canceledMap: canceled, replacementMap: replacements };
+}, [schedules]);
+
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
@@ -60,8 +91,12 @@ export default function SchedulesMiniCalendar({
     while (!isAfter(cursor, rangeEnd)) {
       if (!isBefore(cursor, rangeStart)) {
         const key = format(cursor, "yyyy-MM-dd");
-        map[key] = map[key] || [];
-        map[key].push(s);
+        const cancelKey = `${s.id}-${key}`;
+
+        if (!canceledMap[cancelKey]) {
+          map[key] = map[key] || [];
+          map[key].push(s);
+        }
       }
 
       if (s.schedule_type === "weekly") {
@@ -76,8 +111,16 @@ export default function SchedulesMiniCalendar({
     }
   });
 
+  // ✅ INJECT replacement occurrences HERE
+  Object.entries(replacementMap).forEach(([date, schedules]) => {
+    map[date] = map[date] || [];
+    map[date].push(...schedules);
+  });
+
   return map;
-}, [schedules, currentMonth]);
+}, [schedules, currentMonth, canceledMap, replacementMap]);
+const [actionCtx, setActionCtx] = useState(null);
+
 
 
   return (
@@ -143,7 +186,15 @@ export default function SchedulesMiniCalendar({
                 {daySchedules.map((s) => (
                   <div
                     key={s.id}
-                    onClick={() => onEdit(s)}
+onClick={() =>
+  onEdit({
+    schedule: s,
+    occurrenceDate: dateKey,
+    isException: s._isException,
+    exceptionId: s._exceptionId,
+  })
+}
+
                     className="
                       cursor-pointer rounded bg-blue-100 text-blue-800
                       px-1 py-0.5 truncate hover:bg-blue-200
