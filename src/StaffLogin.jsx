@@ -46,14 +46,14 @@ export default function StaffLogin() {
   <div className="min-h-screen bg-gradient-to-br from-sky-600 via-blue-900 to-black flex flex-col">
 
     {/* 🔝 TOP BANNER */}
+    <div className="bg-gradient-to-t from-slate-700 to-black ">
     <div
-      className="relative w-full mt-14 lg:mt-20 border-b lg:h-96 md:h-80 h-64 flex items-end"
+      className="relative w-full mt-14 lg:mt-20  border-b lg:h-96 md:h-80 h-64 flex items-end"
       style={{
         backgroundImage: "url('/logo2.jpg')",
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
-        backgroundColor: "#000",
       }}
     >
       {/* Gradient Overlay */}
@@ -65,7 +65,7 @@ export default function StaffLogin() {
           Welcome Back, Team 👋
         </h1>
    
-      </div>
+      </div></div>
     </div>
 
 {/* 🧾 LOGIN SECTION */}
