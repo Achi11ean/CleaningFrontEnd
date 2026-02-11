@@ -47,7 +47,7 @@ export default function StaffLogin() {
 
     {/* 🔝 TOP BANNER */}
     <div
-      className="relative w-full mt-14 lg:h-96 md:h-80 h-64 flex items-end"
+      className="relative w-full mt-14 lg:mt-20 border-b lg:h-96 md:h-80 h-64 flex items-end"
       style={{
         backgroundImage: "url('/logo2.jpg')",
         backgroundSize: "contain",
@@ -68,7 +68,6 @@ export default function StaffLogin() {
       </div>
     </div>
 
-    {/* 🧾 LOGIN CARD */}
 {/* 🧾 LOGIN SECTION */}
 <div className="flex mt-8 justify-center px-4 ">
   <div className="w-full max-w-md border-yellow-400 border-2 bg-white rounded-2xl shadow-2xl p-8 ">
