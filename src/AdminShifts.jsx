@@ -91,13 +91,24 @@ return (
                 {s.client?.first_name} {s.client?.last_name}
               </h3>
 
-              {mode === "all" && (
-                <p className="text-xs text-gray-500 font-medium">
-                  {s.owner_type === "admin"
-                    ? `Admin #${s.admin_id}`
-                    : `Staff #${s.staff_id}`}
-                </p>
-              )}
+            {mode === "all" && (
+  <p className="text-xs text-gray-500 font-medium">
+    {s.owner_type === "admin" ? (
+      <>
+        {s.admin?.profile?.first_name || s.admin?.username}{" "}
+        {s.admin?.profile?.last_name || ""}
+        <span className="ml-1 italic text-gray-400">(admin)</span>
+      </>
+    ) : (
+      <>
+        {s.staff?.profile?.first_name || s.staff?.username}{" "}
+        {s.staff?.profile?.last_name || ""}
+        <span className="ml-1 italic text-gray-400">(staff)</span>
+      </>
+    )}
+  </p>
+)}
+
             </div>
 
             <span className="text-sm font-bold text-emerald-700">
