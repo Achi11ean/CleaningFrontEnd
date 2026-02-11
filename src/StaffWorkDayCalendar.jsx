@@ -174,7 +174,9 @@ const formatScheduleType = (t) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 const [showWeekly, setShowWeekly] = useState(false);
 const [weekOffset, setWeekOffset] = useState(0); // 0 = this week, 1 = next, -1 = last
-  
+const [activeShift, setActiveShift] = useState(null);
+const [checkingActiveShift, setCheckingActiveShift] = useState(true);
+
 const isAssignedToMe = (schedule) => {
   if (!schedule?.client?.cleaners || !myStaffId) return false;
 
@@ -222,6 +224,31 @@ const isAssignedToMe = (schedule) => {
 
     load();
   }, []);
+
+useEffect(() => {
+  const loadActiveShift = async () => {
+    try {
+      setCheckingActiveShift(true);
+
+      const res = await authAxios.get("/staff/shifts/active");
+
+      if (res.data?.active) {
+        setActiveShift(res.data.shift);
+      } else {
+        setActiveShift(null);
+      }
+    } catch (err) {
+      console.error("Failed to load active shift", err);
+      setActiveShift(null);
+    } finally {
+      setCheckingActiveShift(false);
+    }
+  };
+
+  loadActiveShift();
+}, [authAxios]);
+
+
 
   const formatDateTime = (date) => {
   return format(date, "EEEE, MMM d • h:mm a"); 
@@ -278,11 +305,40 @@ const myWeeklyEvents = useMemo(() => {
     <div className="space-y-4">
 <h2 className="text-2xl font-bold">🗓️ Work Day Schedule</h2>
 {/* NEXT SHIFT BANNER */}
-{nextShift ? (
+{checkingActiveShift ? null : activeShift ? (
+
+  // 🔵 ACTIVE SHIFT
+  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-5">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+      <div>
+        <p className="text-xs sm:text-sm text-blue-700 font-semibold">
+          You are currently clocked in
+        </p>
+
+        <p className="text-base sm:text-lg font-bold text-blue-900 mt-1">
+          {formatDateTime(new Date(activeShift.check_in_at))}
+        </p>
+
+        <p className="text-sm text-blue-800 mt-0.5">
+          {activeShift.client?.first_name}{" "}
+          {activeShift.client?.last_name}
+        </p>
+      </div>
+
+      <div className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1.5 rounded-lg">
+        Shift in progress
+      </div>
+
+    </div>
+  </div>
+
+) : nextShift ? (
+
+  // 🟢 NEXT SHIFT
   <div className="bg-green-50 border border-green-200 rounded-xl p-4 sm:p-5">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-      {/* Left: Details */}
       <div>
         <p className="text-xs sm:text-sm text-green-700 font-semibold">
           Your next scheduled work shift
@@ -298,7 +354,6 @@ const myWeeklyEvents = useMemo(() => {
         </p>
       </div>
 
-      {/* Right: Time + Action */}
       <div className="flex flex-col items-start sm:items-end gap-2">
 
         <div className="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1.5 rounded-lg">
@@ -307,7 +362,6 @@ const myWeeklyEvents = useMemo(() => {
           {formatTo12Hour(nextShift.resource.end_time)}
         </div>
 
-        {/* ✅ START SHIFT BUTTON */}
         {isAssignedToMe(nextShift.resource) && (
           <StartShift
             schedule={nextShift.resource}
@@ -321,11 +375,16 @@ const myWeeklyEvents = useMemo(() => {
 
     </div>
   </div>
+
 ) : (
+
+  // ⚪ NO SHIFTS
   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-600 italic text-sm">
     You have no upcoming assigned work shifts.
   </div>
+
 )}
+
 
 {/* WEEKLY SCHEDULE DROPDOWN */}
 <div className="bg-white border rounded-xl shadow-sm">
