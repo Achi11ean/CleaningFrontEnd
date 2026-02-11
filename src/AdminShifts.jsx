@@ -72,170 +72,175 @@ export default function AdminShifts({ mode = "me" }) {
     );
   }
 
-  return (
-    <div className="space-y-4">
+return (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-bold">
+      🧾 {mode === "all" ? "All Work Shifts" : "My Admin Shifts"}
+    </h2>
 
-      <h2 className="text-2xl font-bold">
-        🧾 {mode === "all" ? "All Work Shifts" : "My Admin Shifts"}
-      </h2>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {shifts.map((s) => (
+        <div
+          key={s.id}
+          className="rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition p-5 space-y-4"
+        >
+          {/* HEADER */}
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-lg font-extrabold text-gray-800">
+                {s.client?.first_name} {s.client?.last_name}
+              </h3>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border rounded-lg text-sm">
-          <thead className="bg-gray-100">
-            <tr>
               {mode === "all" && (
-                <th className="p-2 border text-left">Owner</th>
+                <p className="text-xs text-gray-500 font-medium">
+                  {s.owner_type === "admin"
+                    ? `Admin #${s.admin_id}`
+                    : `Staff #${s.staff_id}`}
+                </p>
               )}
+            </div>
 
-              <th className="p-2 border text-left">Client</th>
-              <th className="p-2 border text-left">Assigned Team</th>
-              <th className="p-2 border text-left">Schedule</th>
-              <th className="p-2 border text-left">Check In</th>
-              <th className="p-2 border text-left">Check Out</th>
-              <th className="p-2 border text-left">Duration</th>
-              <th className="p-2 border text-left">Notes</th>
-              <th className="p-2 border text-left">Photo</th>
-            </tr>
-          </thead>
+            <span className="text-sm font-bold text-emerald-700">
+              {formatDuration(s.duration_seconds)}
+            </span>
+          </div>
 
-          <tbody>
-            {shifts.map((s) => (
-              <tr key={s.id} className="hover:bg-gray-50 align-top">
+          {/* SCHEDULE */}
+          <div className="bg-slate-50 rounded-xl p-3 text-sm space-y-1">
+            {s.schedule ? (
+              <>
+                <div className="font-semibold capitalize">
+                  {s.schedule.schedule_type.replace("_", " ")}
+                </div>
 
-                {/* OWNER (ALL MODE ONLY) */}
-                {mode === "all" && (
-                  <td className="p-2 border font-medium">
-                    {s.owner_type === "admin"
-                      ? `Admin #${s.admin_id}`
-                      : `Staff #${s.staff_id}`}
-                  </td>
+                <div>
+                  ⏰ {formatTo12Hour(s.schedule.start_time)} →{" "}
+                  {formatTo12Hour(s.schedule.end_time)}
+                </div>
+
+                {s.schedule.day_of_week !== null && (
+                  <div className="text-gray-600 font-medium">
+                    📅 {formatDayOfWeek(s.schedule.day_of_week)}
+                  </div>
                 )}
 
-                {/* CLIENT */}
-                <td className="p-2 border font-semibold">
-                  {s.client?.first_name} {s.client?.last_name}
-                </td>
+                {s.schedule.description && (
+                  <div className="italic text-gray-500">
+                    {s.schedule.description}
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="italic text-gray-400">
+                Manual / Unscheduled
+              </span>
+            )}
+          </div>
 
-                {/* ASSIGNED TEAM */}
-                <td className="p-2 border text-xs">
-                  {s.client?.cleaners?.length > 0 ? (
-                    <div className="space-y-1">
-                      {s.client.cleaners.map((c) => {
-                        const name =
-                          c.profile?.first_name ||
-                          c.username;
+          {/* TIMES */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="text-xs text-gray-500 font-semibold">
+                Check In
+              </div>
+              <div>{formatDateTime(s.check_in_at)}</div>
+            </div>
 
-                        return (
-                          <div key={c.assignment_id}>
-                            • {name} ({c.type})
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <span className="italic text-gray-400">None</span>
-                  )}
-                </td>
+            <div>
+              <div className="text-xs text-gray-500 font-semibold">
+                Check Out
+              </div>
+              <div>{formatDateTime(s.check_out_at)}</div>
+            </div>
+          </div>
 
-                {/* SCHEDULE */}
-                <td className="p-2 border text-xs">
-                  {s.schedule ? (
-                    <div className="space-y-1">
-                      <div className="font-semibold capitalize">
-                        {s.schedule.schedule_type.replace("_", " ")}
-                      </div>
+          {/* TEAM */}
+          <div>
+            <div className="text-xs text-gray-500 font-semibold mb-1">
+              Assigned Team
+            </div>
 
-                      <div>
-                        {formatTo12Hour(s.schedule.start_time)} →{" "}
-                        {formatTo12Hour(s.schedule.end_time)}
-                      </div>
+            {s.client?.cleaners?.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {s.client.cleaners.map((c) => {
+                  const name =
+                    c.profile?.first_name || c.username;
 
-                      {s.schedule.day_of_week !== null && (
-                        <div className="text-gray-600 font-medium">
-                          {formatDayOfWeek(s.schedule.day_of_week)}
-                        </div>
-                      )}
-
-                      {s.schedule.description && (
-                        <div className="italic text-gray-500">
-                          {s.schedule.description}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="italic text-gray-400">
-                      Manual / Unscheduled
+                  return (
+                    <span
+                      key={c.assignment_id}
+                      className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
+                    >
+                      {name} ({c.type})
                     </span>
-                  )}
-                </td>
+                  );
+                })}
+              </div>
+            ) : (
+              <span className="italic text-gray-400 text-sm">
+                None assigned
+              </span>
+            )}
+          </div>
 
-                {/* CHECK IN */}
-                <td className="p-2 border">
-                  {formatDateTime(s.check_in_at)}
-                </td>
+          {/* NOTES */}
+          <div>
+            <div className="text-xs text-gray-500 font-semibold mb-1">
+              Notes
+            </div>
+            <p className="text-sm text-gray-700">
+              {s.message || "—"}
+            </p>
+          </div>
 
-                {/* CHECK OUT */}
-                <td className="p-2 border">
-                  {formatDateTime(s.check_out_at)}
-                </td>
+          {/* PHOTOS */}
+          <div>
+            <div className="text-xs text-gray-500 font-semibold mb-1">
+              Photos
+            </div>
 
-                {/* DURATION */}
-                <td className="p-2 border font-semibold">
-                  {formatDuration(s.duration_seconds)}
-                </td>
-
-                {/* NOTES */}
-                <td className="p-2 border max-w-xs text-xs">
-                  {s.message || "—"}
-                </td>
-
-                {/* PHOTO */}
-              <td className="p-2 border">
-  {s.image_urls && s.image_urls.length > 0 ? (
-    <div className="flex flex-wrap gap-1">
-      {s.image_urls.map((url, i) => (
-        <img
-          key={i}
-          src={url}
-          alt={`Shift photo ${i + 1}`}
-          onClick={() => setViewImageUrl(url)}
-          className="w-10 h-10 object-cover rounded cursor-pointer hover:brightness-110"
-        />
+            {s.image_urls && s.image_urls.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {s.image_urls.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Shift photo ${i + 1}`}
+                    onClick={() => setViewImageUrl(url)}
+                    className="w-14 h-14 object-cover rounded-lg cursor-pointer hover:brightness-110"
+                  />
+                ))}
+              </div>
+            ) : (
+              <span className="italic text-gray-400 text-sm">
+                No photos
+              </span>
+            )}
+          </div>
+        </div>
       ))}
     </div>
-  ) : (
-    "—"
-  )}
-</td>
 
+    {/* IMAGE MODAL (unchanged) */}
+    {viewImageUrl && (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl p-4 max-w-3xl w-full mx-4 relative">
+          <button
+            onClick={() => setViewImageUrl(null)}
+            className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl font-bold"
+          >
+            ✕
+          </button>
 
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* IMAGE MODAL */}
-     {viewImageUrl && (
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl shadow-xl p-4 max-w-3xl w-full mx-4 relative">
-      <button
-        onClick={() => setViewImageUrl(null)}
-        className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl font-bold"
-      >
-        ✕
-      </button>
-
-      <img
-        src={viewImageUrl}
-        alt="Shift Photo"
-        className="w-full max-h-[80vh] object-contain rounded"
-      />
-    </div>
-  </div>
-)}
-
-
+          <img
+            src={viewImageUrl}
+            alt="Shift Photo"
+            className="w-full max-h-[80vh] object-contain rounded"
+          />
+        </div>
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
+
 }

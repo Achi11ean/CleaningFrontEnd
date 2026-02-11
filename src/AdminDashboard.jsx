@@ -764,7 +764,7 @@ export default function AdminDashboard() {
           {activeTab === "workday" && (
             <>
               {/* Work Day Sub Tabs */}
-              <div className="flex space-x-4 border-b mb-6 mt-4">
+              <div className="flex overflow-auto space-x-4 border-b mb-6 mt-4">
                 <button
                   onClick={() => setWorkDaySubTab("workday")}
                   className={`px-3 py-2 font-semibold border-b-2 transition ${
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
                       : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  🟢 Day
+                  Day
                 </button>
                 <button
                   onClick={() => setWorkDaySubTab("employees")}
@@ -783,7 +783,7 @@ export default function AdminDashboard() {
                       : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  🗓️ Employees
+                  Employees
                 </button>
 
                 <button
@@ -794,7 +794,7 @@ export default function AdminDashboard() {
                       : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  👥 Active
+                  Active
                 </button>
                 <button
                   onClick={() => setWorkDaySubTab("inventory")}
@@ -804,9 +804,9 @@ export default function AdminDashboard() {
                       : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  📦 Inventory
+                  Inventory
                   {inventoryShortageAlert && (
-                    <span className="absolute top-0 right-0 -mt-1 -mr-2 bg-gray-100 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow">
+                    <span className="absolute top-0 left-0 -mt-1 -mr-2 bg-gray-100 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow">
                       ❗️
                     </span>
                   )}
