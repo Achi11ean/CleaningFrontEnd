@@ -46,6 +46,7 @@ import AdminShifts from "./AdminShifts";
 import ManualTimeEntry from "./ManualTimeEntry";
 import AdminChecklistOverview from "./AdminChecklistOverview";
 import ClientInquiry from "./ClientInquiry";
+import AllExceptions from "./AllExceptions";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -433,9 +434,20 @@ export default function AdminDashboard() {
                         </span>
                       )}
                     </button>
+                    <button
+  onClick={() => setClientsListMode("exceptions")}
+  className={`relative px-3 py-2 text-sm font-semibold border-b-2 transition ${
+    clientsListMode === "exceptions"
+      ? "border-red-600 text-red-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  Exceptions
+</button>
+
                   </div>
 
-                  {/* Content for each */}
+{clientsListMode === "exceptions" && <AllExceptions />}
                   {clientsListMode === "all" && <ManageClients />}
                   {clientsListMode === "requests" && <ManagerRequests />}
                 </>

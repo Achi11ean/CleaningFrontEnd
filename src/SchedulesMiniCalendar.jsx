@@ -185,26 +185,35 @@ const [actionCtx, setActionCtx] = useState(null);
               </div>
 
               <div className="space-y-1">
-                {daySchedules.map((s) => (
-  <div
-    key={s.id}
-    onClick={() =>
-      onEdit({
-        schedule: s,
-        occurrenceDate: dateKey,
-        isException: s._isException,
-        exceptionId: s._exceptionId,
-      })
-    }
-    className="
-      cursor-pointer rounded bg-blue-100 text-blue-800
-      px-1 py-0.5 truncate hover:bg-blue-200
-    "
-    title={`${s.client?.first_name} ${s.client?.last_name}`}
-  >
-    {s.client?.first_name}
-  </div>
-))}
+               {daySchedules.map((item) => {
+  const schedule = item.schedule || item;
+  const occurrenceDate = item.occurrenceDate || dateKey;
+
+  const key = item.isException
+    ? `ex-${item.exceptionId}-${occurrenceDate}`
+    : `sch-${schedule.id}-${occurrenceDate}`;
+
+  return (
+    <div
+      key={key}
+      onClick={() =>
+        onEdit({
+          schedule,
+          occurrenceDate,
+          isException: item.isException || false,
+          exceptionId: item.exceptionId || null,
+        })
+      }
+      className="
+        cursor-pointer rounded bg-blue-100 text-blue-800
+        px-1 py-0.5 truncate hover:bg-blue-200
+      "
+      title={`${schedule.client?.first_name} ${schedule.client?.last_name}`}
+    >
+      {schedule.client?.first_name}
+    </div>
+  );
+})}
 
               </div>
             </div>
