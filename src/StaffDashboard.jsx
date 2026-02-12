@@ -98,32 +98,46 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-600 via-black to-slate-700  text-center  pt-20">
       <div className="max-w-6xl mx-auto bg-white pb-4 rounded-none shadow-none border border-gray-200 ">
-      <h2
-          className="
-    pt-4 text-7xl lg:text-8xl
-    font-extrabold font-[Aspire]   tracking-tight text-center
-    relative
-    bg-gradient-to-br from-blue-600 via-cyan-400 to-blue-600
-text-white
-    drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]
-    border-b-2 border-white/70
-    shadow-[inset_0_2px_4px_rgba(255,255,255,0.35)]
-  "
-        >              Staff Dashboard
-            </h2>
-        {/* Header */}
-        <div className="mb-8 flex  items-center justify-between">
-  
-            <p className="text-gray-500 text-sm mt-1">
-              Logged in as{" "}
-              <span className="font-semibold">
-                {staff?.username}
-              </span>{" "}
-              <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs uppercase">
-                {staff?.role}
-              </span>
-            </p>
-          </div>
+{/* DASHBOARD HERO HEADER */}
+<div className="relative overflow-hidden rounded-none mb-4">
+
+  {/* Background Gradient */}
+  <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
+
+  {/* Subtle Glow Accents */}
+  <div className="absolute -top-20 -left-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl" />
+  <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
+
+  {/* Content */}
+  <div className="relative z-10 px-8 py-3 text-center text-white">
+
+    <p className="uppercase tracking-[0.3em] text-xs text-cyan-300/80 mb-4">
+      Welcome 
+    </p>
+
+    <h2 className="
+      text-6xl sm:text-6xl lg:text-7xl
+      font-extrabold font-[Aspire]
+      tracking-tight
+      drop-shadow-lg
+    ">
+      Staff Dashboard
+    </h2>
+
+    <div className="mt-1 flex justify-center items-center gap-3 text-sm">
+    
+
+      <span className="
+        px-3 py-1 rounded-full text-xs font-bold uppercase
+        bg-gradient-to-r from-cyan-500 to-blue-600
+        shadow-md
+      ">
+        {staff?.role}
+      </span>
+    </div>
+
+  </div>
+</div>
 
 
 
