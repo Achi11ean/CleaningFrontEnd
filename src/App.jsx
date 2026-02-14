@@ -14,6 +14,8 @@ import StaffLogin from "./StaffLogin";
 import StaffDashboard from "./StaffDashboard";
 import ClientInquiry from "./ClientInquiry";
 import ClientCleaning from "./ClientCleaning";
+import ForgotPassword from "./ForgotPassword";
+
 const App = () => (
   
   <>
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/staff-login" element={<StaffLogin/>}/>
             <Route path="/staff-dashboard" element={<StaffDashboard/>}/>
             <Route path="/cleaning" element={<ClientCleaning/>}/>
+<Route path="/forgot-password" element={<ForgotPassword />} />
 
 
     </Routes>

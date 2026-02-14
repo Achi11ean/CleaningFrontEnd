@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "./AdminContext";
+import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -142,6 +143,12 @@ return (
         {loading ? "Signing in..." : "Sign In"}
       </button>
     </form>
+<Link
+  to="/forgot-password"
+  className="text-sm text-purple-400 hover:underline"
+>
+  Forgot Password?
+</Link>
 
     {/* Error */}
     {error && (
