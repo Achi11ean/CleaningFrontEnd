@@ -15,7 +15,7 @@ import StaffDashboard from "./StaffDashboard";
 import ClientInquiry from "./ClientInquiry";
 import ClientCleaning from "./ClientCleaning";
 import ForgotPassword from "./ForgotPassword";
-
+import ResetPassword from "./ResetPassword";
 const App = () => (
   
   <>
@@ -34,6 +34,7 @@ const App = () => (
             <Route path="/staff-dashboard" element={<StaffDashboard/>}/>
             <Route path="/cleaning" element={<ClientCleaning/>}/>
 <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
 
 
     </Routes>

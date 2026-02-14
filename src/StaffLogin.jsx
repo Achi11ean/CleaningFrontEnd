@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStaff } from "./StaffContext";
-
+import { Link } from "react-router-dom";
 export default function StaffLogin() {
   const { login } = useStaff();
   const navigate = useNavigate();
@@ -138,7 +138,12 @@ export default function StaffLogin() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
+      <Link
+        to="/forgot-password"
+        className="text-sm text-purple-400 hover:underline"
+      >
+        Forgot Password?
+      </Link>
         {/* Error */}
         {error && (
           <div className="mt-6 text-center text-red-600 font-semibold">
@@ -150,7 +155,9 @@ export default function StaffLogin() {
         <div className="mt-8 text-center text-xs text-gray-400">
           © {new Date().getFullYear()} A Breath of Fresh Air — Staff System
         </div>
+        
       </div>
+
     </div>
   </div>
 );
