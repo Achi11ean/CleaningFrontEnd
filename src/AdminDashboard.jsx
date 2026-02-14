@@ -18,9 +18,12 @@ import BossTimeOff from "./BossTimeOff";
 import ManageAvailability from "./ManageAvailability";
 import CreateConsultation from "./CreateConsultation";
 import CreateSection from "./CreateSection";
+import ManageAppointments from "./ManageAppointments";
+
 import CreateConsultItem from "./CreateConsultItem";
 import CreateMultiplier from "./CreateMultiplier";
 import ConductConsultation from "./ConductConsultation";
+import CreateAppointment from "./CreateAppointment";
 import ConsultationSelector from "./ConsultationSelector";
 import CreateIntensity from "./CreateIntensity";
 import ConsultationList from "./ConsultationList";
@@ -65,6 +68,8 @@ export default function AdminDashboard() {
   const [inventoryShortageAlert, setInventoryShortageAlert] = useState(false);
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [pendingTimeOffCount, setPendingTimeOffCount] = useState(0);
+  const [appointmentsSubTab, setAppointmentsSubTab] = useState("create");
+
 
   useEffect(() => {
     const fetchPendingTimeOff = async () => {
@@ -391,12 +396,59 @@ export default function AdminDashboard() {
                 >
                   Create
                 </button>
+                <button
+  onClick={() => setClientsSubTab("consultations")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    clientsSubTab === "consultations"
+      ? "border-purple-600 text-purple-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  Consultations
+</button>
+
               </div>
 {!loading && !error && clientsSubTab === "new" && (
   <div className="mt-6">
     <ClientInquiry />
   </div>
 )}
+{!loading && !error && clientsSubTab === "consultations" && (
+  <div className="mt-6">
+
+    {/* APPOINTMENT SUB-TABS */}
+    <div className="flex space-x-4 border-b mb-6">
+      <button
+        onClick={() => setAppointmentsSubTab("create")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          appointmentsSubTab === "create"
+            ? "border-purple-600 text-purple-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        ➕ Create
+      </button>
+
+      <button
+        onClick={() => setAppointmentsSubTab("manage")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          appointmentsSubTab === "manage"
+            ? "border-purple-600 text-purple-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🛠 Manage
+      </button>
+    </div>
+
+    {/* CONTENT */}
+    {appointmentsSubTab === "create" && <CreateAppointment />}
+
+    {appointmentsSubTab === "manage" && <ManageAppointments />}
+
+  </div>
+)}
+
 
               {/* Clients Sub Content */}
               {!loading && !error && clientsSubTab === "list" && (
