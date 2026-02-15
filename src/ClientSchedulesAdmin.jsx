@@ -69,13 +69,15 @@ const [exceptionCtx, setExceptionCtx] = useState(null);
   const startEdit = (s) => {
     setEditing(s);
     setEditForm({
-      schedule_type: s.schedule_type,
-      start_date: s.start_date,
-      start_time: s.start_time,
-      end_time: s.end_time,
-      description: s.description || "",
-      status: s.status,
-    });
+  schedule_type: s.schedule_type,
+  start_date: s.start_date,
+  start_time: s.start_time,
+  end_time: s.end_time,
+  description: s.description || "",
+  status: s.status,
+  day_of_week: s.day_of_week ?? "",
+});
+
   };
 
   const cancelEdit = () => {
@@ -431,9 +433,16 @@ const filteredSchedules = schedules.filter((s) => {
               </label>
               <select
                 value={editForm.schedule_type}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, schedule_type: e.target.value })
-                }
+           onChange={(e) => {
+  const type = e.target.value;
+
+  setEditForm({
+    ...editForm,
+    schedule_type: type,
+day_of_week: type === "one_time" ? null : editForm.day_of_week,
+  });
+}}
+
                 className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="one_time">One Time</option>
@@ -456,6 +465,33 @@ const filteredSchedules = schedules.filter((s) => {
                 className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
+{/* DAY OF WEEK (RECURRING ONLY) */}
+{editForm.schedule_type !== "one_time" && (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">
+      Day of Week
+    </label>
+
+    <select
+value={editForm.day_of_week ?? ""}
+      onChange={(e) =>
+        setEditForm({
+          ...editForm,
+          day_of_week: Number(e.target.value),
+        })
+      }
+      className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    >
+      <option value="">Select Day</option>
+
+      {DAY_NAMES.map((day, index) => (
+        <option key={day} value={index}>
+          {day}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">

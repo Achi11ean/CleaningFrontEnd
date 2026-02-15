@@ -26,7 +26,16 @@ const [showClientDropdown, setShowClientDropdown] = useState(false);
     if (!axios) return;
 
     axios.get("https://cleaningback.onrender.com/clients").then(res => setClients(res.data));
-    axios.get("https://cleaningback.onrender.com/admin/all").then(res => setAdmins(res.data));
+axios.get("https://cleaningback.onrender.com/admin/all").then(res => {
+  setAdmins(res.data);
+
+  const defaultAdmin = res.data.find(a => a.id === 1);
+
+  if (defaultAdmin) {
+    setAssignedId(defaultAdmin.id);
+    setAssignedType("admin");
+  }
+});
     axios.get("https://cleaningback.onrender.com/staff/all").then(res => setStaff(res.data));
   }, [axios]);
 
@@ -161,35 +170,44 @@ const [showClientDropdown, setShowClientDropdown] = useState(false);
             Assign To (Optional)
           </label>
 
-          <select
-            value={`${assignedType}-${assignedId}`}
-            onChange={(e) => {
-              const [type, id] = e.target.value.split("-");
-              setAssignedType(type);
-              setAssignedId(id);
-            }}
-            className="w-full border rounded p-2"
-          >
-            <option value="">Unassigned</option>
+<select
+  value={assignedType && assignedId ? `${assignedType}-${assignedId}` : ""}
+  onChange={(e) => {
+    const value = e.target.value;
 
-            <optgroup label="Admins">
-              {admins.map(a => (
-                <option key={a.id} value={`admin-${a.id}`}>
-                  {a.username}
-                </option>
-              ))}
-            </optgroup>
+    if (!value) {
+      setAssignedType("");
+      setAssignedId("");
+      return;
+    }
 
-            <optgroup label="Managers">
-              {staff
-                .filter(s => s.role === "manager")
-                .map(s => (
-                  <option key={s.id} value={`staff-${s.id}`}>
-                    {s.username}
-                  </option>
-                ))}
-            </optgroup>
-          </select>
+    const [type, id] = value.split("-");
+    setAssignedType(type);
+    setAssignedId(id);
+  }}
+  className="w-full border rounded p-2"
+>
+  <option value="">Unassigned</option>
+
+  <optgroup label="Admins">
+    {admins.map(a => (
+      <option key={a.id} value={`admin-${a.id}`}>
+        {a.username}
+      </option>
+    ))}
+  </optgroup>
+
+  <optgroup label="Managers">
+    {staff
+      .filter(s => s.role === "manager")
+      .map(s => (
+        <option key={s.id} value={`staff-${s.id}`}>
+          {s.username}
+        </option>
+      ))}
+  </optgroup>
+</select>
+
         </div>
 
         {/* Notes */}

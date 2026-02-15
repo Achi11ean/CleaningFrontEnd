@@ -92,13 +92,15 @@ const cleanerMatches = (schedule) => {
   const startEdit = (s) => {
     setEditing(s);
     setEditForm({
-      schedule_type: s.schedule_type,
-      start_date: s.start_date,
-      start_time: s.start_time,
-      end_time: s.end_time,
-      description: s.description || "",
-      status: s.status,
-    });
+  schedule_type: s.schedule_type,
+  start_date: s.start_date,
+  start_time: s.start_time,
+  end_time: s.end_time,
+  description: s.description || "",
+  status: s.status,
+  day_of_week: s.day_of_week ?? null,
+});
+
   };
 
   const cancelEdit = () => {
@@ -466,9 +468,16 @@ const filteredSchedules = schedules.filter((s) => {
                 </label>
                 <select
                   value={editForm.schedule_type}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, schedule_type: e.target.value })
-                  }
+                 onChange={(e) => {
+  const type = e.target.value;
+
+  setEditForm({
+    ...editForm,
+    schedule_type: type,
+    day_of_week: type === "one_time" ? null : editForm.day_of_week,
+  });
+}}
+
                   className="w-full border rounded p-2"
                 >
                   <option value="one_time">One Time</option>
@@ -485,12 +494,54 @@ const filteredSchedules = schedules.filter((s) => {
                 <input
                   type="date"
                   value={editForm.start_date}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, start_date: e.target.value })
-                  }
+       onChange={(e) => {
+  const date = e.target.value;
+
+  let day = editForm.day_of_week;
+
+  if (date && editForm.schedule_type !== "one_time") {
+    const jsDay = new Date(date).getDay();
+    day = jsDay === 0 ? 6 : jsDay - 1; // convert to Monday=0 format
+  }
+
+  setEditForm({
+    ...editForm,
+    start_date: date,
+    day_of_week: day,
+  });
+}}
+
                   className="w-full border rounded p-2"
                 />
               </div>
+{/* DAY OF WEEK (RECURRING ONLY) */}
+{editForm.schedule_type !== "one_time" && (
+  <div>
+    <label className="block text-sm font-semibold mb-1">
+      Day of Week
+    </label>
+
+    <select
+      value={editForm.day_of_week ?? ""}
+      onChange={(e) =>
+        setEditForm({
+          ...editForm,
+          day_of_week:
+            e.target.value === "" ? null : Number(e.target.value),
+        })
+      }
+      className="w-full border rounded p-2"
+    >
+      <option value="">Select Day</option>
+
+      {DAY_NAMES.map((day, index) => (
+        <option key={day} value={index}>
+          {day}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
               <div>
                 <label className="block text-sm font-semibold mb-1">

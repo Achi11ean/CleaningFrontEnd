@@ -4,8 +4,6 @@ import { useAuthorizedAxios } from "./useAuthorizedAxios";
 export default function ManageAppointments() {
   const { axios } = useAuthorizedAxios();
 
-  const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState("");
   const [appointments, setAppointments] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
@@ -15,23 +13,12 @@ export default function ManageAppointments() {
   const [loading, setLoading] = useState(false);
 
   // ─────────────────────────────
-  // Load initial data
+  // Load ALL appointments
   // ─────────────────────────────
-  useEffect(() => {
-    if (!axios) return;
-
-    axios.get("https://cleaningback.onrender.com/clients").then(res => setClients(res.data));
-    axios.get("https://cleaningback.onrender.com/admin/all").then(res => setAdmins(res.data));
-    axios.get("https://cleaningback.onrender.com/staff/all").then(res => setStaff(res.data));
-  }, [axios]);
-
-  // ─────────────────────────────
-  // Load appointments
-  // ─────────────────────────────
-  const loadAppointments = async (clientId) => {
+  const loadAllAppointments = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/clients/${clientId}/appointments`);
+      const res = await axios.get("/appointments");
       setAppointments(res.data);
     } finally {
       setLoading(false);
@@ -39,14 +26,28 @@ export default function ManageAppointments() {
   };
 
   // ─────────────────────────────
+  // Initial load
+  // ─────────────────────────────
+  useEffect(() => {
+    if (!axios) return;
+
+    loadAllAppointments();
+
+    axios.get("/admin/all").then(res => setAdmins(res.data));
+    axios.get("/staff/all").then(res => setStaff(res.data));
+  }, [axios]);
+
+  // ─────────────────────────────
   // Delete
   // ─────────────────────────────
   const deleteAppointment = async (appt) => {
     if (!window.confirm("Delete this appointment?")) return;
 
-    await axios.delete(`/clients/${appt.client_id}/appointments/${appt.id}`);
+    await axios.delete(
+      `/clients/${appt.client_id}/appointments/${appt.id}`
+    );
 
-    loadAppointments(appt.client_id);
+    loadAllAppointments();
   };
 
   // ─────────────────────────────
@@ -59,57 +60,62 @@ export default function ManageAppointments() {
     );
 
     setEditingId(null);
-    loadAppointments(appt.client_id);
+    loadAllAppointments();
   };
 
   // ─────────────────────────────
   // UI
   // ─────────────────────────────
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* Client Select */}
+      {/* Header */}
       <div>
-        <label className="font-semibold block mb-2">Select Client</label>
-
-        <select
-          value={selectedClient}
-          onChange={(e) => {
-            setSelectedClient(e.target.value);
-            loadAppointments(e.target.value);
-          }}
-          className="w-full border rounded p-2"
-        >
-          <option value="">Choose client</option>
-          {clients.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.first_name} {c.last_name}
-            </option>
-          ))}
-        </select>
+        <h2 className="text-2xl font-bold">Consultation Appointments</h2>
+        <p className="text-gray-500">
+          Manage all scheduled consultations across clients
+        </p>
       </div>
 
-      {/* Appointment List */}
-      {loading && <p>Loading appointments...</p>}
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-10 text-gray-500">
+          Loading appointments...
+        </div>
+      )}
 
+      {/* Empty State */}
+      {!loading && appointments.length === 0 && (
+        <div className="text-center py-10 text-gray-400">
+          No consultations scheduled yet.
+        </div>
+      )}
+
+      {/* Appointment List */}
       {appointments.map(appt => {
         const editing = editingId === appt.id;
 
         return (
           <div
             key={appt.id}
-            className="border rounded-xl p-4 shadow-sm bg-white"
+            className="border rounded-xl p-5 shadow-sm bg-white"
           >
-            {/* Client Name */}
-            <h3 className="font-bold text-lg mb-3">
-              {appt.client_name}
-            </h3>
+
+            {/* Header Row */}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg">
+                {appt.client_name}
+              </h3>
+
+              <span className="text-sm text-gray-500">
+                {new Date(appt.scheduled_for).toLocaleString()}
+              </span>
+            </div>
 
             {/* Date */}
-            <div className="mb-2">
-              <label className="text-sm font-semibold">Date</label>
-
-              {editing ? (
+            {editing && (
+              <div className="mb-3">
+                <label className="text-sm font-semibold">Date</label>
                 <input
                   type="datetime-local"
                   value={appt.scheduled_for.slice(0, 16)}
@@ -118,22 +124,22 @@ export default function ManageAppointments() {
                   }
                   className="w-full border rounded p-2"
                 />
-              ) : (
-                <p>{new Date(appt.scheduled_for).toLocaleString()}</p>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Assignee */}
-            <div className="mb-2">
-              <label className="text-sm font-semibold">Assigned To</label>
+            <div className="mb-3">
+              <label className="text-sm font-semibold">
+                Assigned To
+              </label>
 
               {editing ? (
                 <select
-                  value={`${appt.assigned_user_type}-${appt.assigned_user_id}`}
+                  value={`${appt.assigned_user_type || ""}-${appt.assigned_user_id || ""}`}
                   onChange={(e) => {
                     const [type, id] = e.target.value.split("-");
-                    appt.assigned_user_type = type;
-                    appt.assigned_user_id = id;
+                    appt.assigned_user_type = type || null;
+                    appt.assigned_user_id = id || null;
                   }}
                   className="w-full border rounded p-2"
                 >
@@ -158,12 +164,14 @@ export default function ManageAppointments() {
                   </optgroup>
                 </select>
               ) : (
-                <p>{appt.assigned_user_name || "Unassigned"}</p>
+                <p className="text-gray-700">
+                  {appt.assigned_user_name || "Unassigned"}
+                </p>
               )}
             </div>
 
             {/* Notes */}
-            <div className="mb-3">
+            <div className="mb-4">
               <label className="text-sm font-semibold">Notes</label>
 
               {editing ? (
@@ -173,7 +181,9 @@ export default function ManageAppointments() {
                   className="w-full border rounded p-2"
                 />
               ) : (
-                <p>{appt.notes || "-"}</p>
+                <p className="text-gray-600">
+                  {appt.notes || "No notes"}
+                </p>
               )}
             </div>
 
@@ -183,14 +193,14 @@ export default function ManageAppointments() {
                 <>
                   <button
                     onClick={() => saveEdit(appt)}
-                    className="bg-green-600 text-white px-3 py-1 rounded"
+                    className="bg-green-600 text-white px-4 py-1 rounded"
                   >
                     Save
                   </button>
 
                   <button
                     onClick={() => setEditingId(null)}
-                    className="bg-gray-400 text-white px-3 py-1 rounded"
+                    className="bg-gray-400 text-white px-4 py-1 rounded"
                   >
                     Cancel
                   </button>
@@ -199,20 +209,21 @@ export default function ManageAppointments() {
                 <>
                   <button
                     onClick={() => setEditingId(appt.id)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                    className="bg-blue-600 text-white px-4 py-1 rounded"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => deleteAppointment(appt)}
-                    className="bg-red-600 text-white px-3 py-1 rounded"
+                    className="bg-red-600 text-white px-4 py-1 rounded"
                   >
                     Delete
                   </button>
                 </>
               )}
             </div>
+
           </div>
         );
       })}
