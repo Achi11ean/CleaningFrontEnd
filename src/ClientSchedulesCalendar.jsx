@@ -96,7 +96,7 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
     let cursor = new Date(startDate);
 
     if (s.day_of_week !== null) {
-      while (cursor.getDay() !== ((s.day_of_week + 1) % 7)) {
+      while (cursor.getDay() !== (s.day_of_week + 1) % 7) {
         cursor = addDays(cursor, 1);
       }
     }
@@ -135,45 +135,79 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
   return events;
 }
 
-
 export default function ClientSchedulesCalendar() {
   const { authAxios, admin } = useAdmin();
   const myAdminId = admin?.id;
-const formatScheduleType = (t) => {
-  if (!t) return "—";
-  const map = {
-    one_time: "One Time",
-    weekly: "Weekly",
-    bi_weekly: "Bi-Weekly",
-    monthly: "Monthly",
+  const formatScheduleType = (t) => {
+    if (!t) return "—";
+    const map = {
+      one_time: "One Time",
+      weekly: "Weekly",
+      bi_weekly: "Bi-Weekly",
+      monthly: "Monthly",
+    };
+    return (
+      map[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    );
   };
-  return map[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-};
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
+
+  const [appointments, setAppointments] = useState([]);
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        const res = await authAxios.get("/appointments");
+        setAppointments(res.data || []);
+      } catch (err) {
+        console.error("Failed to load consultations", err);
+      }
+    };
+
+    loadAppointments();
+  }, [authAxios]);
+  const nextConsultation = useMemo(() => {
+    const now = new Date();
+
+    const upcoming = appointments
+      .filter((a) => {
+        if (!a.scheduled_for) return false;
+
+        const date = new Date(a.scheduled_for);
+
+        // must be assigned to THIS admin
+        const assignedToMe =
+          a.assigned_user_type === "admin" && a.assigned_user_id === myAdminId;
+
+        return assignedToMe && date > now;
+      })
+      .sort((a, b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+
+    return upcoming.length > 0 ? upcoming[0] : null;
+  }, [appointments, myAdminId]);
 
   const [showWeekly, setShowWeekly] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0); // 0 = this week
   const [showTimeOff, setShowTimeOff] = useState(false);
   const [timeOffRows, setTimeOffRows] = useState([]); // raw TimeOffRequest rows
   const [timeOffLoading, setTimeOffLoading] = useState(false);
-const [selectedTimeOff, setSelectedTimeOff] = useState(null);
-const [activeShift, setActiveShift] = useState(null);
-const [checkingActiveShift, setCheckingActiveShift] = useState(true);
+  const [selectedTimeOff, setSelectedTimeOff] = useState(null);
+  const [activeShift, setActiveShift] = useState(null);
+  const [checkingActiveShift, setCheckingActiveShift] = useState(true);
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-const isMobile = () => window.innerWidth < 640;
+  const isMobile = () => window.innerWidth < 640;
 
-const dayFormat = (date, culture, localizer) => {
-  if (isMobile()) {
-    // Mobile: S M T W T F S
-    return format(date, "EEEEE");
-  }
+  const dayFormat = (date, culture, localizer) => {
+    if (isMobile()) {
+      // Mobile: S M T W T F S
+      return format(date, "EEEEE");
+    }
 
-  // Desktop: SUN MON TUE WED THUR FRI SAT
-  return format(date, "EEE").toUpperCase();
-};
-
+    // Desktop: SUN MON TUE WED THUR FRI SAT
+    return format(date, "EEE").toUpperCase();
+  };
 
   const getGoogleMapsLink = (address) => {
     if (!address) return null;
@@ -234,19 +268,39 @@ const dayFormat = (date, culture, localizer) => {
       (c) => c.type === "admin" && c.id === myAdminId,
     );
   };
+  const consultationEvents = useMemo(() => {
+    return appointments.map((a) => {
+      const start = new Date(a.scheduled_for);
+      const end = new Date(start);
+
+      // default consultation duration = 1 hour
+      end.setHours(end.getHours() + 1);
+
+      return {
+        id: `consult-${a.id}`,
+        title: `${a.client_name}`,
+        start,
+        end,
+        resource: {
+          type: "consultation",
+          appointment: a,
+        },
+      };
+    });
+  }, [appointments]);
 
   const nextShift = useMemo(() => {
-  const now = new Date();
+    const now = new Date();
 
-  const myUpcoming = scheduleEvents
-    .filter((e) => {
-      const schedule = e.resource;
-      return isAssignedToMe(schedule) && e.start > now;
-    })
-    .sort((a, b) => a.start - b.start);
+    const myUpcoming = scheduleEvents
+      .filter((e) => {
+        const schedule = e.resource;
+        return isAssignedToMe(schedule) && e.start > now;
+      })
+      .sort((a, b) => a.start - b.start);
 
-  return myUpcoming.length > 0 ? myUpcoming[0] : null;
-}, [scheduleEvents, myAdminId]);
+    return myUpcoming.length > 0 ? myUpcoming[0] : null;
+  }, [scheduleEvents, myAdminId]);
 
   const weekStart = useMemo(() => {
     const base = addWeeks(new Date(), weekOffset);
@@ -258,8 +312,8 @@ const dayFormat = (date, culture, localizer) => {
     return showTimeOff ? expandTimeOffRequests(timeOffRows) : [];
   }, [showTimeOff, timeOffRows]);
   const allEvents = useMemo(() => {
-    return [...scheduleEvents, ...timeOffEvents];
-  }, [scheduleEvents, timeOffEvents]);
+    return [...scheduleEvents, ...consultationEvents, ...timeOffEvents];
+  }, [scheduleEvents, consultationEvents, timeOffEvents]);
 
   const myWeeklyEvents = useMemo(() => {
     return scheduleEvents
@@ -271,42 +325,41 @@ const dayFormat = (date, culture, localizer) => {
       .sort((a, b) => a.start - b.start);
   }, [scheduleEvents, weekStart, weekEnd, myAdminId]);
   const toggleTimeOff = async () => {
-  const next = !showTimeOff;
-  setShowTimeOff(next);
+    const next = !showTimeOff;
+    setShowTimeOff(next);
 
-  if (next && timeOffRows.length === 0) {
-    try {
-      setTimeOffLoading(true);
-const res = await authAxios.get("/time-off/all");
-      console.log("🛑 time off rows:", res.data);
-      setTimeOffRows(res.data || []);
-    } finally {
-      setTimeOffLoading(false);
-    }
-  }
-};
-useEffect(() => {
-  const loadActiveShift = async () => {
-    try {
-      setCheckingActiveShift(true);
-      const res = await authAxios.get("/admin/shifts/active");
-
-      if (res.data?.active) {
-        setActiveShift(res.data.shift);
-      } else {
-        setActiveShift(null);
+    if (next && timeOffRows.length === 0) {
+      try {
+        setTimeOffLoading(true);
+        const res = await authAxios.get("/time-off/all");
+        console.log("🛑 time off rows:", res.data);
+        setTimeOffRows(res.data || []);
+      } finally {
+        setTimeOffLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to load active shift", err);
-      setActiveShift(null);
-    } finally {
-      setCheckingActiveShift(false);
     }
   };
+  useEffect(() => {
+    const loadActiveShift = async () => {
+      try {
+        setCheckingActiveShift(true);
+        const res = await authAxios.get("/admin/shifts/active");
 
-  loadActiveShift();
-}, [authAxios]);
+        if (res.data?.active) {
+          setActiveShift(res.data.shift);
+        } else {
+          setActiveShift(null);
+        }
+      } catch (err) {
+        console.error("Failed to load active shift", err);
+        setActiveShift(null);
+      } finally {
+        setCheckingActiveShift(false);
+      }
+    };
 
+    loadActiveShift();
+  }, [authAxios]);
 
   if (loading) return <p className="p-6">Loading calendar...</p>;
 
@@ -315,33 +368,64 @@ useEffect(() => {
       <h2 className="text-2xl font-bold">🗓️ Cleaning Schedule Calendar</h2>
 
       {/* NEXT ADMIN SHIFT BANNER */}
-     {/* NEXT ADMIN SHIFT BANNER */}
-{!checkingActiveShift && !activeShift && nextShift && (
-  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-      <p className="text-sm text-green-700 font-semibold">
-        Your next scheduled admin shift is:
-      </p>
+      {!checkingActiveShift &&
+        !activeShift &&
+        (nextShift || nextConsultation) && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-4">
+            {/* NEXT CLEANING SHIFT */}
+            {nextShift && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <p className="text-sm text-green-700 font-semibold">
+                    Your next scheduled admin shift:
+                  </p>
 
-      <p className="text-lg font-bold text-green-900">
-        {formatDateTime(nextShift.start)}
-      </p>
+                  <p className="text-lg font-bold text-green-900">
+                    {formatDateTime(nextShift.start)}
+                  </p>
 
-      <p className="text-sm text-green-800">
-        {nextShift.resource.client.first_name}{" "}
-        {nextShift.resource.client.last_name}
-      </p>
+                  <p className="text-sm text-green-800">
+                    {nextShift.resource.client.first_name}{" "}
+                    {nextShift.resource.client.last_name}
+                  </p>
 
-      <p className="text-sm text-green-700 font-semibold">
-        {formatTo12Hour(nextShift.resource.start_time)} →{" "}
-        {formatTo12Hour(nextShift.resource.end_time)}
-      </p>
-    </div>
+                  <p className="text-sm text-green-700 font-semibold">
+                    {formatTo12Hour(nextShift.resource.start_time)} →{" "}
+                    {formatTo12Hour(nextShift.resource.end_time)}
+                  </p>
+                </div>
 
-    <AdminStartShift schedule={nextShift.resource} />
-  </div>
-)}
+                <AdminStartShift schedule={nextShift.resource} />
+              </div>
+            )}
 
+            {/* NEXT CONSULTATION */}
+            {nextConsultation && (
+              <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-pink-700">
+                  🩷 Next Consultation:
+                </p>
+
+                <p className="text-lg font-bold text-pink-900">
+                  {format(
+                    new Date(nextConsultation.scheduled_for),
+                    "EEEE, MMM d • h:mm a",
+                  )}
+                </p>
+
+                <p className="text-sm text-pink-800">
+                  {nextConsultation.client_name}
+                </p>
+
+                {nextConsultation.notes && (
+                  <p className="text-sm text-pink-700 mt-1 italic">
+                    {nextConsultation.notes}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
       {/* WEEKLY SCHEDULE DROPDOWN */}
       <div className="bg-white border rounded-xl shadow-sm">
@@ -438,64 +522,81 @@ useEffect(() => {
         <p className="text-sm text-gray-500 italic px-2">Loading time off…</p>
       )}
 
-      <div className="bg-white rounded-xl shadow p-4" style={{ height: 700 }}>
-<Calendar
-  localizer={localizer}
-  events={allEvents}
-  startAccessor="start"
-  endAccessor="end"
-  defaultView="week"
-  views={["month", "week", "day"]}
-  popup
-  selectable
+      <div className="bg-white rounded-xl shadow p-" style={{ height: 700 }}>
+        <Calendar
+          localizer={localizer}
+          events={allEvents}
+          startAccessor="start"
+          endAccessor="end"
+          defaultView="month"
+          views={["month", "week", "day"]}
+          popup
+          selectable
+          formats={{
+            dayFormat,
 
-  formats={{
-  dayFormat,
-}}
+            // 🔥 THIS HIDES THE TIME IN EVENT LABELS
+            eventTimeRangeFormat: () => "",
+            eventTimeRangeStartFormat: () => "",
+            eventTimeRangeEndFormat: () => "",
+          }}
+          onSelectSlot={({ start, end }) => {
+            console.log("📅 Date clicked:", start, end);
+          }}
+          onSelectEvent={(event) => {
+            if (event?.resource?.type === "consultation") {
+              setSelectedConsultation(event.resource.appointment);
+              return;
+            }
 
+            if (event?.resource?.type === "consultation") {
+              setSelectedEvent(event.resource.appointment);
+              return;
+            }
 
-  onSelectSlot={({ start, end }) => {
-    console.log("📅 Date clicked:", start, end);
-  }}
+            setSelectedEvent(event.resource);
+          }}
+          eventPropGetter={(event) => {
+            if (event?.resource?.type === "consultation") {
+              return {
+                style: {
+                  backgroundColor: "#ec4899", // pink-500
+                  border: "2px solid #9d174d",
+                  borderRadius: "6px",
+                  color: "white",
+                  fontWeight: 700,
+                  boxShadow: "0 0 8px rgba(236, 72, 153, 0.6)",
+                },
+              };
+            }
 
-  onSelectEvent={(event) => {
-    if (event?.resource?.type === "time_off") {
-      setSelectedTimeOff(event.resource);
-      return;
-    }
+            if (event?.resource?.type === "time_off") {
+              return {
+                style: {
+                  backgroundColor: "#dc2626",
+                  color: "white",
+                  borderRadius: "6px",
+                  border: "2px solid #991b1b",
+                  fontWeight: 800,
+                },
+              };
+            }
 
-    setSelectedEvent(event.resource);
-  }}
-
-  eventPropGetter={(event) => {
-    if (event?.resource?.type === "time_off") {
-      return {
-        style: {
-          backgroundColor: "#dc2626",
-          color: "white",
-          borderRadius: "6px",
-          border: "2px solid #991b1b",
-          fontWeight: 800,
-        },
-      };
-    }
-
-    const assignedToMe = isAssignedToMe(event.resource);
-    return {
-      style: {
-        backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
-        borderRadius: "6px",
-        color: "white",
-        border: assignedToMe ? "2px solid #14532d" : "none",
-        boxShadow: assignedToMe
-          ? "0 0 8px rgba(22, 163, 74, 0.7)"
-          : "none",
-        fontWeight: assignedToMe ? "700" : "500",
-      },
-    };
-  }}
-/>
-
+            const assignedToMe = isAssignedToMe(event.resource);
+            return {
+              style: {
+                backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
+                borderRadius: "6px",
+                color: "white",
+                border: assignedToMe ? "2px solid #14532d" : "none",
+                boxShadow: assignedToMe
+                  ? "0 0 8px rgba(22, 163, 74, 0.7)"
+                  : "none",
+                fontWeight: assignedToMe ? "700" : "500",
+              },
+            };
+          }}
+        />
       </div>
 
       {/* CLIENT DETAIL MODAL */}
@@ -525,11 +626,11 @@ useEffect(() => {
                   "—"
                 )}
               </p>
-      
-       <p>
-  <strong>Schedule Type:</strong> {formatScheduleType(selectedEvent.schedule_type)}
-</p>
 
+              <p>
+                <strong>Schedule Type:</strong>{" "}
+                {formatScheduleType(selectedEvent.schedule_type)}
+              </p>
             </div>
 
             <div>
@@ -598,69 +699,104 @@ useEffect(() => {
       )}
 
       {!loading && <AdminActiveShiftPanel />}
-{selectedTimeOff && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg space-y-4">
-      <h3 className="text-xl font-bold text-red-700">
-        ⛔ Time Off Request
-      </h3>
+      {selectedTimeOff && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg space-y-4">
+            <h3 className="text-xl font-bold text-red-700">
+              ⛔ Time Off Request
+            </h3>
 
-      <div className="space-y-2 text-sm">
-        <p>
-          <strong>Name:</strong>{" "}
-          {selectedTimeOff.request.owner.display_name}
-        </p>
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>Name:</strong>{" "}
+                {selectedTimeOff.request.owner.display_name}
+              </p>
 
-        <p>
-          <strong>Role:</strong>{" "}
-          {selectedTimeOff.request.owner.type}
-        </p>
+              <p>
+                <strong>Role:</strong> {selectedTimeOff.request.owner.type}
+              </p>
 
-        <p>
-          <strong>Status:</strong>{" "}
-          <span className="capitalize font-semibold">
-            {selectedTimeOff.request.status}
-          </span>
-        </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span className="capitalize font-semibold">
+                  {selectedTimeOff.request.status}
+                </span>
+              </p>
 
-        <p>
-          <strong>Date:</strong>{" "}
-          {format(
-            new Date(selectedTimeOff.entry.request_date),
-            "EEEE, MMM d, yyyy"
-          )}
-        </p>
+              <p>
+                <strong>Date:</strong>{" "}
+                {format(
+                  new Date(selectedTimeOff.entry.request_date),
+                  "EEEE, MMM d, yyyy",
+                )}
+              </p>
 
-        <p>
-          <strong>Time:</strong>{" "}
-          {selectedTimeOff.entry.is_all_day
-            ? "All Day"
-            : `${selectedTimeOff.entry.start_time} → ${selectedTimeOff.entry.end_time}`}
-        </p>
+              <p>
+                <strong>Time:</strong>{" "}
+                {selectedTimeOff.entry.is_all_day
+                  ? "All Day"
+                  : `${selectedTimeOff.entry.start_time} → ${selectedTimeOff.entry.end_time}`}
+              </p>
 
-        <p>
-          <strong>Reason:</strong>{" "}
-          {selectedTimeOff.request.description || (
-            <span className="italic text-gray-400">
-              No reason provided
-            </span>
-          )}
-        </p>
-      </div>
+              <p>
+                <strong>Reason:</strong>{" "}
+                {selectedTimeOff.request.description || (
+                  <span className="italic text-gray-400">
+                    No reason provided
+                  </span>
+                )}
+              </p>
+            </div>
 
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={() => setSelectedTimeOff(null)}
-          className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => setSelectedTimeOff(null)}
+                className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedConsultation && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg space-y-4">
+            <h3 className="text-xl font-bold text-pink-700">
+              🩷 Consultation Details
+            </h3>
 
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>Client:</strong> {selectedConsultation.client_name}
+              </p>
 
+              <p>
+                <strong>Date:</strong>{" "}
+                {format(
+                  new Date(selectedConsultation.scheduled_for),
+                  "EEEE, MMM d • h:mm a",
+                )}
+              </p>
+
+              {selectedConsultation.notes && (
+                <p>
+                  <strong>Notes:</strong> {selectedConsultation.notes}
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => setSelectedConsultation(null)}
+                className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -705,4 +841,64 @@ function expandTimeOffRequests(rows) {
   });
 
   return events;
+}
+
+
+function MobileAgenda({ events }) {
+  const grouped = {};
+
+  events.forEach((e) => {
+    const day = format(e.start, "yyyy-MM-dd");
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(e);
+  });
+
+  const sortedDays = Object.keys(grouped).sort();
+
+  return (
+    <div className="space-y-6">
+
+      {sortedDays.map((day) => (
+        <div key={day}>
+
+          {/* Day header */}
+          <h3 className="font-bold text-lg text-gray-800 mb-2">
+            {format(new Date(day), "EEEE, MMM d")}
+          </h3>
+
+          <div className="space-y-2">
+            {grouped[day]
+              .sort((a, b) => a.start - b.start)
+              .map((e) => {
+
+                let bg = "bg-blue-100 border-blue-400";
+
+                if (e.resource?.type === "consultation")
+                  bg = "bg-pink-100 border-pink-500";
+
+                if (e.resource?.type === "time_off")
+                  bg = "bg-red-100 border-red-500";
+
+                return (
+                  <div
+                    key={e.id}
+                    className={`border-l-4 p-3 rounded-lg shadow-sm ${bg}`}
+                  >
+                    <div className="font-semibold text-gray-900">
+                      {e.title}
+                    </div>
+
+                    <div className="text-sm text-gray-600">
+                      {format(e.start, "h:mm a")} – {format(e.end, "h:mm a")}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+  );
 }

@@ -214,7 +214,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-20 lg:pt-24 ">
-      <div className="max-w-6xl text-center mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200">
+      <div className="max-w-8xl text-center mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200">
         {/* Header */}{" "}
 <header className="relative overflow-hidden rounded-none bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 px-6 py-5 shadow-2xl">
   {/* Subtle background accents */}

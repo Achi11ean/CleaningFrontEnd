@@ -471,7 +471,7 @@ const myWeeklyEvents = useMemo(() => {
   events={events}
   startAccessor="start"
   endAccessor="end"
-  defaultView="week"
+  defaultView="month"
   views={["month", "week", "day"]}
   popup
   onSelectEvent={(event) => setSelectedEvent(event.resource)}

@@ -97,7 +97,7 @@ useEffect(() => {
 }, [clientSubTab]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-600 via-black to-slate-700  text-center  pt-20">
-      <div className="max-w-6xl mx-auto bg-white pb-4 rounded-none shadow-none border border-gray-200 ">
+      <div className="max-w-8xl mx-auto bg-white pb-4 rounded-none shadow-none border border-gray-200 ">
 {/* DASHBOARD HERO HEADER */}
 <div className="relative overflow-hidden rounded-none mb-4">
 
