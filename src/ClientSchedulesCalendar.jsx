@@ -413,9 +413,29 @@ export default function ClientSchedulesCalendar() {
                   )}
                 </p>
 
-                <p className="text-sm text-pink-800">
-                  {nextConsultation.client_name}
-                </p>
+        <p className="text-sm text-pink-800">
+  {nextConsultation.client_name}
+</p>
+
+{nextConsultation.client_address && (
+  <a
+    href={getGoogleMapsLink(nextConsultation.client_address)}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block mt-1 text-sm text-blue-600 hover:underline font-medium"
+  >
+    📍 {nextConsultation.client_address}
+  </a>
+)}
+{nextConsultation.client_phone && (
+  <a
+    href={getTelLink(nextConsultation.client_phone)}
+    className="block mt-1 text-sm text-green-700 font-semibold hover:underline"
+  >
+    📞 {nextConsultation.client_phone}
+  </a>
+)}
+
 
                 {nextConsultation.notes && (
                   <p className="text-sm text-pink-700 mt-1 italic">
@@ -767,9 +787,35 @@ export default function ClientSchedulesCalendar() {
             </h3>
 
             <div className="space-y-2 text-sm">
-              <p>
-                <strong>Client:</strong> {selectedConsultation.client_name}
-              </p>
+       <p>
+  <strong>Client:</strong> {selectedConsultation.client_name}
+</p>
+
+{selectedConsultation.client_address && (
+  <p>
+    <strong>Address:</strong>{" "}
+    <a
+      href={getGoogleMapsLink(selectedConsultation.client_address)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 hover:underline font-medium"
+    >
+      {selectedConsultation.client_address}
+    </a>
+  </p>
+)}
+{selectedConsultation.client_phone && (
+  <p>
+    <strong>Phone:</strong>{" "}
+    <a
+      href={getTelLink(selectedConsultation.client_phone)}
+      className="text-green-700 hover:underline font-medium"
+    >
+      {selectedConsultation.client_phone}
+    </a>
+  </p>
+)}
+
 
               <p>
                 <strong>Date:</strong>{" "}
