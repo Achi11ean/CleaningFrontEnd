@@ -211,6 +211,21 @@ export default function AdminDashboard() {
     await authAxios.patch(`/staff/${id}/role`, { role });
     loadStaff();
   };
+const setStaffPassword = async (id) => {
+  const newPassword = window.prompt("Enter new password for this staff user:");
+
+  if (!newPassword) return;
+
+  try {
+    await authAxios.patch(`/staff/${id}/set-password`, {
+      password: newPassword,
+    });
+
+    alert("✅ Password updated successfully");
+  } catch (err) {
+    alert(err.response?.data?.error || "Failed to set password");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-20 lg:pt-24 ">
@@ -1112,13 +1127,15 @@ export default function AdminDashboard() {
           {activeTab === "profile" &&
             profileSubTab === "users" &&
             usersSubTab === "staff" && (
-              <StaffTable
-                staff={staff}
-                onActivate={activateStaff}
-                onDeactivate={deactivateStaff}
-                onDelete={deleteStaff}
-                onUpdateRole={updateRole}
-              />
+<StaffTable
+  staff={staff}
+  onActivate={activateStaff}
+  onDeactivate={deactivateStaff}
+  onDelete={deleteStaff}
+  onUpdateRole={updateRole}
+  onSetPassword={setStaffPassword}
+/>
+
             )}
 
           {activeTab === "profile" &&
@@ -1193,7 +1210,9 @@ function StaffTable({
   onDeactivate,
   onDelete,
   onUpdateRole,
+  onSetPassword,
 }) {
+
   if (staff.length === 0) {
     return <p className="text-center text-gray-500">No staff found.</p>;
   }
@@ -1268,6 +1287,13 @@ function StaffTable({
                 >
                   Delete
                 </button>
+                <button
+  onClick={() => onSetPassword(s.id)}
+  className="px-3 py-1 text-sm rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
+>
+  🔑 Set Password
+</button>
+
               </td>
             </tr>
           ))}

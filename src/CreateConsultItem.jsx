@@ -10,6 +10,7 @@ export default function CreateConsultItem({ onCreated }) {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [basePoints, setBasePoints] = useState(1);
+const [applyToAll, setApplyToAll] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -36,38 +37,51 @@ useEffect(() => {
   loadSections();
 }, [axios]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
+ async function handleSubmit(e) {
+  e.preventDefault();
+  setError(null);
 
-    if (!sectionId || !title) {
-      setError("Section and title are required");
-      return;
-    }
+  if ((!sectionId && !applyToAll) || !title) {
+    setError("Section (or apply to all) and title are required");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await axios.post("/consultation/items", {
+  try {
+    let res;
+
+    if (applyToAll) {
+      res = await axios.post("/consultation/items/apply-to-all", {
+        title,
+        notes,
+        base_points: basePoints,
+      });
+    } else {
+      res = await axios.post("/consultation/items", {
         section_id: sectionId,
         title,
         notes,
         base_points: basePoints,
       });
-
-      setSectionId("");
-      setTitle("");
-      setNotes("");
-      setBasePoints(1);
-      setLoading(false);
-
-      if (onCreated) onCreated(res.data);
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || "Failed to create item");
-      setLoading(false);
     }
+
+    setSectionId("");
+    setTitle("");
+    setNotes("");
+    setBasePoints(1);
+    setApplyToAll(false);
+    setLoading(false);
+
+    if (onCreated) onCreated(res.data);
+
+  } catch (err) {
+    console.error(err);
+    setError(err.response?.data?.error || "Failed to create item");
+    setLoading(false);
   }
+}
+
 
   return (
     <form
@@ -98,11 +112,13 @@ useEffect(() => {
   </button>
 </div>
 
-        <select
-          value={sectionId}
-          onChange={(e) => setSectionId(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        >
+<select
+  disabled={applyToAll}
+  value={sectionId}
+  onChange={(e) => setSectionId(e.target.value)}
+  className="w-full border rounded px-3 py-2"
+>
+
           <option value="">Select section…</option>
           {sections.map((s) => (
             <option key={s.id} value={s.id}>
@@ -111,6 +127,16 @@ useEffect(() => {
           ))}
         </select>
       </div>
+<div className="flex items-center gap-2 mt-2">
+  <input
+    type="checkbox"
+    checked={applyToAll}
+    onChange={(e) => setApplyToAll(e.target.checked)}
+  />
+  <label className="text-sm font-medium text-gray-700">
+    Apply this item to ALL sections
+  </label>
+</div>
 
       {/* Title */}
       <div>
