@@ -189,11 +189,12 @@ multiplierText: {
    ─────────────────────────────── */
 export default function PrintConsultation({
   consultation,
-  groupedSections,
+  groupedRooms = {},
   pricing,
-    client,
+  client,
+})
 
-}) {
+{
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
@@ -235,71 +236,89 @@ export default function PrintConsultation({
 
         {/* Sections */}
       {/* Sections */}
-{Object.values(groupedSections).map((section) => (
-  <View key={section.section_name} style={styles.block}>
-<Text style={styles.sectionTitle}>
-  <Text style={styles.sectionName}>
-    {section.section_name}
-  </Text>
-  {" — "}
-</Text>
+{/* Rooms */}
+{Object.values(groupedRooms || {}).map((roomGroup) => (
+  <View key={roomGroup.room.id} style={styles.block}>
 
+    {/* ROOM HEADER */}
+    <Text style={styles.sectionTitle}>
+      {roomGroup.room.label} — {roomGroup.total_points} pts
+    </Text>
 
-    {section.entries[0]?.section_description && (
+    {roomGroup.room.square_feet && (
       <Text style={styles.notes}>
-        {section.entries[0].section_description}
+        {roomGroup.room.square_feet} sqft • multiplier ×
+        {roomGroup.room.sqft_multiplier}
       </Text>
     )}
 
-{section.entries.map((e) => (
-  <View key={e.id} style={styles.entryBox}>
+    {/* SECTIONS INSIDE ROOM */}
+    {Object.values(roomGroup.sections).map((section) => (
+      <View key={section.section_name} style={{ marginTop: 8 }}>
 
-    {/* Title + points */}
-    <View style={styles.entryTitleRow}>
-      <Text>{e.item_title}</Text>
-    </View>
-
-    {/* Base + intensity */}
-    <Text style={styles.entryMeta}>
-     • Intensity: {e.intensity_label}
-    </Text>
-
-    {/* Item notes BOX */}
-    {e.item_notes && (
-      <View style={styles.noteBox}>
-        <Text style={styles.noteLabel}>Item Notes</Text>
-        <Text style={styles.noteText}>{e.item_notes}</Text>
-      </View>
-    )}
-
-    {/* Multipliers BOX */}
-    {e.multipliers?.length > 0 && (
-      <View style={styles.multiplierBox}>
-        <Text style={styles.multiplierTitle}>Applied Multipliers</Text>
-        {e.multipliers.map((m) => (
-          <Text key={m.id} style={styles.multiplierText}>
-            • {m.label} × {m.multiplier}
-            {m.notes ? ` — ${m.notes}` : ""}
-          </Text>
-        ))}
-      </View>
-    )}
-
-    {/* Entry notes BOX */}
-    {e.entry_notes && (
-      <View style={styles.entryNoteBox}>
-        <Text style={styles.noteLabel}>Entry Notes</Text>
-        <Text style={styles.noteText}>
-          “{e.entry_notes}”
+        <Text style={{ fontSize: 11, fontWeight: "bold" }}>
+          {section.section_name} — {section.total_points} pts
         </Text>
+
+        {section.entries[0]?.section_description && (
+          <Text style={styles.notes}>
+            {section.entries[0].section_description}
+          </Text>
+        )}
+
+        {section.entries.map((e) => (
+          <View key={e.id} style={styles.entryBox}>
+
+            {/* Title */}
+            <Text>{e.item_title}</Text>
+
+            {/* Intensity */}
+            <Text style={styles.entryMeta}>
+              • Intensity: {e.intensity_label}
+            </Text>
+
+            {/* Item Notes */}
+            {e.item_notes && (
+              <View style={styles.noteBox}>
+                <Text style={styles.noteLabel}>Item Notes</Text>
+                <Text style={styles.noteText}>{e.item_notes}</Text>
+              </View>
+            )}
+
+            {/* Multipliers */}
+            {e.multipliers?.length > 0 && (
+              <View style={styles.multiplierBox}>
+                <Text style={styles.multiplierTitle}>
+                  Applied Multipliers
+                </Text>
+                {e.multipliers.map((m) => (
+                  <Text key={m.id} style={styles.multiplierText}>
+                    • {m.label} × {m.multiplier}
+                    {m.notes ? ` — ${m.notes}` : ""}
+                  </Text>
+                ))}
+              </View>
+            )}
+
+            {/* Entry Notes */}
+            {e.entry_notes && (
+              <View style={styles.entryNoteBox}>
+                <Text style={styles.noteLabel}>Entry Notes</Text>
+                <Text style={styles.noteText}>
+                  “{e.entry_notes}”
+                </Text>
+              </View>
+            )}
+
+          </View>
+        ))}
+
       </View>
-    )}
+    ))}
 
   </View>
 ))}
 
-  </View>
-))}
 
 
         {/* Pricing Breakdown */}

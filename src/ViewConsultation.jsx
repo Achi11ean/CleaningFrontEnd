@@ -47,27 +47,47 @@ const discountedTotal = useMemo(() => {
   /* ───────────────────────────────
      Group entries by section
      ─────────────────────────────── */
-  const groupedSections = useMemo(() => {
-    if (!consultation?.entries) return {};
+ const groupedRooms = useMemo(() => {
+  if (!consultation?.entries) return {};
 
-    return consultation.entries.reduce((acc, entry) => {
-      const key = entry.section_name;
+  const roomsMap = {};
 
-      if (!acc[key]) {
-        acc[key] = {
-          section_name: key,
-          entries: [],
-          total_points: 0,
-        };
-      }
+  consultation.entries.forEach(entry => {
+    const roomId = entry.room_id || "no-room";
 
-      acc[key].entries.push(entry);
-      acc[key].total_points += entry.calculated_points;
+    // 🔹 Find room object
+    const room =
+      consultation.rooms?.find(r => r.id === entry.room_id) || {
+        id: "no-room",
+        label: "Unassigned",
+      };
 
-      return acc;
-    }, {});
-  }, [consultation]);
+    if (!roomsMap[roomId]) {
+      roomsMap[roomId] = {
+        room,
+        total_points: 0,
+        sections: {},
+      };
+    }
 
+    const sectionKey = entry.section_name;
+
+    if (!roomsMap[roomId].sections[sectionKey]) {
+      roomsMap[roomId].sections[sectionKey] = {
+        section_name: sectionKey,
+        entries: [],
+        total_points: 0,
+      };
+    }
+
+    roomsMap[roomId].sections[sectionKey].entries.push(entry);
+    roomsMap[roomId].sections[sectionKey].total_points += entry.calculated_points;
+
+    roomsMap[roomId].total_points += entry.calculated_points;
+  });
+
+  return roomsMap;
+}, [consultation]);
 
 
 const pricingBreakdown = useMemo(() => {
@@ -153,57 +173,85 @@ const pricingBreakdown = useMemo(() => {
     )}
 
     {/* Sections */}
-    {Object.keys(groupedSections).length === 0 && (
-      <div className="text-gray-500 italic text-sm">
-        No entries yet.
-      </div>
-    )}
-
-    <div className="space-y-5">
-      {Object.values(groupedSections).map((section) => (
-        <div
-          key={section.section_name}
-          className="rounded-xl border bg-gray-50"
-        >
- <div className="flex flex-col gap-1 px-4 py-3 border-b bg-white rounded-t-xl">
-  <div className="flex items-center justify-between">
-    <h3 className="font-semibold text-gray-800">
-      {section.section_name}
-    </h3>
-
-    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
-      {section.total_points} pts
-    </span>
+{Object.keys(groupedRooms).length === 0 && (
+  <div className="text-gray-500 italic text-sm">
+    No entries yet.
   </div>
+)}
 
-  {section.entries[0]?.section_description && (
-    <p className="text-xs text-gray-500 italic">
-      {section.entries[0].section_description}
-    </p>
-  )}
-</div>
+  <div className="space-y-6">
 
-          {/* Entries */}
-          <div className="divide-y">
-          {section.entries.map((e) => (
-  <EditConsultationEntry
-    key={e.id}
-    entry={e}
-    onUpdated={async () => {
-      try {
-        const res = await axios.get(`/consultations/${consultationId}`);
-        setConsultation(res.data);
-      } catch (err) {
-        console.error("Failed to reload consultation", err);
-      }
-    }}
-  />
-))}
+  {Object.values(groupedRooms).map(roomGroup => (
+
+    <div key={roomGroup.room.id} className="rounded-xl border bg-white shadow">
+
+      {/* ROOM HEADER */}
+      <div className="px-5 py-4 border-b bg-gradient-to-r from-indigo-50 to-sky-50">
+        <div className="flex justify-between items-center">
+
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">
+              {roomGroup.room.label}
+            </h3>
+
+            {roomGroup.room.square_feet && (
+              <div className="text-xs text-gray-500">
+                {roomGroup.room.square_feet} sqft • multiplier ×{roomGroup.room.sqft_multiplier}
+              </div>
+            )}
+          </div>
+
+          <div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
+            {roomGroup.total_points} pts
+          </div>
+
+        </div>
+      </div>
+
+      {/* SECTIONS INSIDE ROOM */}
+      <div className="space-y-5 p-4">
+
+        {Object.values(roomGroup.sections).map(section => (
+
+          <div key={section.section_name} className="rounded-lg border bg-gray-50">
+
+            {/* SECTION HEADER */}
+            <div className="flex justify-between px-4 py-3 border-b bg-white">
+              <h4 className="font-semibold text-gray-800">
+                {section.section_name}
+              </h4>
+
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+                {section.total_points} pts
+              </span>
+            </div>
+
+            {/* ENTRIES */}
+            <div className="divide-y">
+              {section.entries.map(e => (
+                <EditConsultationEntry
+                  key={e.id}
+                  entry={e}
+                  onUpdated={async () => {
+                    const res = await axios.get(`/consultations/${consultationId}`);
+                    setConsultation(res.data);
+                  }}
+                />
+              ))}
+            </div>
 
           </div>
-        </div>
-      ))}
+
+        ))}
+
+      </div>
+
     </div>
+
+  ))}
+
+</div>
+
 {/* Pricing Estimate */}
 <div className="rounded-xl border bg-gradient-to-br from-emerald-50 to-white p-5 space-y-4">
   <h3 className="text-lg font-semibold text-gray-800">
@@ -315,17 +363,18 @@ const pricingBreakdown = useMemo(() => {
         </span>
       </div>
     </div>
-{pricingBreakdown && (
+{pricingBreakdown && consultation && (
   <PDFDownloadLink
+
     key={JSON.stringify(pricingBreakdown)}
     document={
-      <PrintConsultation
-        consultation={consultation}
-        groupedSections={groupedSections}
-        pricing={pricingBreakdown}
-          client={consultation.client}
+    <PrintConsultation
+  consultation={consultation}
+  groupedRooms={groupedRooms}
+  pricing={pricingBreakdown}
+  client={consultation.client}
+/>
 
-      />
     }
     fileName={`consultation-estimate-${consultation.id}.pdf`}
   >
@@ -335,7 +384,7 @@ const pricingBreakdown = useMemo(() => {
         onClick={() => {
           console.log("🖨️ PDF CLICKED");
           console.log("📋 Consultation:", consultation);
-          console.log("📊 Grouped Sections:", groupedSections);
+console.log("📊 Grouped Rooms:", groupedRooms);
           console.log("💰 Pricing Breakdown:", pricingBreakdown);
         }}
         disabled={loading}

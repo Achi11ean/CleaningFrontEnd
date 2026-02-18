@@ -34,6 +34,26 @@ export default function ConsultationList({ onSelect }) {
 
     load();
   }, [axios]);
+async function handleDelete(consultationId) {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this consultation?\n\nThis will remove ALL rooms and entries."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await axios.delete(`/consultations/${consultationId}`);
+
+    // remove from UI immediately
+    setConsultations(prev =>
+      prev.filter(c => c.id !== consultationId)
+    );
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete consultation");
+  }
+}
 
   const filteredConsultations = consultations.filter((c) => {
     const name = clientsById[c.client_id] || "";
@@ -86,12 +106,24 @@ export default function ConsultationList({ onSelect }) {
               Created: {new Date(c.created_at).toLocaleString()}
             </p>
 
-            <button
-              onClick={() => onSelect(c.id)}
-              className="mt-4 inline-block text-sm text-blue-600 hover:underline"
-            >
-              View →
-            </button>
+<div className="flex justify-between mt-4">
+
+  <button
+    onClick={() => onSelect(c.id)}
+    className="text-sm text-blue-600 hover:underline"
+  >
+    View →
+  </button>
+
+  <button
+    onClick={() => handleDelete(c.id)}
+    className="text-sm text-red-600 hover:underline"
+  >
+    Delete
+  </button>
+
+</div>
+
           </div>
         ))}
       </div>
