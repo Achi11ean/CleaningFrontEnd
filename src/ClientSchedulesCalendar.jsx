@@ -542,7 +542,7 @@ export default function ClientSchedulesCalendar() {
         <p className="text-sm text-gray-500 italic px-2">Loading time off…</p>
       )}
 
-      <div className="bg-white rounded-xl shadow p-" style={{ height: 700 }}>
+      <div className="bg-white rounded-xl shadow" style={{ height: 700 }}>
         <Calendar
           localizer={localizer}
           events={allEvents}
@@ -582,7 +582,7 @@ export default function ClientSchedulesCalendar() {
                 style: {
                   backgroundColor: "#ec4899", // pink-500
                   border: "2px solid #9d174d",
-                  borderRadius: "6px",
+                  borderRadius: "2px",
                   color: "white",
                   fontWeight: 700,
                   boxShadow: "0 0 8px rgba(236, 72, 153, 0.6)",
@@ -604,17 +604,15 @@ export default function ClientSchedulesCalendar() {
 
             const assignedToMe = isAssignedToMe(event.resource);
             return {
-              style: {
-                backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
-                borderRadius: "6px",
-                color: "white",
-                border: assignedToMe ? "2px solid #14532d" : "none",
-                boxShadow: assignedToMe
-                  ? "0 0 8px rgba(22, 163, 74, 0.7)"
-                  : "none",
-                fontWeight: assignedToMe ? "700" : "500",
-              },
-            };
+  style: {
+    backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
+    borderRadius: "4px",
+    color: "white",
+    fontSize: "11px",
+    padding: "2px 4px",
+  },
+};
+
           }}
         />
       </div>

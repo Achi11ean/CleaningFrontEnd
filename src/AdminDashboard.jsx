@@ -231,7 +231,7 @@ const setStaffPassword = async (id) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-400 via-white to-slate-400 pt-20 lg:pt-24 ">
       <div className="max-w-8xl text-center mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200">
         {/* Header */}{" "}
-<header className="relative overflow-hidden rounded-none bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 px-6 py-5 shadow-2xl">
+<header className="relative overflow-hidden rounded-none bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900  py-5 shadow-2xl">
   {/* Subtle background accents */}
   <div className="pointer-events-none absolute inset-0">
     <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
@@ -255,7 +255,7 @@ const setStaffPassword = async (id) => {
   </div>
 </header>
 
-        <div className="px-2 py-2">
+        <div className=" py-2">
           <div
             className="
     grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 
@@ -368,7 +368,8 @@ const setStaffPassword = async (id) => {
           {activeTab === "clients" && (
             <>
               {/* Clients Sub Tabs */}
-              <div className="flex space-x-4 border-b mb-6 mt-4">
+<div className="border-b mb-6 mt-4 overflow-x-auto">
+  <div className="flex space-x-4 min-w-max px-1">
                 <button
                   onClick={() => setClientsSubTab("list")}
                   className={`px-3 py-2 font-semibold border-b-2 transition ${
@@ -421,7 +422,7 @@ const setStaffPassword = async (id) => {
 >
   Consultations
 </button>
-
+</div>
               </div>
 {!loading && !error && clientsSubTab === "new" && (
   <div className="mt-6">

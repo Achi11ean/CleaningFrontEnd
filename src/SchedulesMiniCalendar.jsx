@@ -209,7 +209,7 @@ const formatTime = (timeStr) => {
 
 
   return (
-    <div className="rounded-2xl border bg-white shadow p-4 space-y-3">
+    <div className="rounded-2xl border bg-white shadow  space-y-3">
       {/* HEADER */}
       <div className="flex justify-between items-center">
         <button
@@ -258,7 +258,7 @@ const formatTime = (timeStr) => {
             <div
               key={day.toISOString()}
               className={`
-                min-h-[90px] rounded-lg border p-1
+min-h-[70px] rounded-md border p-[2px]
                 ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
                 ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
               `}
@@ -294,7 +294,7 @@ onClick={() => {
       "
       title={`Consultation: ${appt.client_name}`}
     >
-      🩷 {format(parseISO(appt.scheduled_for), "h:mm a")} {appt.client_name}
+       {format(parseISO(appt.scheduled_for), "h:mm a")} {appt.client_name}
     </div>
   );
 }
@@ -325,7 +325,7 @@ onClick={() => {
   "
   title={`${schedule.client?.first_name} ${schedule.client?.last_name}`}
 >
-  🧼 {formatTime(schedule.start_time)} {schedule.client?.first_name}
+   {formatTime(schedule.start_time)} {schedule.client?.first_name}
 </div>
 
   );

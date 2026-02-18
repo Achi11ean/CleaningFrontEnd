@@ -55,3 +55,24 @@
   font-style: normal;
 }
 
+/* 🔹 Make calendar events smaller */
+.rbc-event {
+  padding: 2px 4px !important;
+  font-size: 11px !important;
+  line-height: 1.1 !important;
+}
+
+/* 🔹 Reduce height in month view */
+.rbc-month-view .rbc-event {
+  min-height: 16px !important;
+}
+
+/* 🔹 Reduce spacing between stacked events */
+.rbc-row-segment {
+  padding: 1px 2px !important;
+}
+
+/* 🔹 Make "show more" link smaller */
+.rbc-show-more {
+  font-size: 11px !important;
+}
