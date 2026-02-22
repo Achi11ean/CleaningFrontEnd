@@ -11,10 +11,12 @@ export default function ManageClients() {
   const [admins, setAdmins] = useState([]);
 const [searchTerm, setSearchTerm] = useState("");
 const STATUS_ORDER = [
+  "waitlist",
   "new",
   "contacted",
   "active",
   "inactive",
+
   "unresponsive",
   "paused",
   "archived",

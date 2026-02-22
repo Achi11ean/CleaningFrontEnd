@@ -12,6 +12,7 @@ export default function StaffClients() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 const STATUS_ORDER = [
+  "waitlist",
   "new",
   "contacted",
   "active",

@@ -88,41 +88,41 @@ const appendedNotes =
 const finalMessage = `${form.message}${appendedNotes}`;
 
 
-  try {
-    await axios.post(`${API_BASE_URL}/clients/inquiry`, {
-      first_name: form.first_name,
-      last_name: form.last_name,
-      email: form.email,
-      phone: form.phone,
-      address: form.address || null,
+ try {
+  const res = await axios.post(`${API_BASE_URL}/clients/inquiry`, {
+    first_name: form.first_name,
+    last_name: form.last_name,
+    email: form.email,
+    phone: form.phone,
+    address: form.address || null,
+    message: finalMessage,
+  });
 
-      // 👇 send composed message
-      message: finalMessage,
-    });
+  // ⭐ Use backend dynamic message
+  setStatus(res.data.message);
 
-    setStatus("Your inquiry has been sent successfully! We’ll contact you soon.");
-    setForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      address: "",
-      message: "",
+  setForm({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    address: "",
+    message: "",
+    preferred_contact: "",
+    property_type: "",
+    square_footage: "",
+    service_type: "",
+    heard_about_us: "",
+  });
 
-      preferred_contact: "",
-      property_type: "",
-      square_footage: "",
-      service_type: "",
-      heard_about_us: "",
-    });
-  } catch (err) {
-    setError(
-      err.response?.data?.error ||
-        "Failed to submit inquiry. Please try again."
-    );
-  } finally {
-    setLoading(false);
-  }
+} catch (err) {
+  setError(
+    err.response?.data?.error ||
+      "Failed to submit inquiry. Please try again."
+  );
+} finally {
+  setLoading(false);
+}
 };
 
 

@@ -69,8 +69,38 @@ export default function AdminDashboard() {
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [pendingTimeOffCount, setPendingTimeOffCount] = useState(0);
   const [appointmentsSubTab, setAppointmentsSubTab] = useState("create");
+const [acceptingClients, setAcceptingClients] = useState(null);
+const [savingIntake, setSavingIntake] = useState(false);
+useEffect(() => {
+  const loadIntakeStatus = async () => {
+    try {
+      const res = await authAxios.get("/admin/client-intake");
+      setAcceptingClients(res.data.accepting);
+    } catch (err) {
+      console.error("Failed to load intake status", err);
+    }
+  };
 
+  loadIntakeStatus();
+}, []);
+const toggleIntake = async () => {
+  if (acceptingClients === null) return;
 
+  const newValue = !acceptingClients;
+
+  setSavingIntake(true);
+  try {
+    await authAxios.post("/admin/client-intake", {
+      accepting: newValue,
+    });
+
+    setAcceptingClients(newValue);
+  } catch (err) {
+    alert("Failed to update intake status");
+  } finally {
+    setSavingIntake(false);
+  }
+};
   useEffect(() => {
     const fetchPendingTimeOff = async () => {
       try {
@@ -480,6 +510,7 @@ const setStaffPassword = async (id) => {
                       }`}
                     >
                       All Clients
+                      
                       {newClientCount > 0 && (
                         <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
                           {newClientCount}
@@ -516,7 +547,49 @@ const setStaffPassword = async (id) => {
                   </div>
 
 {clientsListMode === "exceptions" && <AllExceptions />}
-                  {clientsListMode === "all" && <ManageClients />}
+
+{clientsListMode === "all" && (
+  <>
+    {acceptingClients !== null && (
+      <div className="mb-6 flex justify-center">
+        <div className="bg-white border rounded-2xl shadow p-4 flex items-center gap-6">
+
+          <div className="text-left">
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+              Client Intake
+            </p>
+
+            <p className={`text-lg font-bold ${
+              acceptingClients ? "text-green-600" : "text-red-600"
+            }`}>
+              {acceptingClients
+                ? "Accepting New Clients"
+                : "Waitlist Mode"}
+            </p>
+          </div>
+
+          {/* Toggle Switch */}
+          <button
+            onClick={toggleIntake}
+            disabled={savingIntake}
+            className={`relative w-16 h-9 rounded-full transition-all duration-300 ${
+              acceptingClients ? "bg-green-500" : "bg-gray-400"
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-7 h-7 bg-white rounded-full shadow transition-all duration-300 ${
+                acceptingClients ? "translate-x-7" : ""
+              }`}
+            />
+          </button>
+
+        </div>
+      </div>
+    )}
+
+    <ManageClients />
+  </>
+)}
                   {clientsListMode === "requests" && <ManagerRequests />}
                 </>
               )}
