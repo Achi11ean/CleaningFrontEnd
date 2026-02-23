@@ -42,6 +42,41 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginBottom: 4,
   },
+  roomBox: {
+  marginTop: 16,
+  padding: 12,
+  border: "1 solid #d1d5db",
+  borderRadius: 6,
+  backgroundColor: "#fafafa",
+},
+roomHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+
+  backgroundColor: "#eef2ff",   // soft indigo
+  border: "1 solid #c7d2fe",
+  paddingVertical: 8,
+  paddingHorizontal: 10,
+  borderRadius: 6,
+  marginBottom: 10,
+},
+
+roomTitle: {
+  fontSize: 13,
+  fontWeight: "bold",
+  color: "#1e3a8a",
+},
+
+pointsBadge: {
+  backgroundColor: "#4f46e5",
+  color: "white",
+  fontSize: 10,
+  fontWeight: "bold",
+  paddingVertical: 3,
+  paddingHorizontal: 8,
+  borderRadius: 4,
+},
   subtitle: {
     fontSize: 10,
     color: "#6b7280",
@@ -88,6 +123,26 @@ entryMeta: {
 multiplierBox: {
   marginTop: 4,
   paddingLeft: 8,
+},
+roomMetaRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 4,
+  marginBottom: 6,
+},
+
+roomMetaBox: {
+  backgroundColor: "#f1f5f9",
+  border: "1 solid #e2e8f0",
+  borderRadius: 4,
+  paddingVertical: 3,
+  paddingHorizontal: 6,
+},
+
+roomMetaText: {
+  fontSize: 9,
+  color: "#475569",
+  fontWeight: "bold",
 },
 
 multiplierText: {
@@ -238,28 +293,32 @@ export default function PrintConsultation({
       {/* Sections */}
 {/* Rooms */}
 {Object.values(groupedRooms || {}).map((roomGroup) => (
-  <View key={roomGroup.room.id} style={styles.block}>
-
+<View key={roomGroup.room.id} style={styles.roomBox}>
     {/* ROOM HEADER */}
-    <Text style={styles.sectionTitle}>
-      {roomGroup.room.label} — {roomGroup.total_points} pts
-    </Text>
 
-    {roomGroup.room.square_feet && (
-      <Text style={styles.notes}>
-        {roomGroup.room.square_feet} sqft • multiplier ×
-        {roomGroup.room.sqft_multiplier}
-      </Text>
-    )}
+
 
     {/* SECTIONS INSIDE ROOM */}
     {Object.values(roomGroup.sections).map((section) => (
       <View key={section.section_name} style={{ marginTop: 8 }}>
+<View style={styles.roomHeader}>
+  <Text style={styles.roomTitle}>
+    {roomGroup.room.label}
+  </Text>
 
-        <Text style={{ fontSize: 11, fontWeight: "bold" }}>
-          {section.section_name} — {section.total_points} pts
-        </Text>
-
+  <Text style={styles.pointsBadge}>
+    {roomGroup.total_points} pts
+  </Text>
+</View>
+ {roomGroup.room.square_feet && (
+  <View style={styles.roomMetaRow}>
+    <View style={styles.roomMetaBox}>
+      <Text style={styles.roomMetaText}>
+        {roomGroup.room.square_feet} sqft
+      </Text>
+    </View>
+  </View>
+)}
         {section.entries[0]?.section_description && (
           <Text style={styles.notes}>
             {section.entries[0].section_description}

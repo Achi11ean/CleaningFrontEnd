@@ -107,9 +107,9 @@ const { canceledMap, replacementMap } = useMemo(() => {
 }, [schedules]);
 
 
-  const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
-    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+ const calendarDays = useMemo(() => {
+  const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+  const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
 
     const days = [];
     let d = start;
@@ -241,7 +241,7 @@ const formatTime = (timeStr) => {
 
       {/* DAYS */}
       <div className="grid grid-cols-7 text-xs font-semibold text-gray-500">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+        {["Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ].map((d) => (
           <div key={d} className="text-center">
             {d}
           </div>

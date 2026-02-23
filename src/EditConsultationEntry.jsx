@@ -2,17 +2,57 @@ import { useState, useEffect } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import { toast } from "react-toastify";
 
+
+function getCalculation(entry) {
+  const base = entry.base_points || 0;
+  const qty = entry.quantity || 1;
+  const intensity = entry.intensity_points || 1;
+
+  const multiplierValues =
+    entry.multipliers?.map((m) => m.multiplier) || [];
+
+  const roomMultiplier = entry.room_sqft_multiplier || 1;
+
+  // STEP 1
+  const baseTotal = base * qty;
+
+  // STEP 2
+  const afterIntensity = baseTotal * intensity;
+
+  // STEP 3
+  let afterMultipliers = afterIntensity;
+  multiplierValues.forEach((m) => {
+    afterMultipliers *= m;
+  });
+
+  // STEP 4
+  const afterRoom = Math.round(afterMultipliers * roomMultiplier);
+
+  return {
+    base,
+    qty,
+    baseTotal,
+    intensity,
+    multipliers: multiplierValues,
+    roomMultiplier,
+    afterIntensity,
+    afterMultipliers,
+    final: afterRoom,
+  };
+}
 export default function EditConsultationEntry({ entry, onUpdated }) {
   const { axios } = useAuthorizedAxios();
   const [editing, setEditing] = useState(false);
   const [intensities, setIntensities] = useState([]);
   const [multipliers, setMultipliers] = useState([]);
 
-  const [form, setForm] = useState({
-    intensity_id: entry.intensity_id,
-    multiplier_ids: entry.multipliers?.map((m) => m.id) || [],
-    notes: entry.entry_notes || "",
-  });
+const [form, setForm] = useState({
+  intensity_id: entry.intensity_id,
+  multiplier_ids: entry.multipliers?.map((m) => m.id) || [],
+  notes: entry.entry_notes || "",
+});
+
+const calc = getCalculation(entry);
 
   useEffect(() => {
     const loadData = async () => {
@@ -82,6 +122,8 @@ export default function EditConsultationEntry({ entry, onUpdated }) {
               <div key={m.id} className="text-amber-800">
                 • {m.label} × {m.multiplier}
               </div>
+
+              
             ))}
           </div>
         )}
@@ -146,8 +188,51 @@ export default function EditConsultationEntry({ entry, onUpdated }) {
               {m.label} × {m.multiplier}
             </label>
           ))}
+          
         </div>
+        
       </div>
+
+   <div className="bg-blue-50 border border-blue-200 px-3 py-2 rounded text-xs space-y-1">
+
+  <div className="font-semibold text-blue-700">
+    Calculation Details
+  </div>
+
+  {/* STEP 1 */}
+  <div>
+    Base ({calc.base}) × Qty ({calc.qty}) ={" "}
+    <strong>{calc.baseTotal}</strong>
+  </div>
+
+  {/* STEP 2 */}
+  <div>
+    × Intensity ({calc.intensity}) ={" "}
+    <strong>{calc.afterIntensity}</strong>
+  </div>
+
+  {/* STEP 3 */}
+  {calc.multipliers.length > 0 && (
+    <div>
+      × Multipliers ({calc.multipliers.join(" × ")}) ={" "}
+      <strong>{calc.afterMultipliers}</strong>
+    </div>
+  )}
+
+  {/* STEP 4 */}
+  {calc.roomMultiplier !== 1 && (
+    <div>
+      × Room Size ({calc.roomMultiplier}) ={" "}
+      <strong>{calc.final}</strong>
+    </div>
+  )}
+
+  {/* FINAL */}
+  <div className="font-semibold text-blue-800 pt-1 border-t">
+    Final: {calc.final} pts
+  </div>
+
+</div>
 
       <div>
         <label className="block text-xs font-medium mb-1">Entry Notes</label>

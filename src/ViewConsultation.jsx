@@ -13,7 +13,21 @@ const clientName = useMemo(() => {
   if (!consultation?.client) return "Client";
   return `${consultation.client.first_name} ${consultation.client.last_name}`;
 }, [consultation]);
+const handleDeleteRoom = async (roomId) => {
+  if (!window.confirm("Delete this entire room and ALL its entries?")) return;
 
+  try {
+    await axios.delete(`/consultation-rooms/${roomId}`);
+
+    // reload consultation after delete
+    const res = await axios.get(`/consultations/${consultationId}`);
+    setConsultation(res.data);
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete room");
+  }
+};
 const estimatedTotal = useMemo(() => {
   const points = consultation?.total_points ?? 0;
   const rate = parseFloat(pricePerPoint);
@@ -187,25 +201,40 @@ const pricingBreakdown = useMemo(() => {
 
       {/* ROOM HEADER */}
       <div className="px-5 py-4 border-b bg-gradient-to-r from-indigo-50 to-sky-50">
-        <div className="flex justify-between items-center">
+       <div className="flex justify-between items-center">
 
-          <div>
-            <h3 className="text-lg font-bold text-gray-800">
-              {roomGroup.room.label}
-            </h3>
+  <div>
+    <h3 className="text-lg font-bold text-gray-800">
+      {roomGroup.room.label}
+    </h3>
 
-            {roomGroup.room.square_feet && (
-              <div className="text-xs text-gray-500">
-                {roomGroup.room.square_feet} sqft • multiplier ×{roomGroup.room.sqft_multiplier}
-              </div>
-            )}
-          </div>
+    {roomGroup.room.square_feet && (
+      <div className="text-xs text-gray-500">
+        {roomGroup.room.square_feet} sqft • multiplier ×{roomGroup.room.sqft_multiplier}
+      </div>
+    )}
+  </div>
 
-          <div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
-            {roomGroup.total_points} pts
-          </div>
+  <div className="flex items-center gap-3">
 
-        </div>
+    {/* Points badge */}
+    <div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
+      {roomGroup.total_points} pts
+    </div>
+
+    {/* DELETE BUTTON */}
+    {roomGroup.room.id !== "no-room" && (
+      <button
+        onClick={() => handleDeleteRoom(roomGroup.room.id)}
+        className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+      >
+        Delete
+      </button>
+    )}
+
+  </div>
+
+</div>
       </div>
 
       {/* SECTIONS INSIDE ROOM */}
@@ -218,7 +247,7 @@ const pricingBreakdown = useMemo(() => {
             {/* SECTION HEADER */}
             <div className="flex justify-between px-4 py-3 border-b bg-white">
               <h4 className="font-semibold text-gray-800">
-                {section.section_name}
+                {section.section_name} Items
               </h4>
 
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
