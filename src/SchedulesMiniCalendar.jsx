@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
-
+import CreateSchedules  from "./CreateSchedules";
 import {
   startOfMonth,
   endOfMonth,
@@ -24,6 +24,7 @@ export default function SchedulesMiniCalendar({
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { axios } = useAuthorizedAxios();
+  const [createDate, setCreateDate] = useState(null);
 const [selectedAppointment, setSelectedAppointment] = useState(null);
 const [editingAppt, setEditingAppt] = useState(false);
 const [apptForm, setApptForm] = useState({});
@@ -255,14 +256,22 @@ const formatTime = (timeStr) => {
           const daySchedules = schedulesByDate[dateKey] || [];
 
           return (
-            <div
-              key={day.toISOString()}
-              className={`
-min-h-[70px] rounded-md border p-[2px]
-                ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
-                ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
-              `}
-            >
+        <div
+  key={day.toISOString()}
+  onClick={(e) => {
+    // only trigger if clicking empty area
+    if (e.target === e.currentTarget) {
+      setCreateDate(format(day, "yyyy-MM-dd"));
+    }
+  }}
+  className={`
+    cursor-pointer
+    min-h-[70px] rounded-md border p-[2px]
+    hover:bg-blue-50
+    ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
+    ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
+  `}
+>
               <div className="font-bold text-[11px] mb-1">
                 {format(day, "d")}
               </div>
@@ -457,7 +466,26 @@ onClick={() => {
     </div>
   </div>
 )}
+{/* CREATE SCHEDULE MODAL */}
+{createDate && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl p-6 w-[700px] max-h-[90vh] overflow-y-auto">
 
+      <button
+        onClick={() => setCreateDate(null)}
+        className="float-right text-gray-500"
+      >
+        ✕
+      </button>
+
+      <CreateSchedules
+        defaultDate={createDate}
+        onCreated={() => setCreateDate(null)}
+      />
+
+    </div>
+  </div>
+)}
 
     </div>
   );
