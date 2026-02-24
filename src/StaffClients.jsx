@@ -29,6 +29,12 @@ const STATUS_STYLES = {
     text: "text-blue-700",
     badge: "bg-blue-500 text-white",
   },
+  waitlist: {
+  bg: "bg-yellow-50",
+  border: "border-yellow-400",
+  text: "text-yellow-700",
+  badge: "bg-yellow-500 text-white",
+},
   contacted: {
     bg: "bg-indigo-50",
     border: "border-indigo-500",
@@ -128,8 +134,7 @@ const groupedClients = STATUS_ORDER.reduce((acc, status) => {
     const clientsInSection = groupedClients[status];
     if (!clientsInSection || clientsInSection.length === 0) return null;
 
-    const style = STATUS_STYLES[status];
-
+const style = STATUS_STYLES[status] || STATUS_STYLES["inactive"];
     return (
       <div key={status}>
         {/* SECTION HEADER */}

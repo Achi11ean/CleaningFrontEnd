@@ -1,6 +1,55 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
-
+const STATUS_STYLES = {
+  new: {
+    bg: "bg-blue-50",
+    border: "border-blue-500",
+    text: "text-blue-700",
+    badge: "bg-blue-500 text-white",
+  },
+  contacted: {
+    bg: "bg-indigo-50",
+    border: "border-indigo-500",
+    text: "text-indigo-700",
+    badge: "bg-indigo-500 text-white",
+  },
+  active: {
+    bg: "bg-emerald-50",
+    border: "border-emerald-500",
+    text: "text-emerald-700",
+    badge: "bg-emerald-500 text-white",
+  },
+  inactive: {
+    bg: "bg-gray-100",
+    border: "border-gray-400",
+    text: "text-gray-700",
+    badge: "bg-gray-500 text-white",
+  },
+  unresponsive: {
+    bg: "bg-amber-50",
+    border: "border-amber-500",
+    text: "text-amber-700",
+    badge: "bg-amber-500 text-white",
+  },
+  paused: {
+    bg: "bg-purple-50",
+    border: "border-purple-500",
+    text: "text-purple-700",
+    badge: "bg-purple-500 text-white",
+  },
+  archived: {
+    bg: "bg-slate-100",
+    border: "border-slate-500",
+    text: "text-slate-700",
+    badge: "bg-slate-600 text-white",
+  },
+  waitlist: {
+    bg: "bg-yellow-50",
+    border: "border-yellow-400",
+    text: "text-yellow-700",
+    badge: "bg-yellow-500 text-white",
+  },
+};
 export default function ManagerClients({ client, onClientUpdated }) {
   const { authAxios } = useStaff();
 
