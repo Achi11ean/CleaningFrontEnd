@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import AssignCleaners from "./AssignCleaners";
 export default function CreateSchedules({ defaultDate = null }) {
-    const { authAxios } = useAdmin();
-
+const { axios: authAxios, role } = useAuthorizedAxios();
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState("");
 

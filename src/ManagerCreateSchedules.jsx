@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
 import AssignCleaners from "./AssignCleaners";
 
-export default function ManagerCreateSchedules() {
+export default function CreateSchedules({ defaultDate = null }) {
   const { authAxios } = useStaff();
 
   const [clients, setClients] = useState([]);
@@ -19,6 +19,18 @@ const [selectedClient, setSelectedClient] = useState(null);
     end_time: "",
     description: "",
   });
+
+  useEffect(() => {
+  if (defaultDate) {
+    const derivedDay = deriveDayOfWeek(defaultDate);
+
+    setForm((prev) => ({
+      ...prev,
+      start_date: defaultDate,
+      day_of_week: derivedDay,
+    }));
+  }
+}, [defaultDate]);
 const [clientQuery, setClientQuery] = useState("");
 const [showClientDropdown, setShowClientDropdown] = useState(false);
 
