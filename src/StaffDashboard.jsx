@@ -30,7 +30,7 @@ import CreateGallery from "./CreateGallery";
 import ManageGallery from "./ManageGallery";
 import MyShifts from "./MyShifts";
 import ClientInquiry from "./ClientInquiry";
-
+import StaffWeeklyHours from "./StaffWeeklyHours";
 export default function StaffDashboard() {
 const { staff, authAxios } = useStaff();
 const [timeOffSubTab, setTimeOffSubTab] = useState("create");
@@ -87,6 +87,8 @@ useEffect(() => {
 
 
   const [activeTab, setActiveTab] = useState("clock");
+  const [shiftsSubTab, setShiftsSubTab] = useState("shifts");
+// "shifts" | "week"
   const [clientSubTab, setClientSubTab] = useState("list"); 
 const [inventorySubTab, setInventorySubTab] = useState("my");
 const [purchaseSubTab, setPurchaseSubTab] = useState("history"); // for nested purchases
@@ -228,6 +230,7 @@ useEffect(() => {
         if (key === "clients") setClientSubTab("list");
         if (key === "timeoff") setTimeOffSubTab("create");
         if (key === "services") setServicesSubTab("create");
+        if (key === "myshifts") setShiftsSubTab("shifts");
       }}
       className={`
         w-full px-4 py-2 text-sm sm:text-base font-semibold rounded-xl
@@ -390,8 +393,38 @@ useEffect(() => {
   </>
 )}
 
-{activeTab === "myshifts" && <MyShifts mode="staff" />}
+{activeTab === "myshifts" && (
+  <>
+    {/* SHIFTS SUB TABS */}
+    <div className="flex space-x-4 border-b mb-6 ml-2">
+      <button
+        onClick={() => setShiftsSubTab("shifts")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          shiftsSubTab === "shifts"
+            ? "border-emerald-600 text-emerald-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🧹 Shifts
+      </button>
 
+      <button
+        onClick={() => setShiftsSubTab("week")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          shiftsSubTab === "week"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🕒 My Week
+      </button>
+    </div>
+
+    {/* CONTENT */}
+    {shiftsSubTab === "shifts" && <MyShifts mode="staff" />}
+    {shiftsSubTab === "week" && <StaffWeeklyHours />}
+  </>
+)}
 {activeTab === "workday" && <StaffWorkDayCalendar />}
 {activeTab === "workday" && <ActiveShiftPanel />}
 
