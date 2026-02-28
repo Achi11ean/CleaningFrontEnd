@@ -59,6 +59,8 @@ export default function AdminDashboard() {
   const [shiftsSubTab, setShiftsSubTab] = useState("me"); // "me" | "all"
   const [workDaySubTab, setWorkDaySubTab] = useState("workday");
   const [servicesSubTab, setServicesSubTab] = useState("create");
+  const [employeesSubTab, setEmployeesSubTab] = useState("hours");
+const [employeesHoursSubTab, setEmployeesHoursSubTab] = useState("weekly");
   const [usersSubTab, setUsersSubTab] = useState("staff"); // "staff" | "admins"
   const [consultationsSubTab, setConsultationsSubTab] = useState("create");
   const [inventorySubTab, setInventorySubTab] = useState("create");
@@ -83,6 +85,12 @@ useEffect(() => {
 
   loadIntakeStatus();
 }, []);
+useEffect(() => {
+  if (activeTab !== "employees") {
+    setEmployeesSubTab("hours");
+    setEmployeesHoursSubTab("weekly");
+  }
+}, [activeTab]);
 const toggleIntake = async () => {
   if (acceptingClients === null) return;
 
@@ -164,17 +172,12 @@ const toggleIntake = async () => {
   }, []);
 
   const [consultSetupTab, setConsultSetupTab] = useState("consultation");
-  const [timeSubTab, setTimeSubTab] = useState("weekly"); // weekly | manual
 
   const [consultSetupMode, setConsultSetupMode] = useState("create");
   // create | manage
 
   const [timeOffSubTab, setTimeOffSubTab] = useState("manage");
-  useEffect(() => {
-    if (activeTab !== "time") {
-      setTimeSubTab("weekly");
-    }
-  }, [activeTab]);
+
 
   const [staff, setStaff] = useState([]);
   const [admins, setAdmins] = useState([]);
@@ -314,15 +317,28 @@ const setStaffPassword = async (id) => {
                 color: "blue",
                 subTab: "workday",
               },
+              
               {
                 key: "consultations",
                 label: "Consults",
                 color: "blue",
                 subTab: "create",
               },
-              { key: "shifts", label: "Shifts", color: "blue", subTab: "me" },
-              { key: "profile", label: "Profile", color: "blue", subTab: "me" },
-              { key: "time", label: "Time", color: "blue" },
+              {
+  key: "employees",
+  label: (
+    <span className="relative">
+      Employees
+      {pendingTimeOffCount > 0 && (
+        <span className="absolute -top-2 -right-5 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+          {pendingTimeOffCount}
+        </span>
+      )}
+    </span>
+  ),
+  color: "blue",
+},
+         
               {
                 key: "services",
                 label: "Services",
@@ -343,21 +359,7 @@ const setStaffPassword = async (id) => {
                 ),
                 color: "blue",
               },
-              {
-                key: "timeoff",
-                label: (
-                  <span className="relative">
-                    Off
-                    {pendingTimeOffCount > 0 && (
-                      <span className="absolute -top-2 -right-6 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
-                        {pendingTimeOffCount}
-                      </span>
-                    )}
-                  </span>
-                ),
-                color: "rose",
-                subTab: "manage",
-              },
+
             ].map(({ key, label, color, subTab }) => (
               <button
                 key={key}
@@ -369,6 +371,10 @@ const setStaffPassword = async (id) => {
                   if (key === "profile") setProfileSubTab(subTab);
                   if (key === "services") setServicesSubTab(subTab);
                   if (key === "timeoff") setTimeOffSubTab(subTab);
+                  if (key === "employees") {
+  setEmployeesSubTab("hours");
+  setEmployeesHoursSubTab("weekly");
+}
                 }}
                 className={`w-full px-4 py-1 text-lg font-semibold rounded-xl text-center transition-all duration-200
         ${
@@ -395,6 +401,8 @@ const setStaffPassword = async (id) => {
               {error}
             </div>
           )}
+
+          
           {activeTab === "clients" && (
             <>
               {/* Clients Sub Tabs */}
@@ -459,6 +467,7 @@ const setStaffPassword = async (id) => {
     <ClientInquiry />
   </div>
 )}
+
 {!loading && !error && clientsSubTab === "consultations" && (
   <div className="mt-6">
 
@@ -773,7 +782,260 @@ const setStaffPassword = async (id) => {
               )}
             </>
           )}
+{activeTab === "employees" && (
+  <>
+    {/* LEVEL 1 */}
+   <div className="flex flex-wrap gap-4 border-b mb-6 mt-4">
 
+  <button
+    onClick={() => setEmployeesSubTab("hours")}
+    className={`px-3 py-2 font-semibold border-b-2 ${
+      employeesSubTab === "hours"
+        ? "border-blue-600 text-blue-600"
+        : "border-transparent text-gray-500"
+    }`}
+  >
+    🕒 Hours
+  </button>
+
+  <button
+    onClick={() => setEmployeesSubTab("off")}
+    className={`px-3 py-2 font-semibold border-b-2 ${
+      employeesSubTab === "off"
+        ? "border-rose-600 text-rose-600"
+        : "border-transparent text-gray-500"
+    }`}
+  >
+    🗓️ Off
+  </button>
+
+  <button
+    onClick={() => setEmployeesSubTab("shifts")}
+    className={`px-3 py-2 font-semibold border-b-2 ${
+      employeesSubTab === "shifts"
+        ? "border-purple-600 text-purple-600"
+        : "border-transparent text-gray-500"
+    }`}
+  >
+    🧹 Shifts
+  </button>
+
+  <button
+    onClick={() => setEmployeesSubTab("profile")}
+    className={`px-3 py-2 font-semibold border-b-2 ${
+      employeesSubTab === "profile"
+        ? "border-indigo-600 text-indigo-600"
+        : "border-transparent text-gray-500"
+    }`}
+  >
+    👤 Profile
+  </button>
+
+</div>
+{/* SHIFTS */}
+{employeesSubTab === "shifts" && (
+  <>
+    <div className="flex space-x-4 border-b mb-6">
+      <button
+        onClick={() => setShiftsSubTab("me")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          shiftsSubTab === "me"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        My Shifts
+      </button>
+
+      <button
+        onClick={() => setShiftsSubTab("all")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          shiftsSubTab === "all"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        All Shifts
+      </button>
+
+      <button
+        onClick={() => setShiftsSubTab("manage")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          shiftsSubTab === "manage"
+            ? "border-purple-600 text-purple-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        Manage
+      </button>
+    </div>
+
+    {shiftsSubTab === "me" && <AdminShifts mode="me" />}
+    {shiftsSubTab === "all" && <AdminShifts mode="all" />}
+    {shiftsSubTab === "manage" && <AdminWorkShifts />}
+  </>
+)}
+
+{/* PROFILE */}
+{employeesSubTab === "profile" && (
+  <>
+    <div className="flex space-x-4 border-b mb-6">
+      <button
+        onClick={() => setProfileSubTab("me")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          profileSubTab === "me"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        🙋 My Profile
+      </button>
+
+      <button
+        onClick={() => setProfileSubTab("all")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          profileSubTab === "all"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        👥 All Profiles
+      </button>
+
+      <button
+        onClick={() => {
+          setProfileSubTab("users");
+          setUsersSubTab("staff");
+          loadStaff();
+        }}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          profileSubTab === "users"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        👥 Users
+      </button>
+    </div>
+
+    {profileSubTab === "users" && (
+      <div className="flex space-x-4 border-b mb-6">
+        <button
+          onClick={() => {
+            setUsersSubTab("staff");
+            loadStaff();
+          }}
+          className={`px-3 py-2 font-semibold border-b-2 ${
+            usersSubTab === "staff"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-500"
+          }`}
+        >
+          Employees
+        </button>
+
+        <button
+          onClick={() => {
+            setUsersSubTab("admins");
+            loadAdmins();
+          }}
+          className={`px-3 py-2 font-semibold border-b-2 ${
+            usersSubTab === "admins"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-500"
+          }`}
+        >
+          Admins
+        </button>
+      </div>
+    )}
+
+    {profileSubTab === "me" && <UserProfile />}
+    {profileSubTab === "all" && <AdminAllProfiles />}
+
+    {profileSubTab === "users" && usersSubTab === "staff" && (
+      <StaffTable
+        staff={staff}
+        onActivate={activateStaff}
+        onDeactivate={deactivateStaff}
+        onDelete={deleteStaff}
+        onUpdateRole={updateRole}
+        onSetPassword={setStaffPassword}
+      />
+    )}
+
+    {profileSubTab === "users" && usersSubTab === "admins" && (
+      <AdminTable admins={admins} />
+    )}
+  </>
+)}
+    {/* HOURS */}
+    {employeesSubTab === "hours" && (
+      <>
+        <div className="flex space-x-4 border-b mb-6">
+          <button
+            onClick={() => setEmployeesHoursSubTab("weekly")}
+            className={`px-3 py-2 font-semibold border-b-2 ${
+              employeesHoursSubTab === "weekly"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            📊 Weekly
+          </button>
+
+          <button
+            onClick={() => setEmployeesHoursSubTab("manual")}
+            className={`px-3 py-2 font-semibold border-b-2 ${
+              employeesHoursSubTab === "manual"
+                ? "border-emerald-600 text-emerald-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            ✍️ Manual
+          </button>
+        </div>
+
+        {employeesHoursSubTab === "weekly" && <AdminWeekly />}
+        {employeesHoursSubTab === "manual" && <ManualTimeEntry />}
+      </>
+    )}
+
+    {/* OFF */}
+    {employeesSubTab === "off" && (
+      <>
+        <div className="flex space-x-4 border-b mb-6">
+          <button
+            onClick={() => setTimeOffSubTab("manage")}
+            className={`px-3 py-2 font-semibold border-b-2 ${
+              timeOffSubTab === "manage"
+                ? "border-rose-600 text-rose-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            📋 Requests
+          </button>
+
+          <button
+            onClick={() => setTimeOffSubTab("create")}
+            className={`px-3 py-2 font-semibold border-b-2 ${
+              timeOffSubTab === "create"
+                ? "border-rose-600 text-rose-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            ➕ New
+          </button>
+        </div>
+
+        {timeOffSubTab === "manage" && <BossTimeOff />}
+        {timeOffSubTab === "create" && <CreateTimeOffRequest />}
+      </>
+    )}
+  </>
+)}
+
+    
           {consultationsSubTab === "new" && (
             <div className="space-y-6">
               {/* STEP 1: Select Consultation */}
@@ -794,39 +1056,7 @@ const setStaffPassword = async (id) => {
             </div>
           )}
 
-          {activeTab === "timeoff" && (
-            <div className="flex space-x-4 border-b mb-6 mt-4">
-              <button
-                onClick={() => setTimeOffSubTab("manage")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-                  timeOffSubTab === "manage"
-                    ? "border-rose-600 text-rose-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                🧠 Approvals
-              </button>
-
-              <button
-                onClick={() => setTimeOffSubTab("create")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-                  timeOffSubTab === "create"
-                    ? "border-rose-600 text-rose-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                ➕ Request Time Off
-              </button>
-            </div>
-          )}
-
-          {activeTab === "timeoff" && (
-            <>
-              {timeOffSubTab === "manage" && <BossTimeOff />}
-
-              {timeOffSubTab === "create" && <CreateTimeOffRequest />}
-            </>
-          )}
+        
 
           {activeTab === "services" && (
             <>
@@ -1076,126 +1306,9 @@ const setStaffPassword = async (id) => {
             <ManageAvailability />
           )}
 
-          {activeTab === "shifts" && (
-            <>
-              <div className="flex space-x-4 border-b mb-6 mt-4">
-                <button
-                  onClick={() => setShiftsSubTab("me")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    shiftsSubTab === "me"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  My Shifts
-                </button>
+         
 
-                <button
-                  onClick={() => setShiftsSubTab("all")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    shiftsSubTab === "all"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  All Shifts
-                </button>
-                <button
-                  onClick={() => setShiftsSubTab("manage")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    shiftsSubTab === "manage"
-                      ? "border-purple-600 text-purple-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Manage
-                </button>
-              </div>
-
-              {!loading && !error && shiftsSubTab === "me" && (
-                <AdminShifts mode="me" />
-              )}
-              {!loading && !error && shiftsSubTab === "manage" && (
-                <AdminWorkShifts />
-              )}
-
-              {!loading && !error && shiftsSubTab === "all" && (
-                <AdminShifts mode="all" />
-              )}
-            </>
-          )}
-
-          {activeTab === "profile" && (
-            <div className="flex space-x-4 border-b mb-6 mt-4">
-              <button
-                onClick={() => setProfileSubTab("me")}
-                className={`px-3 py-2 font-semibold border-b-2 transition ${
-                  profileSubTab === "me"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                🙋 My Profile
-              </button>
-
-              <button
-                onClick={() => setProfileSubTab("all")}
-                className={`px-3 py-2 font-semibold border-b-2 transition ${
-                  profileSubTab === "all"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                👥 All Profiles
-              </button>
-              <button
-                onClick={() => {
-                  setProfileSubTab("users");
-                  setUsersSubTab("staff");
-                  loadStaff();
-                }}
-                className={`px-3 py-2 font-semibold border-b-2 ${
-                  profileSubTab === "users"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500"
-                }`}
-              >
-                👥 Users
-              </button>
-            </div>
-          )}
-
-          {activeTab === "profile" && profileSubTab === "users" && (
-            <div className="flex space-x-4 border-b mb-6 mt-2">
-              <button
-                onClick={() => {
-                  setUsersSubTab("staff");
-                  loadStaff();
-                }}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-                  usersSubTab === "staff"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500"
-                }`}
-              >
-                👷 Employees
-              </button>
-
-              <button
-                onClick={() => {
-                  setUsersSubTab("admins");
-                  loadAdmins();
-                }}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-                  usersSubTab === "admins"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500"
-                }`}
-              >
-                🛡️ Admins
-              </button>
-            </div>
-          )}
+       
 
           {activeTab === "profile" && profileSubTab === "me" && <UserProfile />}
           {activeTab === "profile" &&
@@ -1212,9 +1325,9 @@ const setStaffPassword = async (id) => {
 
             )}
 
-          {activeTab === "profile" &&
-            profileSubTab === "users" &&
-            usersSubTab === "staff" && <AdminTable admins={admins} />}
+         {activeTab === "profile" &&
+  profileSubTab === "users" &&
+  usersSubTab === "admins" && <AdminTable admins={admins} />}
 
           {activeTab === "profile" && profileSubTab === "all" && (
             <AdminAllProfiles />
@@ -1229,45 +1342,9 @@ const setStaffPassword = async (id) => {
               onUpdateRole={updateRole} // 👈 NEW
             />
           )}
-          {activeTab === "profile" &&
-            profileSubTab === "users" &&
-            usersSubTab === "admins" && <AdminTable admins={admins} />}
+        
 
-          {activeTab === "time" && (
-            <>
-              {/* Time Sub Tabs */}
-              <div className="flex space-x-4 border-b mb-6 mt-4">
-                <button
-                  onClick={() => setTimeSubTab("weekly")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    timeSubTab === "weekly"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  📊 Weekly
-                </button>
-
-                <button
-                  onClick={() => setTimeSubTab("manual")}
-                  className={`px-3 py-2 font-semibold border-b-2 transition ${
-                    timeSubTab === "manual"
-                      ? "border-emerald-600 text-emerald-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  ✍️ Manual
-                </button>
-              </div>
-
-              {/* Time Sub Content */}
-              {!loading && !error && timeSubTab === "weekly" && <AdminWeekly />}
-
-              {!loading && !error && timeSubTab === "manual" && (
-                <ManualTimeEntry />
-              )}
-            </>
-          )}
+     
         </div>
       </div>
     </div>
