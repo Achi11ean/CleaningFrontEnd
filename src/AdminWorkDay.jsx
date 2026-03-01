@@ -1,46 +1,50 @@
 import { useEffect, useState } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 
-export default function AdminWorkDay() {
-  const { authAxios } = useAdmin();
+export default function WorkDayLive() {
+  const { role, axios } = useAuthorizedAxios();
 
   const [allStaff, setAllStaff] = useState([]);
   const [liveData, setLiveData] = useState({});
-  const [staffProfiles, setStaffProfiles] = useState({}); // key = staff_id
+  const [staffProfiles, setStaffProfiles] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState({});
 
+  const canManage = role === "admin" || role === "manager";
+
   const loadAll = async () => {
+    if (!axios || !canManage) return;
+
     setLoading(true);
     try {
       const [staffRes, liveRes] = await Promise.all([
-        authAxios.get("/staff/all"),
-        authAxios.get("/admin/reports/live"),
+        axios.get("/staff/all"),
+        axios.get("/admin/reports/live"),
       ]);
 
       setAllStaff(staffRes.data);
 
-      // Map live entries
       const liveMap = {};
       liveRes.data.active.forEach((entry) => {
         liveMap[entry.staff_id] = entry;
       });
       setLiveData(liveMap);
 
-      // Fetch all staff profiles in parallel
       const profilePromises = staffRes.data.map((staff) =>
-        authAxios.get(`/admin/staff/${staff.id}/profile`).then((res) => ({
+        axios.get(`/admin/staff/${staff.id}/profile`).then((res) => ({
           staff_id: staff.id,
           profile: res.data.profile,
         }))
       );
 
       const resolved = await Promise.all(profilePromises);
+
       const profileMap = {};
       resolved.forEach(({ staff_id, profile }) => {
         profileMap[staff_id] = profile;
       });
+
       setStaffProfiles(profileMap);
     } catch (err) {
       setError("Failed to load workday data.");
@@ -53,7 +57,7 @@ export default function AdminWorkDay() {
     loadAll();
     const interval = setInterval(loadAll, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [axios, role]);
 
   const formatDuration = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -61,22 +65,22 @@ export default function AdminWorkDay() {
     return `${h}h ${m}m`;
   };
 
-  const handleClock = async (staffId, action) => {
-    setActionLoading((prev) => ({ ...prev, [staffId]: true }));
-    try {
-      if (action === "in") {
-        await authAxios.post("/admin/staff-clock-in", { staff_id: staffId });
-      } else {
-        await authAxios.post("/admin/staff-clock-out", { staff_id: staffId });
-      }
-      await loadAll(); // Refresh view
-    } catch (err) {
-      console.error("Clock action failed", err);
-    } finally {
-      setActionLoading((prev) => ({ ...prev, [staffId]: false }));
-    }
-  };
+const handleClock = async (staffId, action) => {
+  setActionLoading((prev) => ({ ...prev, [staffId]: true }));
 
+  try {
+    await axios.post("/admin/staff-clock", {
+      staff_id: staffId,
+      action,
+    });
+
+    await loadAll();
+  } catch (err) {
+    console.error("Clock action failed", err);
+  } finally {
+    setActionLoading((prev) => ({ ...prev, [staffId]: false }));
+  }
+};
   const getDisplayName = (staff) => {
     const profile = staffProfiles[staff.id];
     if (profile && (profile.first_name || profile.last_name)) {
@@ -85,9 +89,13 @@ export default function AdminWorkDay() {
     return staff.username;
   };
 
+  if (!canManage) return null;
+
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">🟢 Live Work Day</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        🟢 Live Work Day
+      </h2>
 
       {loading ? (
         <div className="py-10 text-gray-500 font-semibold">
@@ -113,6 +121,7 @@ export default function AdminWorkDay() {
                 <div className="font-semibold text-gray-800 mb-1">
                   {getDisplayName(staff)}
                 </div>
+
                 <div className="text-sm text-gray-600">
                   Status:{" "}
                   <span
@@ -123,6 +132,7 @@ export default function AdminWorkDay() {
                     {clockedIn ? "Clocked In" : "Not Clocked In"}
                   </span>
                 </div>
+
                 {clockedIn && (
                   <>
                     <div className="text-xs mt-1 text-gray-500">
@@ -143,7 +153,7 @@ export default function AdminWorkDay() {
                     clockedIn
                       ? "bg-red-100 text-red-600 hover:bg-red-200"
                       : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-                  } transition`}
+                  }`}
                 >
                   {actionLoading[staff.id]
                     ? "Updating..."

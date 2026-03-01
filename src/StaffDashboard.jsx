@@ -36,7 +36,7 @@ import CreateSection from "./CreateSection";
 import CreateConsultItem from "./CreateConsultItem";
 import CreateMultiplier from "./CreateMultiplier";
 import CreateIntensity from "./CreateIntensity";
-
+import WorkDayLive from "./AdminWorkDay";
 import ManageConsults from "./ManageConsults";
 import ManageSectionsItems from "./ManageSectionsItems";
 import ManageIntensity from "./ManageIntensity";
@@ -49,15 +49,11 @@ import ViewConsultation from "./ViewConsultation";
 export default function StaffDashboard() {
 const { staff, authAxios } = useStaff();
 const [timeOffSubTab, setTimeOffSubTab] = useState("create");
-// "create" | "manage"
 const [clockSubTab, setClockSubTab] = useState("timeclock");
-// "timeclock" | "staff"
 const [profileSubTab, setProfileSubTab] = useState("me");
-// "me" | "staff"
 const [clientsListMode, setClientsListMode] = useState("all");
-// "all" | "requests"
+const [workSubTab, setWorkSubTab] = useState("work");
 const [servicesSubTab, setServicesSubTab] = useState("create");
-// "create" | "manage"
 const [newRequestCount, setNewRequestCount] = useState(0);
 const [pendingTimeOffCount, setPendingTimeOffCount] = useState(0);
 const [pendingReviewCount, setPendingReviewCount] = useState(0);
@@ -188,7 +184,6 @@ useEffect(() => {
       ),
     },
 
-    { key: "myshifts", label: "Shifts", color: "emerald" },
 
     {
       key: "inventory",
@@ -569,40 +564,49 @@ useEffect(() => {
   </>
 )}
 
-{activeTab === "myshifts" && (
+
+{activeTab === "workday" && (
   <>
-    {/* SHIFTS SUB TABS */}
+    {/* WORK SUB TABS */}
     <div className="flex space-x-4 border-b mb-6 ml-2">
       <button
-        onClick={() => setShiftsSubTab("shifts")}
+        onClick={() => setWorkSubTab("work")}
         className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          shiftsSubTab === "shifts"
-            ? "border-emerald-600 text-emerald-600"
+          workSubTab === "work"
+            ? "border-blue-600 text-blue-600"
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🧹 Shifts
+        📅 Work
       </button>
 
-      <button
-        onClick={() => setShiftsSubTab("week")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          shiftsSubTab === "week"
-            ? "border-indigo-600 text-indigo-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        🕒 My Week
-      </button>
+      {staff?.role === "manager" && (
+        <button
+          onClick={() => setWorkSubTab("live")}
+          className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+            workSubTab === "live"
+              ? "border-emerald-600 text-emerald-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          🟢 Live
+        </button>
+      )}
     </div>
 
-    {/* CONTENT */}
-    {shiftsSubTab === "shifts" && <MyShifts mode="staff" />}
-    {shiftsSubTab === "week" && <StaffWeeklyHours />}
+    {/* WORK CONTENT */}
+    {workSubTab === "work" && (
+      <>
+        <StaffWorkDayCalendar />
+        <ActiveShiftPanel />
+      </>
+    )}
+
+    {workSubTab === "live" && staff?.role === "manager" && (
+      <WorkDayLive />
+    )}
   </>
 )}
-{activeTab === "workday" && <StaffWorkDayCalendar />}
-{activeTab === "workday" && <ActiveShiftPanel />}
 
 {activeTab === "inventory" && (
   <>
@@ -772,6 +776,9 @@ useEffect(() => {
 )}
   </div>
 )}
+
+
+
 {/* CLOCK SUB-TABS */}
 {activeTab === "clock" && (
   <div className="flex space-x-4 border-b mb-6 ml-2">
@@ -784,7 +791,7 @@ useEffect(() => {
           : "border-transparent text-gray-500 hover:text-gray-700"
       }`}
     >
-      ⏱️ Time Clock
+      ⏱️ Time
     </button>
 
     <button
@@ -813,6 +820,17 @@ useEffect(() => {
         </span>
       )}
     </button>
+    <button
+  onClick={() => setClockSubTab("shifts")}
+  className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+    clockSubTab === "shifts"
+      ? "border-emerald-600 text-emerald-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  🧹 Shifts
+</button>
+
 
   </div>
 )}
@@ -820,14 +838,112 @@ useEffect(() => {
         {/* Content */}
 {activeTab === "clock" && (
   <>
-{clockSubTab === "timeclock" && (
-  <StaffClock onRequestInventory={() => setActiveTab("inventory")} />
-)}
+    {/* TIME CLOCK */}
+    {clockSubTab === "timeclock" && (
+      <StaffClock onRequestInventory={() => setActiveTab("inventory")} />
+    )}
 
+    {/* STAFF AVAILABILITY */}
     {clockSubTab === "staff" && (
       <div className="mt-4">
         <AllAvailability />
       </div>
+    )}
+
+    {/* TIME OFF */}
+    {clockSubTab === "off" && (
+      <>
+        <div className="flex space-x-2 border-b mb-6 ml-2">
+          <button
+            onClick={() => setTimeOffSubTab("create")}
+            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+              timeOffSubTab === "create"
+                ? "border-rose-600 text-rose-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            ➕ New
+          </button>
+
+          <button
+            onClick={() => setTimeOffSubTab("my")}
+            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+              timeOffSubTab === "my"
+                ? "border-rose-600 text-rose-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            📄 Requests
+          </button>
+
+          {staff?.role === "manager" && (
+            <>
+              <button
+                onClick={() => setTimeOffSubTab("manage")}
+                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+                  timeOffSubTab === "manage"
+                    ? "border-rose-600 text-rose-600"
+                    : "border-transparent text-gray-500"
+                }`}
+              >
+                🧠 Approvals
+              </button>
+
+              <button
+                onClick={() => setTimeOffSubTab("availability")}
+                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+                  timeOffSubTab === "availability"
+                    ? "border-indigo-600 text-indigo-600"
+                    : "border-transparent text-gray-500"
+                }`}
+              >
+                📅 Availability
+              </button>
+            </>
+          )}
+        </div>
+
+        {timeOffSubTab === "create" && <CreateTimeOffRequest />}
+        {timeOffSubTab === "my" && <ViewMyTimeOffRequests />}
+        {timeOffSubTab === "manage" && staff?.role === "manager" && <BossTimeOff />}
+        {timeOffSubTab === "availability" && staff?.role === "manager" && (
+          <ManageAvailability />
+        )}
+      </>
+    )}
+
+    {/* SHIFTS */}
+    {clockSubTab === "shifts" && (
+      <>
+        {/* SHIFTS SUB TABS */}
+        <div className="flex space-x-4 border-b mb-6 ml-2">
+          <button
+            onClick={() => setShiftsSubTab("shifts")}
+            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+              shiftsSubTab === "shifts"
+                ? "border-emerald-600 text-emerald-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            🧹 My Shifts
+          </button>
+
+          <button
+            onClick={() => setShiftsSubTab("week")}
+            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+              shiftsSubTab === "week"
+                ? "border-indigo-600 text-indigo-600"
+                : "border-transparent text-gray-500"
+            }`}
+          >
+            🕒 My Week
+          </button>
+        </div>
+
+        {/* CONTENT */}
+        {shiftsSubTab === "shifts" && <MyShifts mode="staff" />}
+        {shiftsSubTab === "week" && <StaffWeeklyHours />}
+      </>
     )}
   </>
 )}
@@ -869,80 +985,7 @@ useEffect(() => {
 
 
 {/* TIME OFF CONTENT */}
-{activeTab === "clock" && (
-  <>
-    {clockSubTab === "timeclock" && (
-      <StaffClock onRequestInventory={() => setActiveTab("inventory")} />
-    )}
 
-    {clockSubTab === "staff" && (
-      <div className="mt-4">
-        <AllAvailability />
-      </div>
-    )}
-
-    {clockSubTab === "off" && (
-      <>
-        <div className="flex space-x-2 border-b mb-6">
-          <button
-            onClick={() => setTimeOffSubTab("create")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-              timeOffSubTab === "create"
-                ? "border-rose-600 text-rose-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            ➕ New
-          </button>
-
-          <button
-            onClick={() => setTimeOffSubTab("my")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-              timeOffSubTab === "my"
-                ? "border-rose-600 text-rose-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            📄 Requests
-          </button>
-
-          {staff?.role === "manager" && (
-            <>
-              <button
-                onClick={() => setTimeOffSubTab("manage")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-                  timeOffSubTab === "manage"
-                    ? "border-rose-600 text-rose-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                🧠 Approvals
-              </button>
-
-              <button
-                onClick={() => setTimeOffSubTab("availability")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-                  timeOffSubTab === "availability"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                📅 Availability
-              </button>
-            </>
-          )}
-        </div>
-
-        {timeOffSubTab === "create" && <CreateTimeOffRequest />}
-        {timeOffSubTab === "my" && <ViewMyTimeOffRequests />}
-        {timeOffSubTab === "manage" && staff?.role === "manager" && <BossTimeOff />}
-        {timeOffSubTab === "availability" && staff?.role === "manager" && (
-          <ManageAvailability />
-        )}
-      </>
-    )}
-  </>
-)}
 
 {activeTab === "profile" && (
   <>
