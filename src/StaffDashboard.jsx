@@ -585,7 +585,7 @@ useEffect(() => {
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        Active
+        Work
       </button>
       <button
   onClick={() => setWorkSubTab("inventory")}
