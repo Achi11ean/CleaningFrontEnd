@@ -45,8 +45,7 @@ export default function ManageSectionsItems() {
   const toggle = (id) =>
     setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
-  const isAdmin = role === "admin";
-
+const canEdit = role === "admin" || role === "manager";
   /* ───────────────────────────────
      Save / Delete
      ─────────────────────────────── */
@@ -201,8 +200,7 @@ async function deleteItem(sectionId, itemId) {
                   </div>
                 </div>
               ) : (
-                isAdmin && (
-                  <div className="flex gap-3 text-sm">
+canEdit && (                  <div className="flex gap-3 text-sm">
                     <button
                       onClick={() => {
                         setEditingSection(section.id);
@@ -290,7 +288,7 @@ async function deleteItem(sectionId, itemId) {
                           </div>
                         )}
 
-                        {isAdmin && (
+                  {canEdit && (
                           <div className="flex gap-3 mt-2 text-sm">
                             <button
                               onClick={() => {

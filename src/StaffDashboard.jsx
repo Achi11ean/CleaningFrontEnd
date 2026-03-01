@@ -31,6 +31,21 @@ import ManageGallery from "./ManageGallery";
 import MyShifts from "./MyShifts";
 import ClientInquiry from "./ClientInquiry";
 import StaffWeeklyHours from "./StaffWeeklyHours";
+import CreateConsultation from "./CreateConsultation";
+import CreateSection from "./CreateSection";
+import CreateConsultItem from "./CreateConsultItem";
+import CreateMultiplier from "./CreateMultiplier";
+import CreateIntensity from "./CreateIntensity";
+
+import ManageConsults from "./ManageConsults";
+import ManageSectionsItems from "./ManageSectionsItems";
+import ManageIntensity from "./ManageIntensity";
+import ManageMultipliers from "./ManageMultipliers";
+
+import ConsultationSelector from "./ConsultationSelector";
+import ConductConsultation from "./ConductConsultation";
+import ConsultationList from "./ConsultationList";
+import ViewConsultation from "./ViewConsultation";
 export default function StaffDashboard() {
 const { staff, authAxios } = useStaff();
 const [timeOffSubTab, setTimeOffSubTab] = useState("create");
@@ -47,6 +62,10 @@ const [newRequestCount, setNewRequestCount] = useState(0);
 const [pendingTimeOffCount, setPendingTimeOffCount] = useState(0);
 const [pendingReviewCount, setPendingReviewCount] = useState(0);
 const [inventoryShortageAlert, setInventoryShortageAlert] = useState(false);
+const [consultationsSubTab, setConsultationsSubTab] = useState("new");
+const [consultSetupTab, setConsultSetupTab] = useState("consultation");
+const [consultSetupMode, setConsultSetupMode] = useState("create");
+const [activeConsultationId, setActiveConsultationId] = useState(null);
 
 useEffect(() => {
   if (staff?.role !== "manager") return;
@@ -190,25 +209,28 @@ useEffect(() => {
 
     { key: "profile", label: "Profile", color: "cyan" },
 
-    ...(staff?.role === "manager"
-      ? [
-          { key: "services", label: "Services", color: "cyan" },
-          {
-            key: "reviews",
-            color: "cyan",
-            label: (
-              <span className="relative">
-                Reviews
-                {pendingReviewCount > 0 && (
-                  <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
-                    {pendingReviewCount}
-                  </span>
-                )}
+ ...(staff?.role === "manager"
+  ? [
+      { key: "consultations", label: "Consults", color: "cyan" },
+
+      { key: "services", label: "Services", color: "cyan" },
+
+      {
+        key: "reviews",
+        color: "cyan",
+        label: (
+          <span className="relative">
+            Reviews
+            {pendingReviewCount > 0 && (
+              <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+                {pendingReviewCount}
               </span>
-            ),
-          },
-        ]
-      : []),
+            )}
+          </span>
+        ),
+      },
+    ]
+  : []),
   ].map(({ key, label, color }) => (
     <button
       key={key}
@@ -322,6 +344,173 @@ useEffect(() => {
       </div>
     )}
   </div>
+)}
+
+
+{activeTab === "consultations" && (
+  <>
+    {/* MAIN SUB TABS */}
+    <div className="flex space-x-4 border-b mb-6 ml-2">
+      <button
+        onClick={() => setConsultationsSubTab("new")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          consultationsSubTab === "new"
+            ? "border-green-600 text-green-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        Begin
+      </button>
+
+      {staff?.role === "manager" && (
+        <button
+          onClick={() => setConsultationsSubTab("create")}
+          className={`px-3 py-2 font-semibold border-b-2 ${
+            consultationsSubTab === "create"
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-500"
+          }`}
+        >
+          Tools
+        </button>
+      )}
+
+      <button
+        onClick={() => setConsultationsSubTab("list")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          consultationsSubTab === "list"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        All
+      </button>
+    </div>
+
+    {/* ================= BEGIN CONSULT ================= */}
+    {consultationsSubTab === "new" && (
+      <div className="space-y-6">
+        <ConsultationSelector
+          value={activeConsultationId}
+          onSelect={setActiveConsultationId}
+        />
+
+        {activeConsultationId && (
+          <ConductConsultation consultationId={activeConsultationId} />
+        )}
+      </div>
+    )}
+
+    {/* ================= TOOLS ================= */}
+    {consultationsSubTab === "create" && staff?.role === "manager" && (
+      <div className="space-y-6">
+
+        {/* Setup Tabs */}
+        <div className="flex flex-wrap gap-2 border-b pb-3">
+          {[
+            ["consultation", "Consultation"],
+            ["modules", "Modules"],
+            ["intensities", "Intensities"],
+            ["multipliers", "Multipliers"],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => {
+                setConsultSetupTab(key);
+                setConsultSetupMode("create");
+              }}
+              className={`px-3 py-2 text-sm font-semibold border-b-2 ${
+                consultSetupTab === key
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Create/Manage toggle */}
+        <div className="flex gap-3 border-b pb-3">
+          {["create", "manage"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setConsultSetupMode(mode)}
+              className={`px-3 py-1 text-sm rounded ${
+                consultSetupMode === mode
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-500"
+              }`}
+            >
+              {mode === "create" ? "Create" : "Manage"}
+            </button>
+          ))}
+        </div>
+
+        {/* CONTENT */}
+        <div className="pt-4">
+
+          {/* CONSULTATION */}
+          {consultSetupTab === "consultation" &&
+            consultSetupMode === "create" && (
+              <CreateConsultation
+                onCreated={(c) => {
+                  setActiveConsultationId(c.id);
+                  setConsultationsSubTab("new");
+                }}
+              />
+            )}
+
+          {consultSetupTab === "consultation" &&
+            consultSetupMode === "manage" && (
+              <ManageConsults
+                onSelect={(id) => {
+                  setActiveConsultationId(id);
+                  setConsultationsSubTab("new");
+                }}
+              />
+            )}
+
+          {/* MODULES */}
+          {consultSetupTab === "modules" &&
+            consultSetupMode === "create" && (
+              <>
+                <CreateSection />
+                <CreateConsultItem />
+              </>
+            )}
+
+          {consultSetupTab === "modules" &&
+            consultSetupMode === "manage" && <ManageSectionsItems />}
+
+          {/* INTENSITIES */}
+          {consultSetupTab === "intensities" &&
+            consultSetupMode === "create" && <CreateIntensity />}
+
+          {consultSetupTab === "intensities" &&
+            consultSetupMode === "manage" && <ManageIntensity />}
+
+          {/* MULTIPLIERS */}
+          {consultSetupTab === "multipliers" &&
+            consultSetupMode === "create" && <CreateMultiplier />}
+
+          {consultSetupTab === "multipliers" &&
+            consultSetupMode === "manage" && <ManageMultipliers />}
+        </div>
+      </div>
+    )}
+
+    {/* ================= ALL CONSULTATIONS ================= */}
+    {consultationsSubTab === "list" && (
+      <div className="space-y-6">
+        <ConsultationList onSelect={setActiveConsultationId} />
+
+        {activeConsultationId && (
+          <ViewConsultation consultationId={activeConsultationId} />
+        )}
+      </div>
+    )}
+  </>
 )}
 {activeTab === "services" && staff?.role === "manager" && (
   <>
