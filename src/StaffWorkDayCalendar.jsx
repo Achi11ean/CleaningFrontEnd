@@ -302,13 +302,13 @@ const myWeeklyEvents = useMemo(() => {
   if (loading) return <p className="p-6">Loading work calendar...</p>;
 
   return (
-    <div className="space-y-4">
-<h2 className="text-2xl font-bold">🗓️ Work Day Schedule</h2>
+    <div className="space-y-">
+<h2 className="text-4xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-500 text-white py-2 font-serif font-bold">Calendar</h2>
 {/* NEXT SHIFT BANNER */}
 {checkingActiveShift ? null : activeShift ? (
 
   // 🔵 ACTIVE SHIFT
-  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-5">
+  <div className="bg-blue-50 border border-blue-200 rounded-none p-4 sm:p-5">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
       <div>
@@ -362,15 +362,7 @@ const myWeeklyEvents = useMemo(() => {
           {formatTo12Hour(nextShift.resource.end_time)}
         </div>
 
-        {isAssignedToMe(nextShift.resource) && (
-          <StartShift
-            schedule={nextShift.resource}
-            compact
-            onStarted={() => {
-              alert("Shift started successfully!");
-            }}
-          />
-        )}
+
       </div>
 
     </div>
@@ -387,7 +379,7 @@ const myWeeklyEvents = useMemo(() => {
 
 
 {/* WEEKLY SCHEDULE DROPDOWN */}
-<div className="bg-white border rounded-xl shadow-sm">
+<div className="bg-white border rounded-none shadow-sm">
 
   <button
     onClick={() => setShowWeekly((v) => !v)}

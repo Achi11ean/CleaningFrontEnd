@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useStaff } from "./StaffContext";
 import ConsultationChecklist from "./ConsultationChecklist";
-
-export default function ActiveShiftPanel() {
-  const { authAxios } = useStaff();
+import { format } from "date-fns";
+export default function ActiveShiftPanel({ refreshKey, onShiftUpdated }) {
+      const { authAxios } = useStaff();
   const CLOUD_NAME = "dcw0wqlse";
 const UPLOAD_PRESET = "karaoke";
   const [uploading, setUploading] = useState(false);
@@ -11,6 +11,7 @@ const UPLOAD_PRESET = "karaoke";
   const uploadToCloudinary = async (file) => {
     setUploading(true);
     setUploadError(null);
+
 
     const formData = new FormData();
     formData.append("file", file);
@@ -40,7 +41,13 @@ const UPLOAD_PRESET = "karaoke";
     }
   };
 
-
+    const formatTo12Hour = (timeStr) => {
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":").map(Number);
+  const date = new Date();
+  date.setHours(h, m, 0, 0);
+  return format(date, "h:mm a");
+};
   const [loading, setLoading] = useState(true);
   const [activeShift, setActiveShift] = useState(null);
 
@@ -61,16 +68,16 @@ const UPLOAD_PRESET = "karaoke";
       if (res.data.active) {
         setActiveShift(res.data);
       } else {
-        setActiveShift(null);
+setActiveShift(null);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadActiveShift();
-  }, []);
+useEffect(() => {
+  loadActiveShift();
+}, [refreshKey]);
 
   // 🔔 Get browser GPS
   const getCurrentLocation = () => {
@@ -135,6 +142,8 @@ const UPLOAD_PRESET = "karaoke";
       setActiveShift(null);
       setPinRequired(false);
       setPin("");
+      onShiftUpdated?.();  
+
       setPendingCoords(null);
 
     } catch (err) {
@@ -220,12 +229,13 @@ const UPLOAD_PRESET = "karaoke";
           <strong>Client:</strong> {client.first_name} {client.last_name}
         </p>
 
-        {schedule && (
-          <p>
-            <strong>Scheduled Time:</strong>{" "}
-            {schedule.start_time} → {schedule.end_time}
-          </p>
-        )}
+{schedule && (
+  <p>
+    <strong>Scheduled Time:</strong>{" "}
+    {formatTo12Hour(schedule.start_time)} →{" "}
+    {formatTo12Hour(schedule.end_time)}
+  </p>
+)}
 
         <p>
           <strong>Checked In At:</strong>{" "}
