@@ -146,13 +146,21 @@ useEffect(() => {
     <div className="mt-1 flex justify-center items-center gap-3 text-sm">
     
 
-      <span className="
-        px-3 py-1 rounded-full text-xs font-bold uppercase
-        bg-gradient-to-r from-cyan-500 to-blue-600
-        shadow-md
-      ">
-        {staff?.role}
-      </span>
+<button
+  onClick={() => setActiveTab("profile")}
+  className={`
+    px-4 py-1.5 rounded-full text-xs font-bold uppercase
+    transition-all duration-200
+    shadow-md
+    ${
+      activeTab === "profile"
+        ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white scale-105"
+        : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:brightness-110"
+    }
+  `}
+>
+  👤 My Profile
+</button> 
     </div>
 
   </div>
@@ -191,7 +199,6 @@ useEffect(() => {
 
 
 
-    { key: "profile", label: "Profile", color: "cyan" },
 
  ...(staff?.role === "manager"
   ? [
@@ -844,7 +851,7 @@ useEffect(() => {
       : "border-transparent text-gray-500 hover:text-gray-700"
   }`}
 >
-  🧹 Shifts
+  History
 </button>
 
 
