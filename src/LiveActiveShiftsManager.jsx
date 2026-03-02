@@ -10,19 +10,22 @@ export default function LiveActiveShiftsManager() {
   const [noteMap, setNoteMap] = useState({});
   const [imageMap, setImageMap] = useState({});
 
-  const loadShifts = async () => {
-    if (!axios) return;
+const loadShifts = async () => {
+  if (!axios) return;
 
-    try {
-      setLoading(true);
-      const res = await axios.get("/admin/shifts/active/all");
-      setShifts(res.data || []);
-    } catch (err) {
-      console.error("Failed to load active shifts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const res = await axios.get("/admin/shifts/active/all");
+
+    console.log("🔍 ACTIVE SHIFTS RAW:", res.data);
+
+    setShifts(res.data || []);
+  } catch (err) {
+    console.error("Failed to load active shifts:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadShifts();
@@ -64,15 +67,18 @@ export default function LiveActiveShiftsManager() {
   return (
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       {shifts.map((shift) => {
-        const profile = shift.profile;
+       const profile =
+  shift.profile ||
+  shift.staff?.profile ||
+  shift.admin?.profile ||
+  null;
 
-        const fullName =
-          profile?.first_name && profile?.last_name
-            ? `${profile.first_name} ${profile.last_name}`
-            : shift.owner_type === "staff"
-            ? "Staff Member"
-            : "Admin";
-
+const fullName =
+  profile?.first_name || profile?.last_name
+    ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
+    : shift.owner_type === "staff"
+    ? shift.staff?.username || "Staff"
+    : shift.admin?.username || "Admin";
         return (
           <div
             key={shift.id}
