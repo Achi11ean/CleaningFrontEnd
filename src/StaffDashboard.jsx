@@ -366,16 +366,7 @@ useEffect(() => {
   <>
     {/* TASKS SUB TABS */}
     <div className="flex space-x-4 border-b mb-6 ml-2">
-      <button
-        onClick={() => setTasksSubTab("create")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          tasksSubTab === "create"
-            ? "border-fuchsia-600 text-fuchsia-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        ➕ Create
-      </button>
+
 
       <button
         onClick={() => setTasksSubTab("manage")}
@@ -385,12 +376,11 @@ useEffect(() => {
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🛠 Manage
+       Tasks
       </button>
     </div>
 
     {/* TASKS CONTENT */}
-    {tasksSubTab === "create" && <CreateTask />}
     {tasksSubTab === "manage" && <ManageTasks />}
   </>
 )}

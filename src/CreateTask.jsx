@@ -104,7 +104,7 @@ export default function CreateTask({ onCreated }) {
 
         {/* TITLE */}
         <input
-          placeholder="Task title"
+          placeholder="Task"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border rounded p-2"
@@ -112,7 +112,7 @@ export default function CreateTask({ onCreated }) {
 
         {/* DESCRIPTION */}
         <textarea
-          placeholder="Description (optional)"
+          placeholder="Details (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full border rounded p-2"
