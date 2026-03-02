@@ -10,7 +10,8 @@ export default function CreateSchedules({ defaultDate = null }) {
 const [staff, setStaff] = useState([]);
 const [admins, setAdmins] = useState([]);
 const [selectedClient, setSelectedClient] = useState(null);
-
+const [crossRefLoading, setCrossRefLoading] = useState(false);
+const [crossRefResult, setCrossRefResult] = useState(null);
   const [form, setForm] = useState({
     schedule_type: "one_time",
     start_date: "",
@@ -148,7 +149,127 @@ useEffect(() => {
       setLoading(false);
     }
   };
+const formatDate = (isoDate) => {
+  if (!isoDate) return "";
+  const d = new Date(isoDate + "T12:00:00");
+  return `${(d.getMonth() + 1).toString().padStart(2, "0")}/${d
+    .getDate()
+    .toString()
+    .padStart(2, "0")}/${d.getFullYear()}`;
+};
 
+const toMinutes = (t) => {
+  if (!t) return null;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+};
+
+const overlaps = (aStart, aEnd, bStart, bEnd) => {
+  return aStart < bEnd && bStart < aEnd;
+};
+
+const getAllAssignedCleaners = async (clientId) => {
+  const res = await authAxios.get(`/clients/${clientId}/assignments`);
+  const assignments = res.data?.assignments || res.data || [];
+
+  return assignments.map((a) => ({
+    owner_type: a.type,
+    owner_id: a.id,
+    owner: a,
+  }));
+};
+
+
+const crossReference = async () => {
+  if (!selectedClientId) {
+    alert("Select a client first");
+    return;
+  }
+
+  if (!form.start_date || !form.start_time || !form.end_time) {
+    alert("Pick a date + start/end time first");
+    return;
+  }
+
+  if (toMinutes(form.end_time) <= toMinutes(form.start_time)) {
+    alert("End time must be after start time");
+    return;
+  }
+
+  setCrossRefLoading(true);
+  setCrossRefResult(null);
+
+  try {
+    const owners = await getAllAssignedCleaners(selectedClientId);
+
+    if (!owners.length) {
+      setCrossRefResult({
+        ok: false,
+        conflicts: [],
+        checkedOwners: [],
+        message: "No assigned cleaners found.",
+      });
+      return;
+    }
+
+    const start = form.start_date;
+    const days = form.schedule_type === "one_time" ? 1 : 90;
+
+    const proposedStart = toMinutes(form.start_time);
+    const proposedEnd = toMinutes(form.end_time);
+
+    let allConflicts = [];
+    let checkedOwners = [];
+
+    for (const o of owners) {
+      const url = `/admin/owners/${o.owner_type}/${o.owner_id}/schedule?start=${start}&days=${days}`;
+      const res = await authAxios.get(url);
+
+      const occs = res.data?.occurrences || [];
+      checkedOwners.push(o.owner);
+
+      const conflictsForOwner = occs
+        .filter((occ) => {
+          if (!occ?.date) return false;
+          if (form.schedule_type === "one_time" && occ.date !== form.start_date)
+            return false;
+
+          return overlaps(
+            proposedStart,
+            proposedEnd,
+            occ.start_minutes,
+            occ.end_minutes
+          );
+        })
+        .map((c) => ({
+          ...c,
+          conflict_owner: o.owner,
+          conflict_owner_type: o.owner_type,
+        }));
+
+      allConflicts = [...allConflicts, ...conflictsForOwner];
+    }
+
+    setCrossRefResult({
+      ok: allConflicts.length === 0,
+      conflicts: allConflicts,
+      checkedOwners,
+      message:
+        allConflicts.length === 0
+          ? "✅ No conflicts found."
+          : `❌ ${allConflicts.length} conflict(s) found.`,
+    });
+  } catch (err) {
+    setCrossRefResult({
+      ok: false,
+      conflicts: [],
+      checkedOwners: [],
+      message: "Failed to cross reference.",
+    });
+  } finally {
+    setCrossRefLoading(false);
+  }
+};
 
   const assignCleaner = async ({ staff_id = null, admin_id = null }) => {
   if (!selectedClient) return;
@@ -341,21 +462,32 @@ const filteredClients = clients.filter((c) => {
         </div>
 
         {/* Submit */}
-        <div className="md:col-span-2 flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Create Schedule"}
-          </button>
+       <div className="md:col-span-2 flex flex-col sm:flex-row gap-3">
 
-          {status && (
-            <span className="text-sm font-semibold">
-              {status}
-            </span>
-          )}
-        </div>
+  <button
+    type="button"
+    onClick={crossReference}
+    disabled={crossRefLoading}
+    className="px-5 py-2 bg-purple-100 text-purple-700 rounded"
+  >
+    {crossRefLoading ? "Checking..." : "🔎 Check Conflicts"}
+  </button>
+
+  <button
+    type="submit"
+    disabled={loading}
+    className="px-6 py-2 bg-green-600 text-white rounded"
+  >
+    {loading ? "Saving..." : "Create Schedule"}
+  </button>
+
+  {(status || crossRefResult?.message) && (
+    <span className="text-sm font-semibold">
+      {status || crossRefResult?.message}
+    </span>
+  )}
+
+</div>
       </form>
       {selectedClient && (
   <AssignCleaners
@@ -365,6 +497,27 @@ const filteredClients = clients.filter((c) => {
     onAssign={assignCleaner}
     onRemove={removeAssignment}
   />
+)}
+
+{crossRefResult && crossRefResult.conflicts?.length > 0 && (
+  <div className="mt-4 border rounded-lg p-4 bg-red-50">
+
+    <div className="font-bold text-red-700 mb-2">
+      {crossRefResult.message}
+    </div>
+
+    <ul className="space-y-2">
+      {crossRefResult.conflicts.slice(0, 8).map((c) => (
+        <li key={`${c.schedule_id}-${c.date}`} className="bg-white p-3 border rounded">
+          <div className="font-semibold">{c.client_name}</div>
+          <div className="text-sm text-gray-600">
+            {formatDate(c.date)} • {c.start_time}–{c.end_time}
+          </div>
+        </li>
+      ))}
+    </ul>
+
+  </div>
 )}
     </div>
   );
