@@ -7,6 +7,7 @@ import ClientSchedulesManagers from "./ClientSchedulesManagers"; // 👈 NEW
 import ManagerCreateSchedules from "./ManagerCreateSchedules"; // 👈 NEW
 import AllAvailability from "./AllAvailability";
 import ManagerBooking from "./ManagerBooking";
+import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 import StaffWorkDayCalendar from "./StaffWorkDayCalendar"; // 👈 NEW
 import ActiveShiftPanel from "./ActiveShiftPanel";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
@@ -626,7 +627,11 @@ useEffect(() => {
   </div>
 )}
     {workSubTab === "live" && staff?.role === "manager" && (
+      <div>
       <WorkDayLive />
+        <LiveActiveShiftsManager />
+
+      </div>
     )}
 
     {workSubTab === "inventory" && (

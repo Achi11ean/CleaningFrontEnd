@@ -53,6 +53,7 @@ import ClientInquiry from "./ClientInquiry";
 import AllExceptions from "./AllExceptions";
 import AdminActiveShiftPanel from "./AdminActiveShiftPanel";
 import AdminStartShift from "./AdminStartShift";
+import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -1381,7 +1382,10 @@ const setStaffPassword = async (id) => {
        
 
               {!loading && !error && workDaySubTab === "staff" && (
+                <div>
                 <AdminWorkDay />
+                <LiveActiveShiftsManager/>
+</div>
               )}
             </>
           )}
