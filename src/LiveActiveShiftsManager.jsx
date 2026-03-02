@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
-import { useStaff } from "./StaffContext";
 import { format } from "date-fns";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 
 export default function LiveActiveShiftsManager() {
-  const { authAxios } = useStaff();
+  const { role, axios } = useAuthorizedAxios();
+
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [noteMap, setNoteMap] = useState({});
   const [imageMap, setImageMap] = useState({});
 
   const loadShifts = async () => {
+    if (!axios) return;
+
     try {
       setLoading(true);
-      const res = await authAxios.get("/admin/shifts/active/all");
+      const res = await axios.get("/admin/shifts/active/all");
       setShifts(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to load active shifts:", err);
     } finally {
       setLoading(false);
     }
@@ -23,11 +26,13 @@ export default function LiveActiveShiftsManager() {
 
   useEffect(() => {
     loadShifts();
-  }, []);
+  }, [axios]);
 
   const forceCheckout = async (shiftId) => {
+    if (!axios) return;
+
     try {
-      await authAxios.post(`/admin/shifts/${shiftId}/force-checkout`, {
+      await axios.post(`/admin/shifts/${shiftId}/force-checkout`, {
         image_urls: imageMap[shiftId] || [],
         message: noteMap[shiftId] || null,
       });
@@ -38,6 +43,11 @@ export default function LiveActiveShiftsManager() {
       alert("Failed to force checkout");
     }
   };
+
+  // 🚫 Not authorized
+  if (!role || (role !== "admin" && role !== "manager")) {
+    return null;
+  }
 
   if (loading) {
     return <p className="text-gray-500">Loading active shifts...</p>;
@@ -55,6 +65,7 @@ export default function LiveActiveShiftsManager() {
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       {shifts.map((shift) => {
         const profile = shift.profile;
+
         const fullName =
           profile?.first_name && profile?.last_name
             ? `${profile.first_name} ${profile.last_name}`
@@ -93,44 +104,40 @@ export default function LiveActiveShiftsManager() {
               </p>
 
               <p className="text-sm text-gray-500">
-                Checked in:
-                {" "}
-                {format(
-                  new Date(shift.check_in_at),
-                  "MMM d • h:mm a"
-                )}
+                Checked in{" "}
+                {format(new Date(shift.check_in_at), "MMM d • h:mm a")}
               </p>
             </div>
 
-            {/* NOTES INPUT */}
+            {/* NOTES */}
             <textarea
               placeholder="Add checkout note..."
               className="w-full border rounded-lg px-3 py-2 text-sm"
               rows={2}
               value={noteMap[shift.id] || ""}
               onChange={(e) =>
-                setNoteMap({
-                  ...noteMap,
+                setNoteMap((prev) => ({
+                  ...prev,
                   [shift.id]: e.target.value,
-                })
+                }))
               }
             />
 
-            {/* IMAGE URL INPUT */}
+            {/* IMAGE URL */}
             <input
               type="text"
               placeholder="Add image URL (optional)"
               className="w-full border rounded-lg px-3 py-2 text-sm"
               value={(imageMap[shift.id] || [])[0] || ""}
               onChange={(e) =>
-                setImageMap({
-                  ...imageMap,
+                setImageMap((prev) => ({
+                  ...prev,
                   [shift.id]: [e.target.value],
-                })
+                }))
               }
             />
 
-            {/* BUTTON */}
+            {/* ACTION */}
             <button
               onClick={() => forceCheckout(shift.id)}
               className="w-full bg-red-600 text-white py-2 rounded-xl font-semibold hover:bg-red-700 transition"

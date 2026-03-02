@@ -57,7 +57,7 @@ import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
-  const [activeTab, setActiveTab] = useState("clients");
+  const [activeTab, setActiveTab] = useState("workday");
   const [profileSubTab, setProfileSubTab] = useState("me"); // "me" | "all"
   const [clientsSubTab, setClientsSubTab] = useState("list");
   const [shiftsSubTab, setShiftsSubTab] = useState("me"); // "me" | "all"
@@ -300,7 +300,14 @@ const setStaffPassword = async (id) => {
   "
           >
             {[
+
               {
+                key: "workday",
+                label: "Workday",
+                color: "blue",
+                subTab: "workday",
+              },
+                            {
                 key: "clients",
                 label: (
                   <span className="relative">
@@ -315,13 +322,6 @@ const setStaffPassword = async (id) => {
                 ),
                 color: "blue",
               },
-              {
-                key: "workday",
-                label: "Workday",
-                color: "blue",
-                subTab: "workday",
-              },
-              
               {
                 key: "consultations",
                 label: "Consults",
