@@ -42,8 +42,11 @@ import StaffInventoryOverview from "./StaffInventoryOverview";
 import ManagerRequests from "./Requests";
 import CreateGallery from "./CreateGallery";
 import ManageGallery from "./ManageGallery";
+import CreateTask from "./CreateTask";
+import ManageTasks from "./ManageTasks";
 import axios from "axios";
 import "./App.css";
+
 import CreatePurchase from "./CreatePurchase";
 import ManagePurchases from "./ManagePurchases";
 import AdminShifts from "./AdminShifts";
@@ -57,6 +60,7 @@ import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
+  const [tasksSubTab, setTasksSubTab] = useState("manage"); // "create" | "manage"
   const [activeTab, setActiveTab] = useState("workday");
   const [profileSubTab, setProfileSubTab] = useState("me"); // "me" | "all"
   const [clientsSubTab, setClientsSubTab] = useState("list");
@@ -89,6 +93,12 @@ useEffect(() => {
 
   loadIntakeStatus();
 }, []);
+
+useEffect(() => {
+  if (activeTab !== "tasks") {
+    setTasksSubTab("manage");
+  }
+}, [activeTab]);
 useEffect(() => {
   if (activeTab !== "employees") {
     setEmployeesSubTab("hours");
@@ -286,7 +296,8 @@ const setStaffPassword = async (id) => {
 </p>
 
 {/* PROFILES QUICK BUTTON */}
-<div className="mt-6 flex justify-center">
+{/* QUICK BUTTONS */}
+<div className="mt-6 flex justify-center gap-3 flex-wrap">
   <button
     onClick={() => {
       setActiveTab("employees");
@@ -294,8 +305,7 @@ const setStaffPassword = async (id) => {
       setProfileSubTab("me");
     }}
     className="
-      px-6
-      rounded-full
+      px-6 rounded-full
       bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500
       text-white font-semibold
       shadow-lg
@@ -305,6 +315,24 @@ const setStaffPassword = async (id) => {
     "
   >
     👤 Profiles
+  </button>
+
+  <button
+    onClick={() => {
+      setActiveTab("tasks");
+      setTasksSubTab("manage");
+    }}
+    className="
+      px-6 rounded-full
+      bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500
+      text-white font-semibold
+      shadow-lg
+      hover:scale-105 hover:shadow-xl
+      transition-all duration-300
+      flex items-center gap-2
+    "
+  >
+    ✅ Tasks
   </button>
 </div>
 </header>
@@ -366,6 +394,13 @@ const setStaffPassword = async (id) => {
                 color: "blue",
                 subTab: "create",
               },
+
+              {
+  key: "tasks",
+  label: "Tasks",
+  color: "blue",
+  subTab: "manage",
+},
               {
                 key: "reviews",
                 label: (
@@ -391,6 +426,7 @@ const setStaffPassword = async (id) => {
                   if (key === "shifts") setShiftsSubTab(subTab);
                   if (key === "profile") setProfileSubTab(subTab);
                   if (key === "services") setServicesSubTab(subTab);
+                  if (key === "tasks") setTasksSubTab(subTab);
                   if (key === "timeoff") setTimeOffSubTab(subTab);
                   if (key === "employees") {
   setEmployeesSubTab("hours");
@@ -804,6 +840,44 @@ const setStaffPassword = async (id) => {
               )}
             </>
           )}
+
+
+{activeTab === "tasks" && (
+  <>
+    {/* TASKS SUB TABS */}
+    <div className="flex space-x-4 bg-yellow-200 border-b mb-6 mt-4 px-2 overflow-x-auto">
+      <button
+        onClick={() => setTasksSubTab("create")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          tasksSubTab === "create"
+            ? "border-violet-600 text-violet-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        ➕ Create
+      </button>
+
+      <button
+        onClick={() => setTasksSubTab("manage")}
+        className={`px-3 py-2 font-semibold border-b-2 transition ${
+          tasksSubTab === "manage"
+            ? "border-violet-600 text-violet-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🛠 Manage
+      </button>
+    </div>
+
+    {/* TASKS CONTENT */}
+    {!loading && !error && tasksSubTab === "create" && (
+      <CreateTask onCreated={() => setTasksSubTab("manage")} />
+    )}
+
+    {!loading && !error && tasksSubTab === "manage" && <ManageTasks />}
+  </>
+)}
+
 {activeTab === "employees" && (
   <>
     {/* LEVEL 1 */}

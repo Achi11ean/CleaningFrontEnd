@@ -47,6 +47,8 @@ import Booking from "./Booking";
 import ConsultationSelector from "./ConsultationSelector";
 import ConductConsultation from "./ConductConsultation";
 import ConsultationList from "./ConsultationList";
+import CreateTask from "./CreateTask";
+import ManageTasks from "./ManageTasks";
 import ViewConsultation from "./ViewConsultation";
 export default function StaffDashboard() {
 const { staff, authAxios } = useStaff();
@@ -64,6 +66,7 @@ const [consultationsSubTab, setConsultationsSubTab] = useState("new");
 const [consultSetupTab, setConsultSetupTab] = useState("consultation");
 const [consultSetupMode, setConsultSetupMode] = useState("create");
 const [activeConsultationId, setActiveConsultationId] = useState(null);
+const [tasksSubTab, setTasksSubTab] = useState("manage"); // "create" | "manage"
 
 useEffect(() => {
   if (staff?.role !== "manager") return;
@@ -161,7 +164,27 @@ useEffect(() => {
   `}
 >
   👤 My Profile
-</button> 
+</button>
+
+{staff?.role === "manager" && (
+  <button
+    onClick={() => {
+      setActiveTab("tasks");
+      setTasksSubTab("manage");
+    }}
+    className={`
+      px-4 py-1.5 rounded-full text-xs font-bold uppercase
+      transition-all duration-200 shadow-md
+      ${
+        activeTab === "tasks"
+          ? "bg-gradient-to-r from-fuchsia-400 to-indigo-500 text-white scale-105"
+          : "bg-gradient-to-r from-fuchsia-500 to-indigo-600 text-white hover:brightness-110"
+      }
+    `}
+  >
+    ✅ Tasks
+  </button>
+)}
     </div>
 
   </div>
@@ -204,6 +227,7 @@ useEffect(() => {
  ...(staff?.role === "manager"
   ? [
       { key: "consultations", label: "Consults", color: "cyan" },
+      { key: "tasks", label: "Tasks", color: "cyan" }, // ✅ add this
 
       { key: "services", label: "Services", color: "cyan" },
 
@@ -230,6 +254,7 @@ useEffect(() => {
         setActiveTab(key);
         if (key === "clients") setClientSubTab("list");
         if (key === "timeoff") setTimeOffSubTab("create");
+        if (key === "tasks") setTasksSubTab("manage");
         if (key === "services") setServicesSubTab("create");
         if (key === "myshifts") setShiftsSubTab("shifts");
       }}
@@ -337,7 +362,38 @@ useEffect(() => {
     )}
   </div>
 )}
+{activeTab === "tasks" && staff?.role === "manager" && (
+  <>
+    {/* TASKS SUB TABS */}
+    <div className="flex space-x-4 border-b mb-6 ml-2">
+      <button
+        onClick={() => setTasksSubTab("create")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          tasksSubTab === "create"
+            ? "border-fuchsia-600 text-fuchsia-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        ➕ Create
+      </button>
 
+      <button
+        onClick={() => setTasksSubTab("manage")}
+        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
+          tasksSubTab === "manage"
+            ? "border-fuchsia-600 text-fuchsia-600"
+            : "border-transparent text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        🛠 Manage
+      </button>
+    </div>
+
+    {/* TASKS CONTENT */}
+    {tasksSubTab === "create" && <CreateTask />}
+    {tasksSubTab === "manage" && <ManageTasks />}
+  </>
+)}
 
 {activeTab === "consultations" && (
   <>
