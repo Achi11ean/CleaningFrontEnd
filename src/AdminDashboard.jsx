@@ -313,7 +313,7 @@ const setStaffPassword = async (id) => {
           <div
             className="
     grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 
-    border-b border-gray-200 pb-4 mb-8
+    border-b border-gray-200 pb-4 lg:mb-8
   "
           >
             {[
@@ -427,7 +427,7 @@ const setStaffPassword = async (id) => {
           {activeTab === "clients" && (
             <>
               {/* Clients Sub Tabs */}
-<div className="border-b mb-6 mt-4 overflow-x-auto">
+<div className="border-b mb-6 mt-4 bg-yellow-200 overflow-x-auto">
   <div className="flex space-x-4 min-w-max px-1">
                 <button
                   onClick={() => setClientsSubTab("list")}
@@ -642,7 +642,7 @@ const setStaffPassword = async (id) => {
           {activeTab === "consultations" && (
             <>
               {/* Consultations Sub Tabs */}
-              <div className="flex space-x-4 border-b mb-6 mt-4">
+              <div className="flex space-x-4 bg-yellow-200 border-b mb-6 mt-4">
                 <button
                   onClick={() => setConsultationsSubTab("new")}
                   className={`px-3 py-2 font-semibold border-b-2 transition ${
@@ -807,8 +807,7 @@ const setStaffPassword = async (id) => {
 {activeTab === "employees" && (
   <>
     {/* LEVEL 1 */}
-   <div className="flex flex-wrap gap-4 border-b mb-6 mt-4">
-
+<div className="flex overflow-x-auto whitespace-nowrap pt-2 bg-yellow-200 border-b mb-6  scrollbar-hide">
   <button
     onClick={() => setEmployeesSubTab("hours")}
     className={`px-3 py-2 font-semibold border-b-2 ${
@@ -817,7 +816,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500"
     }`}
   >
-    🕒 Hours
+    Hours
   </button>
 
   <button
@@ -828,7 +827,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500"
     }`}
   >
-    🗓️ Off
+     Off
   </button>
 
   <button
@@ -839,7 +838,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500"
     }`}
   >
-    🧹 Shifts
+     Shifts
   </button>
 <button
   onClick={() => setEmployeesSubTab("inventory")}
@@ -849,7 +848,7 @@ const setStaffPassword = async (id) => {
       : "border-transparent text-gray-500"
   }`}
 >
-  📦 Inventory
+   Inventory
   {inventoryShortageAlert && (
     <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full shadow">
       !
@@ -1194,8 +1193,9 @@ const setStaffPassword = async (id) => {
             <>
               {/* Services Sub Tabs */}
      {/* Services Sub Tabs */}
-<div className="flex flex-wrap gap-4 border-b mb-6 mt-4">
-  <button
+<div className="flex overflow-x-auto gap-4 border-b mb-6 mt-4 px-1 pb-2 snap-x snap-mandatory">
+  
+    <button
     onClick={() => setServicesSubTab("create")}
     className={`px-3 py-2 font-semibold border-b-2 transition ${
       servicesSubTab === "create"
@@ -1203,7 +1203,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    ➕ Create Service
+    ➕ Service
   </button>
 
   <button
@@ -1214,7 +1214,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    🛠️ Manage Services
+    🛠️ Services
   </button>
 
   <button
@@ -1225,7 +1225,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    🖼️ Gallery +
+    ➕ Gallery 
   </button>
 
   <button
@@ -1236,7 +1236,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500 hover:text-gray-700"
     }`}
   >
-    🗂️ Manage Gallery
+    🛠️ Gallery
   </button>
 </div>
 
