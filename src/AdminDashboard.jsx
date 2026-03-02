@@ -421,16 +421,7 @@ const setStaffPassword = async (id) => {
                 >
                   Clients
                 </button>
-<button
-  onClick={() => setClientsSubTab("new")}
-  className={`px-3 py-2 font-semibold border-b-2 transition ${
-    clientsSubTab === "new"
-      ? "border-green-600 text-green-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
->
-  New
-</button>
+
 
                 <button
                   onClick={() => setClientsSubTab("schedules")}
@@ -465,11 +456,7 @@ const setStaffPassword = async (id) => {
 </button>
 </div>
               </div>
-{!loading && !error && clientsSubTab === "new" && (
-  <div className="mt-6">
-    <ClientInquiry />
-  </div>
-)}
+
 
 {!loading && !error && clientsSubTab === "consultations" && (
   <div className="mt-6">
@@ -529,6 +516,16 @@ const setStaffPassword = async (id) => {
                         </span>
                       )}
                     </button>
+                    <button
+  onClick={() => setClientsListMode("inquiry")}
+  className={`relative px-3 py-2 text-sm font-semibold border-b-2 transition ${
+    clientsListMode === "inquiry"
+      ? "border-green-600 text-green-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+   New
+</button>
 
                     <button
                       onClick={() => setClientsListMode("requests")}
@@ -559,7 +556,7 @@ const setStaffPassword = async (id) => {
                   </div>
 
 {clientsListMode === "exceptions" && <AllExceptions />}
-
+{clientsListMode === "inquiry" && <ClientInquiry />}
 {clientsListMode === "all" && (
   <>
     {acceptingClients !== null && (
