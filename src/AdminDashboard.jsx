@@ -276,20 +276,37 @@ const setStaffPassword = async (id) => {
   </div>
 
   {/* Content */}
-  <div className="relative z-10 max-w-5xl mx-auto text-center">
-    <p className="mb-3 text-sm uppercase tracking-[0.25em] text-cyan-300/80">
-      Dashboard
-    </p>
+ <h1 className="font-[Aspire] text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white">
+  Welcome back,
+  Amanda
+</h1>
 
-    <h1 className="font-[Aspire] text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-white">
-      Welcome back,
-        Amanda
-    </h1>
+<p className="mt-4 max-w-xl mx-auto text-base sm:text-lg text-blue-100/80">
+  Everything is up to date and running smoothly.
+</p>
 
-    <p className="mt-4 max-w-xl mx-auto text-base sm:text-lg text-blue-100/80">
-      Everything is up to date and running smoothly.
-    </p>
-  </div>
+{/* PROFILES QUICK BUTTON */}
+<div className="mt-6 flex justify-center">
+  <button
+    onClick={() => {
+      setActiveTab("employees");
+      setEmployeesSubTab("profile");
+      setProfileSubTab("me");
+    }}
+    className="
+      px-6
+      rounded-full
+      bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500
+      text-white font-semibold
+      shadow-lg
+      hover:scale-105 hover:shadow-xl
+      transition-all duration-300
+      flex items-center gap-2
+    "
+  >
+    👤 Profiles
+  </button>
+</div>
 </header>
 
         <div className=" py-2">
@@ -839,16 +856,7 @@ const setStaffPassword = async (id) => {
     </span>
   )}
 </button>
-  <button
-    onClick={() => setEmployeesSubTab("profile")}
-    className={`px-3 py-2 font-semibold border-b-2 ${
-      employeesSubTab === "profile"
-        ? "border-indigo-600 text-indigo-600"
-        : "border-transparent text-gray-500"
-    }`}
-  >
-    Profiles
-  </button>
+
                 <button
                   onClick={() => setEmployeesSubTab("availability")}
                   className={`px-3 py-2 font-semibold border-b-2 transition ${
