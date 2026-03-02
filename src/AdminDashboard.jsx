@@ -845,17 +845,8 @@ const setStaffPassword = async (id) => {
 {activeTab === "tasks" && (
   <>
     {/* TASKS SUB TABS */}
-    <div className="flex space-x-4 bg-yellow-200 border-b mb-6 mt-4 px-2 overflow-x-auto">
-      <button
-        onClick={() => setTasksSubTab("create")}
-        className={`px-3 py-2 font-semibold border-b-2 transition ${
-          tasksSubTab === "create"
-            ? "border-violet-600 text-violet-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        ➕ Create
-      </button>
+    <div className="flex space-x-4 bg-yellow-200 border-b  mt-4 px-2 overflow-x-auto">
+
 
       <button
         onClick={() => setTasksSubTab("manage")}
@@ -865,14 +856,11 @@ const setStaffPassword = async (id) => {
             : "border-transparent text-gray-500 hover:text-gray-700"
         }`}
       >
-        🛠 Manage
+        Tasks
       </button>
     </div>
 
     {/* TASKS CONTENT */}
-    {!loading && !error && tasksSubTab === "create" && (
-      <CreateTask onCreated={() => setTasksSubTab("manage")} />
-    )}
 
     {!loading && !error && tasksSubTab === "manage" && <ManageTasks />}
   </>
