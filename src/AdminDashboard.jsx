@@ -612,8 +612,12 @@ const setStaffPassword = async (id) => {
                 </>
               )}
 
-              {!loading && !error && clientsSubTab === "schedules" && (
+              {!loading && !error && clientsSubTab === "schedules" && (<div>
+                                  <Booking />
+
                 <ClientSchedulesAdmin />
+                </div>
+
               )}
             </>
           )}

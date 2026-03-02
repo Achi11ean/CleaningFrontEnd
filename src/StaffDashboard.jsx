@@ -43,7 +43,7 @@ import ManageConsults from "./ManageConsults";
 import ManageSectionsItems from "./ManageSectionsItems";
 import ManageIntensity from "./ManageIntensity";
 import ManageMultipliers from "./ManageMultipliers";
-
+import Booking from "./Booking";
 import ConsultationSelector from "./ConsultationSelector";
 import ConductConsultation from "./ConductConsultation";
 import ConsultationList from "./ConsultationList";
@@ -1003,8 +1003,10 @@ useEffect(() => {
 )}
 
     {clientSubTab === "schedules" && staff?.role === "manager" && (
+      <div>
+        <Booking/>
       <ClientSchedulesManagers />
-    )}
+   </div> )}
 
     {clientSubTab === "create" && staff?.role === "manager" && (
       <>
