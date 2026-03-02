@@ -64,21 +64,35 @@ const loadShifts = async () => {
     );
   }
 
-  return (
+ return (
+  <div className="mt-6">
+    {/* HEADER */}
+    <div className="flex items-center px-4 justify-between mb-4">
+      <h2 className="text-2xl font-extrabold tracking-tight text-gray-900">
+        🟢 Active Shifts
+      </h2>
+
+      <span className="text-sm font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+        {shifts.length} live
+      </span>
+    </div>
+
+    {/* GRID */}
     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       {shifts.map((shift) => {
-       const profile =
-  shift.profile ||
-  shift.staff?.profile ||
-  shift.admin?.profile ||
-  null;
+        const profile =
+          shift.profile ||
+          shift.staff?.profile ||
+          shift.admin?.profile ||
+          null;
 
-const fullName =
-  profile?.first_name || profile?.last_name
-    ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
-    : shift.owner_type === "staff"
-    ? shift.staff?.username || "Staff"
-    : shift.admin?.username || "Admin";
+        const fullName =
+          profile?.first_name || profile?.last_name
+            ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
+            : shift.owner_type === "staff"
+            ? shift.staff?.username || "Staff"
+            : shift.admin?.username || "Admin";
+
         return (
           <div
             key={shift.id}
@@ -89,7 +103,7 @@ const fullName =
               <img
                 src={
                   profile?.photo_url ||
-                  "https://via.placeholder.com/60"
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQac3iilE_QJCu88RK09lCy4eWuTYw3UOfFFw&s"
                 }
                 alt="profile"
                 className="w-14 h-14 rounded-full object-cover border"
@@ -110,8 +124,7 @@ const fullName =
               </p>
 
               <p className="text-sm text-gray-500">
-                Checked in{" "}
-                {format(new Date(shift.check_in_at), "MMM d • h:mm a")}
+                Checked in {format(new Date(shift.check_in_at), "MMM d • h:mm a")}
               </p>
             </div>
 
@@ -154,5 +167,6 @@ const fullName =
         );
       })}
     </div>
-  );
+  </div>
+);
 }

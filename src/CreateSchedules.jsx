@@ -27,8 +27,138 @@ useEffect(() => {
 }, [defaultDate]);
   const [clientQuery, setClientQuery] = useState("");
 const [showClientDropdown, setShowClientDropdown] = useState(false);
+const [crossRefLoading, setCrossRefLoading] = useState(false);
+const [crossRefResult, setCrossRefResult] = useState(null); // { ok, conflicts, checkedOwner }
+const formatDate = (isoDate) => {
+  if (!isoDate) return "";
+  const d = new Date(isoDate + "T12:00:00"); // prevents timezone shift
+  return `${(d.getMonth() + 1).toString().padStart(2, "0")}/${d
+    .getDate()
+    .toString()
+    .padStart(2, "0")}/${d.getFullYear()}`;
+};
+const toMinutes = (t) => {
+  if (!t) return null;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+};
+
+const overlaps = (aStart, aEnd, bStart, bEnd) => {
+  // half-open intervals [start,end)
+  return aStart < bEnd && bStart < aEnd;
+};
+
+const getAllAssignedCleaners = async (clientId) => {
+  const res = await authAxios.get(`/clients/${clientId}/assignments`);
+  const assignments = res.data?.assignments || res.data || [];
+
+  return assignments.map((a) => ({
+    owner_type: a.type,
+    owner_id: a.id,
+    owner: a,
+  }));
+};
 
 
+
+const crossReference = async () => {
+  if (!selectedClientId) {
+    alert("Select a client first");
+    return;
+  }
+
+  if (!form.start_date || !form.start_time || !form.end_time) {
+    alert("Pick a date + start/end time first");
+    return;
+  }
+
+  if (toMinutes(form.end_time) <= toMinutes(form.start_time)) {
+    alert("End time must be after start time");
+    return;
+  }
+
+  setCrossRefLoading(true);
+  setCrossRefResult(null);
+
+  try {
+    const owners = await getAllAssignedCleaners(selectedClientId);
+
+    if (!owners.length) {
+      setCrossRefResult({
+        ok: false,
+        conflicts: [],
+        checkedOwners: [],
+        message:
+          "No assigned cleaners found. Assign at least one cleaner first.",
+      });
+      return;
+    }
+
+    const start = form.start_date;
+    const days = form.schedule_type === "one_time" ? 1 : 90;
+
+    const proposedStart = toMinutes(form.start_time);
+    const proposedEnd = toMinutes(form.end_time);
+
+    let allConflicts = [];
+    let checkedOwners = [];
+
+    for (const o of owners) {
+      const url = `/admin/owners/${o.owner_type}/${o.owner_id}/schedule?start=${start}&days=${days}`;
+
+      const res = await authAxios.get(url);
+      const occs = res.data?.occurrences || [];
+
+      checkedOwners.push(o.owner);
+
+      const conflictsForOwner = occs
+        .filter((occ) => {
+          if (!occ?.date || occ.start_minutes == null || occ.end_minutes == null)
+            return false;
+
+          if (form.schedule_type === "one_time") {
+            if (occ.date !== form.start_date) return false;
+          }
+
+          return overlaps(
+            proposedStart,
+            proposedEnd,
+            occ.start_minutes,
+            occ.end_minutes
+          );
+        })
+        .map((c) => ({
+          ...c,
+          conflict_owner: o.owner,
+          conflict_owner_type: o.owner_type,
+        }));
+
+      allConflicts = [...allConflicts, ...conflictsForOwner];
+    }
+
+    setCrossRefResult({
+      ok: allConflicts.length === 0,
+      conflicts: allConflicts,
+      checkedOwners,
+      message:
+        allConflicts.length === 0
+          ? `✅ No conflicts across ${checkedOwners.length} assigned cleaner(s).`
+          : `❌ ${allConflicts.length} conflict(s) across ${checkedOwners.length} cleaner(s).`,
+    });
+  } catch (err) {
+    console.error("Cross reference failed:", err);
+    setCrossRefResult({
+      ok: false,
+      conflicts: [],
+      checkedOwners: [],
+      message:
+        err.response?.data?.error ||
+        "Failed to cross reference schedule.",
+    });
+  } finally {
+    setCrossRefLoading(false);
+  }
+};
 const deriveDayOfWeek = (dateStr) => {
   if (!dateStr) return "";
 
@@ -330,21 +460,37 @@ const handleChange = (e) => {
         </div>
 
         {/* Submit */}
-        <div className="md:col-span-2 flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Create Schedule"}
-          </button>
+       <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
+  <button
+    type="button"
+    onClick={crossReference}
+    disabled={crossRefLoading}
+    className="
+      px-5 py-2 rounded
+      border border-purple-200
+      bg-purple-50 text-purple-700
+      hover:bg-purple-100
+      disabled:opacity-50
+      font-semibold
+    "
+  >
+    {crossRefLoading ? "Checking..." : "🔎 Check"}
+  </button>
 
-          {status && (
-            <span className="text-sm font-semibold">
-              {status}
-            </span>
-          )}
-        </div>
+  <button
+    type="submit"
+    disabled={loading}
+    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+  >
+    {loading ? "Saving..." : "Create Schedule"}
+  </button>
+
+  {(status || crossRefResult?.message) && (
+    <span className="text-sm font-semibold">
+      {status || crossRefResult?.message}
+    </span>
+  )}
+</div>
       </form>
       {selectedClient && (
   <AssignCleaners
@@ -355,7 +501,73 @@ const handleChange = (e) => {
     onRemove={removeCleaner}
   />
 )}
+{crossRefResult && crossRefResult.conflicts?.length > 0 && (
+  <div className="mt-4 border rounded-lg p-4 bg-red-50">
+    <div className="font-bold text-red-700 mb-2">
+      {crossRefResult.message}
+    </div>
 
+ {/* Checked Owners Summary */}
+{crossRefResult.checkedOwners?.length > 0 && (
+  <div className="text-sm text-red-700 mb-3">
+    Checked against{" "}
+    <span className="font-semibold">
+      {crossRefResult.checkedOwners.length}
+    </span>{" "}
+    assigned cleaner(s):
+    <div className="mt-1 flex flex-wrap gap-2">
+      {crossRefResult.checkedOwners.map((o) => (
+        <span
+          key={`${o.type}-${o.id}`}
+          className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
+        >
+          {o.profile?.first_name ||
+            o.username ||
+            `${o.type} #${o.id}`}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Conflict List */}
+<ul className="space-y-2">
+  {crossRefResult.conflicts.slice(0, 8).map((c) => (
+    <li
+      key={`${c.schedule_id}-${c.date}-${c.start_time}-${c.conflict_owner?.id}`}
+      className="bg-white border rounded p-3 shadow-sm"
+    >
+      <div className="font-semibold text-gray-800">
+        {c.client_name || `Client #${c.client_id}`}
+      </div>
+<div className="text-sm text-gray-600">
+  {formatDate(c.date)} • {c.start_time}–{c.end_time} • {c.schedule_type}
+</div>
+      {/* Show which cleaner conflicts */}
+      <div className="text-xs text-red-600 font-semibold mt-1">
+        Conflict with:
+        {" "}
+        {c.conflict_owner?.profile?.first_name ||
+         c.conflict_owner?.username ||
+         `${c.conflict_owner_type} #${c.conflict_owner?.id}`}
+      </div>
+
+      {c.exception?.reason && (
+        <div className="text-xs text-gray-500 italic mt-1">
+          Exception: {c.exception.reason}
+        </div>
+      )}
+    </li>
+  ))}
+</ul>
+
+{crossRefResult.conflicts.length > 8 && (
+  <div className="text-xs text-gray-500 mt-2">
+    Showing first 8 conflicts…
+  </div>
+)}
+  </div>
+)}
     </div>
   );
 }
