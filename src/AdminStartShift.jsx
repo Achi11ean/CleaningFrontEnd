@@ -25,18 +25,17 @@ export default function AdminStartShift({ schedule, onStarted }) {
       async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
 
-        try {
-          const res = await authAxios.post("/admin/shifts/check-in", {
-            client_id: schedule.client.id,
-            schedule_id: schedule.id,
-            lat,
-            lng,
-          });
+try {
+  await authAxios.post("/admin/shifts/check-in", {
+    client_id: schedule.client.id,
+    schedule_id: schedule.id,
+    lat,
+    lng,
+  });
 
-          onStarted?.(res.data.shift);
-          window.location.reload();
+  onStarted?.(); // ✅ trigger parent refresh
 
-        } catch (err) {
+} catch (err) {
           const data = err?.response?.data;
 
           if (data?.distance_miles) {

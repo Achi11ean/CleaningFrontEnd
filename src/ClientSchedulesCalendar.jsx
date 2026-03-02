@@ -367,85 +367,90 @@ export default function ClientSchedulesCalendar() {
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">🗓️ Cleaning Schedule Calendar</h2>
 
-      {/* NEXT ADMIN SHIFT BANNER */}
-      {!checkingActiveShift &&
-        !activeShift &&
-        (nextShift || nextConsultation) && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-4">
-            {/* NEXT CLEANING SHIFT */}
-            {nextShift && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <p className="text-sm text-green-700 font-semibold">
-                    Your next scheduled admin shift:
-                  </p>
+{!checkingActiveShift && (nextShift || nextConsultation) && (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-                  <p className="text-lg font-bold text-green-900">
-                    {formatDateTime(nextShift.start)}
-                  </p>
+    {/* ================= NEXT SHIFT CARD ================= */}
+    {nextShift && (
+      <div className="bg-green-50 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
 
-                  <p className="text-sm text-green-800">
-                    {nextShift.resource.client.first_name}{" "}
-                    {nextShift.resource.client.last_name}
-                  </p>
+        <p className="text-sm text-green-700 font-semibold mb-1">
+          Your next scheduled admin shift
+        </p>
 
-                  <p className="text-sm text-green-700 font-semibold">
-                    {formatTo12Hour(nextShift.resource.start_time)} →{" "}
-                    {formatTo12Hour(nextShift.resource.end_time)}
-                  </p>
-                </div>
+        <p className="text-lg font-bold text-green-900">
+          {formatDateTime(nextShift.start)}
+        </p>
 
-                <AdminStartShift schedule={nextShift.resource} />
-              </div>
-            )}
+        <div className="mt-3 space-y-1">
+          <p className="text-sm text-green-800 font-medium">
+            {nextShift.resource.client.first_name}{" "}
+            {nextShift.resource.client.last_name}
+          </p>
 
-            {/* NEXT CONSULTATION */}
-            {nextConsultation && (
-              <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-                <p className="text-sm font-semibold text-pink-700">
-                  🩷 Next Consultation:
-                </p>
+          <p className="text-sm text-green-700 font-semibold">
+            {formatTo12Hour(nextShift.resource.start_time)} →{" "}
+            {formatTo12Hour(nextShift.resource.end_time)}
+          </p>
+        </div>
 
-                <p className="text-lg font-bold text-pink-900">
-                  {format(
-                    new Date(nextConsultation.scheduled_for),
-                    "EEEE, MMM d • h:mm a",
-                  )}
-                </p>
+      </div>
+    )}
 
-        <p className="text-sm text-pink-800">
-  {nextConsultation.client_name}
-</p>
+    {/* ================= CONSULTATION CARD ================= */}
+    {nextConsultation && (
+      <div className="bg-pink-50 border border-pink-200 rounded-xl p-5 shadow-sm hover:shadow-md transition">
 
-{nextConsultation.client_address && (
-  <a
-    href={getGoogleMapsLink(nextConsultation.client_address)}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block mt-1 text-sm text-blue-600 hover:underline font-medium"
-  >
-    📍 {nextConsultation.client_address}
-  </a>
+        <p className="text-sm font-semibold text-pink-700 mb-1">
+          🩷 Next Consultation
+        </p>
+
+        <p className="text-lg font-bold text-pink-900">
+          {format(
+            new Date(nextConsultation.scheduled_for),
+            "EEEE, MMM d • h:mm a"
+          )}
+        </p>
+
+        <div className="mt-3 space-y-1">
+
+          <p className="text-sm text-pink-800 font-medium">
+            {nextConsultation.client_name}
+          </p>
+
+          {nextConsultation.client_address && (
+            <a
+              href={getGoogleMapsLink(nextConsultation.client_address)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-sm text-blue-600 hover:underline font-medium"
+            >
+              📍 {nextConsultation.client_address}
+            </a>
+          )}
+
+          {nextConsultation.client_phone && (
+            <a
+              href={getTelLink(nextConsultation.client_phone)}
+              className="block text-sm text-green-700 font-semibold hover:underline"
+            >
+              📞 {nextConsultation.client_phone}
+            </a>
+          )}
+
+          {nextConsultation.notes && (
+            <p className="text-sm text-pink-700 italic mt-1">
+              {nextConsultation.notes}
+            </p>
+          )}
+
+        </div>
+
+      </div>
+    )}
+
+  </div>
 )}
-{nextConsultation.client_phone && (
-  <a
-    href={getTelLink(nextConsultation.client_phone)}
-    className="block mt-1 text-sm text-green-700 font-semibold hover:underline"
-  >
-    📞 {nextConsultation.client_phone}
-  </a>
-)}
-
-
-                {nextConsultation.notes && (
-                  <p className="text-sm text-pink-700 mt-1 italic">
-                    {nextConsultation.notes}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
       {/* WEEKLY SCHEDULE DROPDOWN */}
       <div className="bg-white border rounded-xl shadow-sm">

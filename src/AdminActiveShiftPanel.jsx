@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
 import ConsultationChecklist from "./ConsultationChecklist";
 
-export default function AdminActiveShiftPanel() {
-  const { authAxios } = useAdmin();
+export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated }) {
+      const { authAxios } = useAdmin();
 
   const CLOUD_NAME = "dcw0wqlse";
   const UPLOAD_PRESET = "karaoke";
@@ -97,9 +97,9 @@ function formatDateTime12(isoString) {
     }
   };
 
-  useEffect(() => {
-    loadActiveShift();
-  }, []);
+useEffect(() => {
+  loadActiveShift();
+}, [refreshKey]);
 
   // 📍 Get browser GPS
   const getCurrentLocation = () => {
@@ -155,6 +155,7 @@ function formatDateTime12(isoString) {
 
       setStatus("✅ Shift checked out successfully");
       setActiveShift(null);
+onShiftUpdated?.(); // ✅ notify banner
       setPinRequired(false);
       setPin("");
       setPendingCoords(null);
@@ -202,6 +203,7 @@ function formatDateTime12(isoString) {
 
       setStatus("✅ Shift checked out with PIN override");
       setActiveShift(null);
+      onShiftUpdated?.();
       setPinRequired(false);
       setPin("");
       setPendingCoords(null);

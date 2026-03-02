@@ -12,6 +12,7 @@ import ClientSchedulesCalendar from "./ClientSchedulesCalendar";
 import CreateServices from "./CreateServices";
 import ManageServices from "./ManageServices";
 import ManageReviews from "./ManageReviews";
+import AdminNextShiftBanner from "./AdminNextShiftBanner";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
@@ -19,7 +20,7 @@ import ManageAvailability from "./ManageAvailability";
 import CreateConsultation from "./CreateConsultation";
 import CreateSection from "./CreateSection";
 import ManageAppointments from "./ManageAppointments";
-
+import NextShiftBanner from "./NextShiftBanner";
 import CreateConsultItem from "./CreateConsultItem";
 import CreateMultiplier from "./CreateMultiplier";
 import ConductConsultation from "./ConductConsultation";
@@ -50,6 +51,8 @@ import ManualTimeEntry from "./ManualTimeEntry";
 import AdminChecklistOverview from "./AdminChecklistOverview";
 import ClientInquiry from "./ClientInquiry";
 import AllExceptions from "./AllExceptions";
+import AdminActiveShiftPanel from "./AdminActiveShiftPanel";
+import AdminStartShift from "./AdminStartShift";
 
 export default function AdminDashboard() {
   const { authAxios, admin } = useAdmin();
@@ -819,7 +822,21 @@ const setStaffPassword = async (id) => {
   >
     🧹 Shifts
   </button>
-
+<button
+  onClick={() => setEmployeesSubTab("inventory")}
+  className={`relative px-3 py-2 font-semibold border-b-2 ${
+    employeesSubTab === "inventory"
+      ? "border-emerald-600 text-emerald-600"
+      : "border-transparent text-gray-500"
+  }`}
+>
+  📦 Inventory
+  {inventoryShortageAlert && (
+    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full shadow">
+      !
+    </span>
+  )}
+</button>
   <button
     onClick={() => setEmployeesSubTab("profile")}
     className={`px-3 py-2 font-semibold border-b-2 ${
@@ -828,7 +845,7 @@ const setStaffPassword = async (id) => {
         : "border-transparent text-gray-500"
     }`}
   >
-    👤 Profile
+    Profiles
   </button>
                 <button
                   onClick={() => setEmployeesSubTab("availability")}
@@ -842,6 +859,102 @@ const setStaffPassword = async (id) => {
                 </button>
 </div>
 {/* SHIFTS */}
+{/* INVENTORY */}
+{employeesSubTab === "inventory" && (
+  <>
+    {/* Inventory Sub Tabs */}
+    <div className="flex flex-wrap gap-4 border-b mb-6">
+      <button
+        onClick={() => setInventorySubTab("create")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          inventorySubTab === "create"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        ➕ Create
+      </button>
+
+      <button
+        onClick={() => setInventorySubTab("manage")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          inventorySubTab === "manage"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        🛠 Manage
+      </button>
+
+      <button
+        onClick={() => setInventorySubTab("staff")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          inventorySubTab === "staff"
+            ? "border-blue-600 text-blue-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        👥 Staff
+      </button>
+
+      <button
+        onClick={() => setInventorySubTab("purchases")}
+        className={`px-3 py-2 font-semibold border-b-2 ${
+          inventorySubTab === "purchases"
+            ? "border-emerald-600 text-emerald-600"
+            : "border-transparent text-gray-500"
+        }`}
+      >
+        💰 Purchases
+      </button>
+    </div>
+
+    {/* Sub Content */}
+    {inventorySubTab === "create" && <CreateInventoryItem />}
+    {inventorySubTab === "manage" && <ManageInventory />}
+    {inventorySubTab === "staff" && (
+      <>
+        <ControlStaffInventory />
+        <StaffInventoryOverview />
+      </>
+    )}
+    {inventorySubTab === "purchases" && (
+      <>
+        <div className="mt-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+          <div className="flex space-x-8 mb-6 justify-center">
+            <button
+              onClick={() => setPurchaseSubTab("create")}
+              className={`pb-2 text-sm font-bold uppercase tracking-wider ${
+                purchaseSubTab === "create"
+                  ? "text-emerald-700 border-b-2 border-emerald-700"
+                  : "text-gray-400"
+              }`}
+            >
+              🛒 Add Purchase
+            </button>
+            <button
+              onClick={() => setPurchaseSubTab("history")}
+              className={`pb-2 text-sm font-bold uppercase tracking-wider ${
+                purchaseSubTab === "history"
+                  ? "text-emerald-700 border-b-2 border-emerald-700"
+                  : "text-gray-400"
+              }`}
+            >
+              📜 Purchase History
+            </button>
+          </div>
+
+          {purchaseSubTab === "create" && (
+            <CreatePurchase
+              onPurchaseAdded={() => setPurchaseSubTab("history")}
+            />
+          )}
+          {purchaseSubTab === "history" && <ManagePurchases />}
+        </div>
+      </>
+    )}
+  </>
+)}
 {employeesSubTab === "shifts" && (
   <>
     <div className="flex space-x-4 border-b mb-6">
@@ -1156,7 +1269,16 @@ const setStaffPassword = async (id) => {
                   Today
                 </button>
 
-
+<button
+  onClick={() => setWorkDaySubTab("calendar")}
+  className={`px-3 py-2 font-semibold border-b-2 transition ${
+    workDaySubTab === "calendar"
+      ? "border-blue-600 text-blue-600"
+      : "border-transparent text-gray-500 hover:text-gray-700"
+  }`}
+>
+  Calendar
+</button>
                 <button
                   onClick={() => setWorkDaySubTab("staff")}
                   className={`px-3 py-2 font-semibold border-b-2 transition ${
@@ -1167,21 +1289,7 @@ const setStaffPassword = async (id) => {
                 >
                   Active
                 </button>
-                <button
-                  onClick={() => setWorkDaySubTab("inventory")}
-                  className={`relative px-3 py-2 font-semibold border-b-2 transition ${
-                    workDaySubTab === "inventory"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Inventory
-                  {inventoryShortageAlert && (
-                    <span className="absolute top-0 left-0 -mt-1 -mr-2 bg-gray-100 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow">
-                      ❗️
-                    </span>
-                  )}
-                </button>
+  
                 <button
   onClick={() => setWorkDaySubTab("checklists")}
   className={`px-3 py-2 font-semibold border-b-2 transition ${
@@ -1196,106 +1304,84 @@ const setStaffPassword = async (id) => {
               </div>
 
               {/* Work Day Sub Content */}
-              {!loading && !error && workDaySubTab === "workday" && (
-                <ClientSchedulesCalendar />
-              )}
+    {workDaySubTab === "calendar" && (
+  <ClientSchedulesCalendar />
+)}
+
 {!loading && !error && workDaySubTab === "checklists" && (
   <AdminChecklistOverview />
 )}
 
-              {!loading && !error && workDaySubTab === "inventory" && (
-                <>
-                  {/* Inventory Sub Tabs */}
-                  <div className="flex space-x-4 border-b mb-6 mt-4">
-                    <button
-                      onClick={() => setInventorySubTab("create")}
-                      className={`px-3 py-2 font-semibold border-b-2 transition ${
-                        inventorySubTab === "create"
-                          ? "border-blue-600 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      ➕ Create
-                    </button>
 
-                    <button
-                      onClick={() => setInventorySubTab("manage")}
-                      className={`px-3 py-2 font-semibold border-b-2 transition ${
-                        inventorySubTab === "manage"
-                          ? "border-blue-600 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      🛠️ Manage
-                    </button>
 
-                    <button
-                      onClick={() => setInventorySubTab("staff")}
-                      className={`px-3 py-2 font-semibold border-b-2 transition ${
-                        inventorySubTab === "staff"
-                          ? "border-blue-600 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      👥 Staff
-                    </button>
-                    <button
-                      onClick={() => setInventorySubTab("purchases")}
-                      className={`px-3 py-2 font-semibold border-b-2 transition ${
-                        inventorySubTab === "purchases"
-                          ? "border-emerald-600 text-emerald-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      💰 Purchases
-                    </button>
-                  </div>
-                  {inventorySubTab === "manage" && <ManageInventory />}
 
-                  {/* Inventory Sub Content */}
-                  {inventorySubTab === "create" && <CreateInventoryItem />}
 
-                  {inventorySubTab === "staff" && <ControlStaffInventory />}
 
-                  {inventorySubTab === "staff" && <StaffInventoryOverview />}
 
-                  {inventorySubTab === "purchases" && (
-                    <div className="mt-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
-                      {/* Purchase Nested Sub-Tabs */}
-                      <div className="flex space-x-8 mb-6 justify-center">
-                        <button
-                          onClick={() => setPurchaseSubTab("create")}
-                          className={`flex items-center gap-2 pb-2 text-sm font-bold uppercase tracking-wider transition ${
-                            purchaseSubTab === "create"
-                              ? "text-emerald-700 border-b-2 border-emerald-700"
-                              : "text-gray-400 hover:text-gray-600"
-                          }`}
-                        >
-                          🛒 Add Purchase
-                        </button>
-                        <button
-                          onClick={() => setPurchaseSubTab("history")}
-                          className={`flex items-center gap-2 pb-2 text-sm font-bold uppercase tracking-wider transition ${
-                            purchaseSubTab === "history"
-                              ? "text-emerald-700 border-b-2 border-emerald-700"
-                              : "text-gray-400 hover:text-gray-600"
-                          }`}
-                        >
-                          📜 Purchase History
-                        </button>
-                      </div>
 
-                      {/* Render actual components */}
-                      {purchaseSubTab === "create" && (
-                        <CreatePurchase
-                          onPurchaseAdded={() => setPurchaseSubTab("history")}
-                        />
-                      )}
-                      {purchaseSubTab === "history" && <ManagePurchases />}
-                    </div>
-                  )}
-                </>
-              )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* TODAY */}
+{!loading && !error && workDaySubTab === "workday" && (
+  <div className="space-y-6 mt-4">
+    <AdminNextShiftBanner />
+
+  </div>
+)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
 
               {!loading && !error && workDaySubTab === "staff" && (
                 <AdminWorkDay />
