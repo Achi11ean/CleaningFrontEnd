@@ -27,6 +27,10 @@ export default function SchedulesMiniCalendar({
   const [createDate, setCreateDate] = useState(null);
 const [selectedAppointment, setSelectedAppointment] = useState(null);
 const [editingAppt, setEditingAppt] = useState(false);
+const [users, setUsers] = useState([]);
+const [selectedUser, setSelectedUser] = useState({ id: "all", type: "all" });
+const [timeOff, setTimeOff] = useState([]);
+const [availability, setAvailability] = useState([]);
 const [apptForm, setApptForm] = useState({});
 const saveAppointment = async () => {
   try {
@@ -78,10 +82,18 @@ const { canceledMap, replacementMap } = useMemo(() => {
   const canceled = {};
   const replacements = {};
 
-  schedules.forEach((s) => {
-    if (!s.exceptions) return;
+// ─────────────────────────────
+// BUILD CLEANING SCHEDULE MAP
+// ─────────────────────────────
+schedules.forEach((s) => {
 
-    s.exceptions.forEach((ex) => {
+  // 👇 FILTER BY SELECTED USER
+
+  if (!s.start_date) return;
+
+if (!s.exceptions) return;
+
+s.exceptions.forEach((ex) => {
       // ❌ cancel original occurrence
       const cancelKey = `${s.id}-${ex.original_date}`;
       canceled[cancelKey] = true;
@@ -107,7 +119,88 @@ const { canceledMap, replacementMap } = useMemo(() => {
   return { canceledMap: canceled, replacementMap: replacements };
 }, [schedules]);
 
+useEffect(() => {
+  if (!axios) return;
 
+  const loadUsers = async () => {
+    try {
+      const [adminsRes, staffRes] = await Promise.all([
+        axios.get("/admin/all"),
+        axios.get("/staff/all"),
+      ]);
+
+      const admins = adminsRes.data.map(a => ({
+        id: a.id,
+        type: "admin",
+        label: a.profile
+          ? `${a.profile.first_name} ${a.profile.last_name}`
+          : a.username
+      }));
+
+      const staff = staffRes.data.map(s => ({
+        id: s.id,
+        type: "staff",
+        role: s.role,
+        label: s.profile
+          ? `${s.profile.first_name} ${s.profile.last_name}`
+          : s.username
+      }));
+
+      setUsers([
+        { id: "all", type: "all", label: "All Employees" },
+        ...admins,
+        ...staff,
+      ]);
+
+    } catch (err) {
+      console.error("Failed loading users", err);
+    }
+  };
+
+  loadUsers();
+}, [axios]);
+
+
+
+useEffect(() => {
+  if (!axios) return;
+
+  const loadData = async () => {
+    try {
+      const [timeOffRes, availabilityRes] = await Promise.all([
+        axios.get("/time-off/all?status=approved"),
+        axios.get("/availability/all"),
+      ]);
+
+      let filteredTimeOff = timeOffRes.data;
+
+      // If specific user selected, filter
+      if (selectedUser && selectedUser.id !== "all") {
+        filteredTimeOff = filteredTimeOff.filter(r =>
+          r.owner.id === selectedUser.id &&
+          r.owner.type === selectedUser.type
+        );
+      }
+
+      setTimeOff(filteredTimeOff);
+
+      if (selectedUser && selectedUser.id !== "all") {
+        const filteredAvailability = availabilityRes.data.find(a =>
+          a.owner.id === selectedUser.id &&
+          a.owner.type === selectedUser.type
+        );
+        setAvailability(filteredAvailability?.weekly || null);
+      } else {
+        setAvailability(null);
+      }
+
+    } catch (err) {
+      console.error("Failed loading availability/timeoff", err);
+    }
+  };
+
+  loadData();
+}, [axios, selectedUser]);
  const calendarDays = useMemo(() => {
   const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
   const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
@@ -131,6 +224,19 @@ const { canceledMap, replacementMap } = useMemo(() => {
   // BUILD CLEANING SCHEDULE MAP
   // ─────────────────────────────
   schedules.forEach((s) => {
+if (selectedUser && selectedUser.id !== "all") {
+  const assignments = s.client?.cleaners || [];
+
+  const isAssigned = assignments.some(a =>
+    String(a.id) === String(selectedUser.id) &&
+    a.type === selectedUser.type
+  );
+
+  if (!isAssigned) {
+    return; // skip this schedule
+  }
+}
+
     if (!s.start_date) return;
 
     const start = parseISO(s.start_date);
@@ -177,11 +283,43 @@ const { canceledMap, replacementMap } = useMemo(() => {
     map[date].push(...schedules);
   });
 
+
+// ─────────────────────────────
+// ADD APPROVED TIME OFF (NEW LOGIC)
+// ─────────────────────────────
+timeOff.forEach(request => {
+  if (!request.entries || !Array.isArray(request.entries)) return;
+
+  request.entries.forEach(entry => {
+    if (!entry.request_date) return;
+
+    const key = entry.request_date; // already yyyy-MM-dd
+
+    map[key] = map[key] || [];
+
+    map[key].push({
+      isTimeOff: true,
+      request,
+      entry,
+    });
+  });
+});
   // ─────────────────────────────
   // ADD CONSULTATION APPOINTMENTS (LAST!)
   // ─────────────────────────────
-  appointments.forEach(appt => {
-    if (!appt.scheduled_for) return;
+appointments.forEach(appt => {
+
+  // 👇 FILTER APPOINTMENTS
+  if (
+    selectedUser &&
+    selectedUser.id !== "all" &&
+    (
+      String(appt.assigned_user_id) !== String(selectedUser.id) ||
+      appt.assigned_user_type !== selectedUser.type
+    )
+  ) {
+    return;
+  }    if (!appt.scheduled_for) return;
 
     const key = format(parseISO(appt.scheduled_for), "yyyy-MM-dd");
 
@@ -194,7 +332,7 @@ const { canceledMap, replacementMap } = useMemo(() => {
   });
 
   return map;
-}, [schedules, appointments, currentMonth, canceledMap, replacementMap]);
+}, [schedules, appointments, currentMonth,   timeOff , canceledMap, replacementMap,  selectedUser ]);
 
 const [actionCtx, setActionCtx] = useState(null);
 
@@ -212,6 +350,23 @@ const formatTime = (timeStr) => {
   return (
     <div className="rounded-2xl border bg-white shadow  space-y-3">
       {/* HEADER */}
+
+      <div className="px-3 pt-3">
+  <select
+    value={selectedUser?.id || ""}
+    onChange={(e) => {
+      const found = users.find(u => String(u.id) === e.target.value);
+      setSelectedUser(found || null);
+    }}
+    className="w-full border rounded-lg px-3 py-2 text-sm bg-white shadow-sm"
+  >
+    {users.map(u => (
+      <option key={`${u.type}-${u.id}`} value={u.id}>
+        {u.label}
+      </option>
+    ))}
+  </select>
+</div>
       <div className="flex justify-between items-center">
         <button
           onClick={() =>
@@ -254,7 +409,7 @@ const formatTime = (timeStr) => {
         {calendarDays.map((day) => {
           const dateKey = format(day, "yyyy-MM-dd");
           const daySchedules = schedulesByDate[dateKey] || [];
-
+  const hasTimeOff = daySchedules.some(i => i.isTimeOff);
           return (
         <div
   key={day.toISOString()}
@@ -264,13 +419,14 @@ const formatTime = (timeStr) => {
       setCreateDate(format(day, "yyyy-MM-dd"));
     }
   }}
-  className={`
-    cursor-pointer
-    min-h-[70px] rounded-md border p-[2px]
-    hover:bg-blue-50
-    ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
-    ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
-  `}
+className={`
+  cursor-pointer
+  min-h-[70px] rounded-md border p-[2px]
+  hover:bg-blue-50
+  ${!isSameMonth(day, currentMonth) ? "bg-gray-50 text-gray-400" : ""}
+  ${isSameDay(day, new Date()) ? "ring-2 ring-blue-400" : ""}
+  ${hasTimeOff ? "bg-red-50 border-red-300" : ""}
+`}
 >
               <div className="font-bold text-[11px] mb-1">
                 {format(day, "d")}
@@ -278,7 +434,39 @@ const formatTime = (timeStr) => {
 
               <div className="space-y-1">
              {daySchedules.map((item) => {
+if (item.isTimeOff) {
+  const { owner } = item.request;
+  const { is_all_day, start_time, end_time } = item.entry;
 
+  return (
+    <div
+      key={`timeoff-${item.request.id}-${dateKey}`}
+      onClick={(e) => {
+        e.stopPropagation();
+
+        let message = `${owner.display_name} is off`;
+
+        if (!is_all_day && start_time && end_time) {
+          message += ` from ${formatTime(start_time)} to ${formatTime(end_time)}`;
+        } else {
+          message += ` (All Day)`;
+        }
+
+        alert(message);
+      }}
+      className="
+        rounded bg-red-200 text-red-800
+        px-1 py-0.5 truncate
+        font-semibold cursor-pointer
+      "
+      title={`${owner.display_name} time off`}
+    >
+      {selectedUser?.id === "all"
+        ? `🚫 ${owner.display_name}`
+        : "🚫 OFF"}
+    </div>
+  );
+}
 if (item.isAppointment) {
   const appt = item.appointment;
 
@@ -287,6 +475,7 @@ if (item.isAppointment) {
       key={`appt-${appt.id}`}
 onClick={() => {
   setSelectedAppointment(appt);
+  
   setApptForm({
     scheduled_for: appt.scheduled_for,
     notes: appt.notes || "",
