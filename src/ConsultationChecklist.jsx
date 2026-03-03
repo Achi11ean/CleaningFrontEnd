@@ -257,9 +257,16 @@ if (!session) return null;
                     {entry.item_title}
                   </p>
 
-                  <p className="text-xs text-gray-600 italic">
-                    Intensity: {entry.intensity_label}
-                  </p>
+    <div className="text-xs text-gray-600">
+  {Number(entry.quantity) > 1 && (
+    <span className="mr-2 font-medium">
+      ×{Number(entry.quantity)}
+    </span>
+  )}
+  <span className="font-semibold">
+    {Number(entry.calculated_points || 0).toFixed(2)} pts
+  </span>
+</div>
                   {entry.multipliers?.length > 0 && (
   <div className="mt-2 space-y-1">
     {entry.multipliers.map((m) => (

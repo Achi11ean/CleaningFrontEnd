@@ -215,13 +215,10 @@ const updateSessionStatus = async (sessionId, status) => {
                           {e.consultation_entry?.section_name} →{" "}
                           {e.consultation_entry?.item_title}
                         </div>
-
-                        <div className="text-gray-600">
-                          Intensity:{" "}
-                          {e.consultation_entry?.intensity_label} •{" "}
-                          Points:{" "}
-                          {e.consultation_entry?.calculated_points}
-                        </div>
+<div className="text-gray-600">
+  Qty: {e.consultation_entry?.quantity || 1} •{" "}
+  Points: {Number(e.consultation_entry?.calculated_points || 0).toFixed(2)}
+</div>
 
                         {e.consultation_entry?.notes && (
                           <div className="text-xs italic text-gray-500 mt-1">

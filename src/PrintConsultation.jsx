@@ -306,9 +306,9 @@ export default function PrintConsultation({
     {roomGroup.room.label}
   </Text>
 
-  <Text style={styles.pointsBadge}>
-    {roomGroup.total_points} pts
-  </Text>
+<Text style={styles.pointsBadge}>
+  {Number(roomGroup.total_points || 0).toFixed(2)} pts
+</Text>
 </View>
  {roomGroup.room.square_feet && (
   <View style={styles.roomMetaRow}>
@@ -330,12 +330,13 @@ export default function PrintConsultation({
 
             {/* Title */}
             <Text>{e.item_title}</Text>
-
-            {/* Intensity */}
-            <Text style={styles.entryMeta}>
-              • Intensity: {e.intensity_label}
-            </Text>
-
+<View style={{ marginTop: 2 }}>
+  <Text style={styles.entryMeta}>
+    {Number(e.quantity) > 1 && `×${Number(e.quantity)} • `}
+    {Number(e.calculated_points || 0).toFixed(2)} pts
+  </Text>
+</View>
+    
             {/* Item Notes */}
             {e.item_notes && (
               <View style={styles.noteBox}>

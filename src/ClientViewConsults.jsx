@@ -125,14 +125,17 @@ export default function ClientViewConsults({ consultations }) {
                               <div className="font-medium text-gray-800">
                                 {e.item_title}
                               </div>
-
-                              <div className="text-xs text-gray-500">
-                                Intensity:
-                                <span className="font-semibold ml-1">
-                                  {e.intensity_label}
-                                </span>
-                              </div>
-
+<div className="text-xs text-gray-600">
+  {Number(e.quantity) > 1 && (
+    <span className="mr-2 font-medium">
+      ×{Number(e.quantity)}
+    </span>
+  )}
+  <span className="font-semibold">
+    {Number(e.calculated_points || 0).toFixed(2)} pts
+  </span>
+</div>
+                
                               {e.item_notes && (
                                 <div className="text-xs text-gray-500 italic">
                                   {e.item_notes}

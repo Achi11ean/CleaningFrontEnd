@@ -37,11 +37,9 @@ import CreateConsultation from "./CreateConsultation";
 import CreateSection from "./CreateSection";
 import CreateConsultItem from "./CreateConsultItem";
 import CreateMultiplier from "./CreateMultiplier";
-import CreateIntensity from "./CreateIntensity";
 import WorkDayLive from "./AdminWorkDay";
 import ManageConsults from "./ManageConsults";
 import ManageSectionsItems from "./ManageSectionsItems";
-import ManageIntensity from "./ManageIntensity";
 import ManageMultipliers from "./ManageMultipliers";
 import Booking from "./Booking";
 import ConsultationSelector from "./ConsultationSelector";
@@ -448,7 +446,6 @@ useEffect(() => {
           {[
             ["consultation", "Consultation"],
             ["modules", "Modules"],
-            ["intensities", "Intensities"],
             ["multipliers", "Multipliers"],
           ].map(([key, label]) => (
             <button
@@ -521,12 +518,7 @@ useEffect(() => {
           {consultSetupTab === "modules" &&
             consultSetupMode === "manage" && <ManageSectionsItems />}
 
-          {/* INTENSITIES */}
-          {consultSetupTab === "intensities" &&
-            consultSetupMode === "create" && <CreateIntensity />}
 
-          {consultSetupTab === "intensities" &&
-            consultSetupMode === "manage" && <ManageIntensity />}
 
           {/* MULTIPLIERS */}
           {consultSetupTab === "multipliers" &&

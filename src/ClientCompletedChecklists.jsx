@@ -79,45 +79,46 @@ export default function ClientCompletedChecklists({ checklists }) {
                                 🧽 {task.item_title || "Unnamed Task"}
                               </div>
 
-                              <div className="text-xs text-gray-600 space-y-1">
-                                {task.intensity_label && (
-                                  <div>
-                                    <strong>Intensity:</strong>{" "}
-                                    {task.intensity_label}
-                                  </div>
-                                )}
-                                {typeof task.calculated_points === "number" && (
-                                  <div>
-                                    <strong>Points:</strong>{" "}
-                                    {task.calculated_points}
-                                  </div>
-                                )}
-                                {task.notes && (
-                                  <div className="italic text-gray-500">
-                                    {task.notes}
-                                  </div>
-                                )}
-                                <div>
-                                  <strong>Completed At:</strong>{" "}
-                                  {entry.completed_at
-                                    ? format(
-                                        new Date(entry.completed_at),
-                                        "MMM d • h:mm a"
-                                      )
-                                    : "—"}
-                                </div>
-                                <div>
-                                  <strong>Completed By:</strong>{" "}
-                                  {completedBy.role && completedBy.name
-                                    ? `${completedBy.role}: ${completedBy.name}`
-                                    : "—"}
-                                </div>
-                                {entry.note && (
-                                  <div className="mt-1 italic text-gray-500">
-                                    "{entry.note}"
-                                  </div>
-                                )}
-                              </div>
+                            <div className="text-xs text-gray-600 space-y-1">
+
+  {task.quantity > 1 && (
+    <div>
+      <strong>Quantity:</strong> ×{task.quantity}
+    </div>
+  )}
+
+  <div>
+    <strong>Points:</strong>{" "}
+    {Number(task.calculated_points || 0).toFixed(2)}
+  </div>
+
+  {task.notes && (
+    <div className="italic text-gray-500">
+      {task.notes}
+    </div>
+  )}
+
+  <div>
+    <strong>Completed At:</strong>{" "}
+    {entry.completed_at
+      ? format(new Date(entry.completed_at), "MMM d • h:mm a")
+      : "—"}
+  </div>
+
+  <div>
+    <strong>Completed By:</strong>{" "}
+    {completedBy.role && completedBy.name
+      ? `${completedBy.role}: ${completedBy.name}`
+      : "—"}
+  </div>
+
+  {entry.note && (
+    <div className="mt-1 italic text-gray-500">
+      "{entry.note}"
+    </div>
+  )}
+
+</div>
                             </div>
                           );
                         })}
