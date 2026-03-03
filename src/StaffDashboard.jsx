@@ -225,7 +225,6 @@ useEffect(() => {
  ...(staff?.role === "manager"
   ? [
       { key: "consultations", label: "Consults", color: "cyan" },
-      { key: "tasks", label: "Tasks", color: "cyan" }, // ✅ add this
 
       { key: "services", label: "Services", color: "cyan" },
 

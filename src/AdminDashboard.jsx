@@ -393,12 +393,7 @@ const setStaffPassword = async (id) => {
                 subTab: "create",
               },
 
-              {
-  key: "tasks",
-  label: "Tasks",
-  color: "blue",
-  subTab: "manage",
-},
+
               {
                 key: "reviews",
                 label: (
