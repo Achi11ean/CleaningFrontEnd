@@ -207,7 +207,7 @@ useEffect(() => {
   /* ================= NEXT SHIFT ================= */
  if (nextShift || nextConsultation) {
   return (
-    <div className="bg-green-50 border border-green-200 rounded-none p-5 space-y-4">
+    <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
 
       {/* NEXT SHIFT */}
       {nextShift && (

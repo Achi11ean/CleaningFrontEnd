@@ -14,6 +14,7 @@ import ManageServices from "./ManageServices";
 import ManageReviews from "./ManageReviews";
 import AdminNextShiftBanner from "./AdminNextShiftBanner";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
+import TodayTasksSlider from "./TodayTasksSlider";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
 import ManageAvailability from "./ManageAvailability";
@@ -1407,6 +1408,10 @@ const setStaffPassword = async (id) => {
 {/* TODAY */}
 {!loading && !error && workDaySubTab === "workday" && (
   <div className="space-y-6 mt-4">
+        <div className="px-4">
+      <TodayTasksSlider />
+    </div>
+
     <AdminNextShiftBanner />
 
   </div>
