@@ -5,7 +5,6 @@ export default function ConductConsultation({ consultationId, onEntryCreated }) 
   const { role, axios } = useAuthorizedAxios();
 
   const [sections, setSections] = useState([]);
-  const [intensities, setIntensities] = useState([]);
   const [multipliers, setMultipliers] = useState([]);
 const [rooms, setRooms] = useState([]);
 const [activeRoomId, setActiveRoomId] = useState(null);
@@ -127,14 +126,12 @@ async function deleteRoom(roomId) {
      ─────────────────────────────── */
   useEffect(() => {
     async function load() {
-      const [s, i, m] = await Promise.all([
-        axios.get("/consultation/sections"),
-        axios.get("/consultation/intensities"),
-        axios.get("/consultation/multipliers"),
-      ]);
+     const [s, m] = await Promise.all([
+  axios.get("/consultation/sections"),
+  axios.get("/consultation/multipliers"),
+]);
 
       setSections(s.data || []);
-      setIntensities(i.data || []);
       setMultipliers(m.data || []);
     }
     load();
@@ -221,7 +218,6 @@ function updateItem(itemId, patch) {
     ...prev,
     [itemId]: {
       ...prev[itemId],   // ← preserve existing state FIRST
-      intensityId: prev[itemId]?.intensityId ?? null,
       multiplierIds: prev[itemId]?.multiplierIds ?? [],
       notes: prev[itemId]?.notes ?? "",
       quantity: prev[itemId]?.quantity ?? 1,   // ← safe default
@@ -242,11 +238,6 @@ async function saveItem(sectionId, item) {
 
   const state = itemState[item.id];
 
-  // 🚨 Must have intensity selected
-  if (!state?.intensityId) {
-    setError("Each item requires an intensity.");
-    return;
-  }
 
   setSavingItemId(item.id);
   setError(null);
@@ -258,7 +249,6 @@ async function saveItem(sectionId, item) {
   room_id: activeRoomId,
   section_id: sectionId,
   item_id: item.id,
-  intensity_id: state.intensityId,
   multiplier_ids: state.multiplierIds || [],
   notes: state.notes || "",
   quantity: state.quantity || 1,   // ⭐ NEW
@@ -298,13 +288,12 @@ async function saveAllItems() {
         const state = itemState[item.id];
 
         // ONLY save completed items
-        if (state?.intensityId) {
-         requests.push(
+if (state?.quantity || state?.multiplierIds?.length || state?.notes) {
+           requests.push(
   axios.post(`/consultations/${consultationId}/entries`, {
     room_id: activeRoomId,
     section_id: sectionId,
     item_id: item.id,
-    intensity_id: state.intensityId,
     multiplier_ids: state.multiplierIds || [],
     notes: state.notes || "",
     quantity: state.quantity || 1,   // ⭐ NEW
@@ -354,7 +343,6 @@ async function hydrateFromEntries(entries) {
   const hydratedItemState = {};
   entries.forEach(e => {
    hydratedItemState[e.item_id] = {
-  intensityId: e.intensity_id,
   multiplierIds: e.multiplier_ids || [],
 notes: e.notes || "",
   quantity: e.quantity || 1,   // ⭐ NEW
@@ -644,21 +632,7 @@ notes: e.notes || "",
   />
 </div>
 
-                {/* INTENSITY */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
-                    Conditions
-                  </label>
-               <IntensitySelect
-  value={state.intensityId}
-  intensities={intensities}
-  onChange={(id) =>
-    updateItem(item.id, { intensityId: id })
-  }
-/>
-
-                </div>
-
+             
                 {/* MULTIPLIERS */}
                 <div>
                   <div className="text-xs font-semibold text-slate-500 mb-1">
@@ -761,102 +735,6 @@ function QuantityStepper({ value = 1, onChange }) {
 }
 
 
-function IntensitySelect({ value, onChange, intensities }) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = React.useRef();
-
-  const selected = intensities.find(i => i.id === value);
-
-  // CLOSE ON OUTSIDE CLICK
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-        setSearch("");
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const filtered = intensities.filter(i =>
-    i.label.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <div ref={ref} className="relative">
-
-      {/* INPUT WRAPPER */}
-      <div className="relative">
-
-        <input
-          type="text"
-          value={
-            open
-              ? search
-              : selected
-              ? `${selected.label} (×${selected.points})`
-              : ""
-          }
-          onChange={e => {
-            setSearch(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          placeholder="Search intensity…"
-          className="w-full border rounded px-2 py-1 pr-8"
-        />
-
-        {/* ⭐ CLEAR BUTTON */}
-        {value && (
-          <button
-            type="button"
-            onClick={() => {
-              onChange(null);   // reset intensity
-              setSearch("");
-              setOpen(false);
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-sm"
-          >
-            ✕
-          </button>
-        )}
-
-      </div>
-
-      {/* DROPDOWN */}
-      {open && (
-        <div className="absolute z-50 bg-white border rounded shadow w-full max-h-48 overflow-y-auto">
-          {filtered.length === 0 && (
-            <div className="p-2 text-gray-400 text-sm">
-              No results
-            </div>
-          )}
-
-          {filtered.map(i => (
-            <div
-              key={i.id}
-              onClick={() => {
-                onChange(i.id);
-                setSearch("");
-                setOpen(false);
-              }}
-              className="p-2 cursor-pointer hover:bg-indigo-50"
-            >
-              <div className="font-medium">{i.label}</div>
-              <div className="text-xs text-gray-500">
-                Multiplier ×{i.points}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 
 

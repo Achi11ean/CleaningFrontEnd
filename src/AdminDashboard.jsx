@@ -719,7 +719,6 @@ const setStaffPassword = async (id) => {
                     {[
                       ["consultation", "Consultation"],
                       ["modules", "Modules"],
-                      ["intensities", "Intensities"],
                       ["multipliers", "Multipliers"],
                     ].map(([key, label]) => (
                       <button
@@ -810,11 +809,8 @@ const setStaffPassword = async (id) => {
                         <ManageSectionsItems /> // or whatever you named it
                       )}
 
-                    {consultSetupTab === "intensities" &&
-                      consultSetupMode === "create" && <CreateIntensity />}
-
-                    {consultSetupTab === "intensities" &&
-                      consultSetupMode === "manage" && <ManageIntensity />}
+             
+          
 
                     {consultSetupTab === "multipliers" &&
                       consultSetupMode === "create" && <CreateMultiplier />}

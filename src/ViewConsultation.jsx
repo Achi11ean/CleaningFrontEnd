@@ -29,7 +29,7 @@ const handleDeleteRoom = async (roomId) => {
   }
 };
 const estimatedTotal = useMemo(() => {
-  const points = consultation?.total_points ?? 0;
+const points = Number(consultation?.total_points) || 0;
   const rate = parseFloat(pricePerPoint);
   if (!rate || rate <= 0) return 0;
   return points * rate;
@@ -94,10 +94,12 @@ const discountedTotal = useMemo(() => {
       };
     }
 
-    roomsMap[roomId].sections[sectionKey].entries.push(entry);
-    roomsMap[roomId].sections[sectionKey].total_points += entry.calculated_points;
+  const points = Number(entry.calculated_points) || 0;
 
-    roomsMap[roomId].total_points += entry.calculated_points;
+roomsMap[roomId].sections[sectionKey].total_points += points;
+roomsMap[roomId].total_points += points;
+roomsMap[roomId].sections[sectionKey].entries.push(entry);
+
   });
 
   return roomsMap;
@@ -173,8 +175,7 @@ const pricingBreakdown = useMemo(() => {
         <div className="px-4 py-2 rounded-lg bg-green-50 text-green-700 font-semibold text-sm">
           Total Points
           <div className="text-lg font-bold">
-            {consultation.total_points ?? 0}
-          </div>
+{Number(consultation.total_points || 0).toFixed(2)}          </div>
         </div>
       </div>
     </div>
@@ -219,7 +220,7 @@ const pricingBreakdown = useMemo(() => {
 
     {/* Points badge */}
     <div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
-      {roomGroup.total_points} pts
+    {Number(roomGroup.total_points).toFixed(2)}  pts
     </div>
 
     {/* DELETE BUTTON */}
@@ -251,8 +252,7 @@ const pricingBreakdown = useMemo(() => {
               </h4>
 
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
-                {section.total_points} pts
-              </span>
+{Number(section.total_points).toFixed(2)} pts              </span>
             </div>
 
             {/* ENTRIES */}
@@ -313,8 +313,7 @@ const pricingBreakdown = useMemo(() => {
     <div className="text-sm text-gray-600">
       <div className="font-medium">Total Points</div>
       <div className="text-lg font-bold text-gray-800">
-        {consultation.total_points ?? 0}
-      </div>
+{Number(consultation.total_points || 0).toFixed(2)}      </div>
     </div>
 
     {/* Estimated total */}
@@ -388,7 +387,7 @@ const pricingBreakdown = useMemo(() => {
       <div className="text-lg font-bold text-gray-800">
         Grand Total{" "}
         <span className="text-green-700">
-          {consultation.total_points ?? 0} pts
+          {Number(consultation.total_points || 0).toFixed(2)} pts
         </span>
       </div>
     </div>

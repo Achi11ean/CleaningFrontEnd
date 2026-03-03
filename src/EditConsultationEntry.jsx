@@ -3,71 +3,59 @@ import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import { toast } from "react-toastify";
 
 
-function getCalculation(entry) {
+function getCalculation(entry, form, multipliersList) {
   const base = entry.base_points || 0;
-  const qty = entry.quantity || 1;
-  const intensity = entry.intensity_points || 1;
+  const qty = form?.quantity ?? entry.quantity ?? 1;
 
   const multiplierValues =
-    entry.multipliers?.map((m) => m.multiplier) || [];
+    form?.multiplier_ids?.map(id => {
+      const found = multipliersList.find(m => m.id === id);
+      return found ? found.multiplier : 1;
+    }) || [];
 
   const roomMultiplier = entry.room_sqft_multiplier || 1;
 
-  // STEP 1
   const baseTotal = base * qty;
 
-  // STEP 2
-  const afterIntensity = baseTotal * intensity;
-
-  // STEP 3
-  let afterMultipliers = afterIntensity;
+  let afterMultipliers = baseTotal;
   multiplierValues.forEach((m) => {
     afterMultipliers *= m;
   });
 
-  // STEP 4
-  const afterRoom = Math.round(afterMultipliers * roomMultiplier);
+  const final = Math.round(afterMultipliers * roomMultiplier);
 
   return {
     base,
     qty,
     baseTotal,
-    intensity,
     multipliers: multiplierValues,
     roomMultiplier,
-    afterIntensity,
     afterMultipliers,
-    final: afterRoom,
+    final,
   };
 }
 export default function EditConsultationEntry({ entry, onUpdated }) {
   const { axios } = useAuthorizedAxios();
   const [editing, setEditing] = useState(false);
-  const [intensities, setIntensities] = useState([]);
   const [multipliers, setMultipliers] = useState([]);
 
 const [form, setForm] = useState({
-  intensity_id: entry.intensity_id,
+  quantity: entry.quantity || 1,
   multiplier_ids: entry.multipliers?.map((m) => m.id) || [],
   notes: entry.entry_notes || "",
 });
 
-const calc = getCalculation(entry);
-
+const calc = getCalculation(entry, form, multipliers);
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [iRes, mRes] = await Promise.all([
-          axios.get("/consultation/intensities"),
-          axios.get("/consultation/multipliers"),
-        ]);
-        setIntensities(iRes.data || []);
-        setMultipliers(mRes.data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load options");
-      }
-    };
+const loadData = async () => {
+  try {
+    const res = await axios.get("/consultation/multipliers");
+    setMultipliers(res.data || []);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load options");
+  }
+};
     if (editing) loadData();
   }, [editing, axios]);
 
@@ -101,10 +89,9 @@ const calc = getCalculation(entry);
         <div className="flex justify-between items-start gap-4">
           <div>
             <div className="font-medium text-gray-800">{entry.item_title}</div>
-            <div className="text-xs text-gray-500">
-              Base: {entry.base_points} • Intensity:
-              <span className="font-semibold text-gray-700"> {entry.intensity_label}</span>
-            </div>
+   <div className="text-xs text-gray-500">
+  Base: {entry.base_points} • Qty: {entry.quantity}
+</div>
           </div>
           <div className="text-right">
             <div className="text-sm font-bold text-gray-800">{entry.calculated_points} pts</div>
@@ -155,21 +142,21 @@ const calc = getCalculation(entry);
     <div className="px-4 py-3 bg-white rounded-lg space-y-3 border border-blue-100">
       <div className="font-semibold text-gray-700">{entry.item_title}</div>
 
-      <div>
-        <label className="block text-xs font-medium mb-1">Intensity</label>
-        <select
-          value={form.intensity_id}
-          onChange={(e) => setForm({ ...form, intensity_id: Number(e.target.value) })}
-          className="w-full border rounded px-2 py-1 text-sm"
-        >
-          {intensities.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.label} ({i.points} pts)
-            </option>
-          ))}
-        </select>
-      </div>
-
+<div>
+  <label className="block text-xs font-medium mb-1">Quantity</label>
+  <input
+    type="number"
+    min="1"
+    value={form.quantity}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        quantity: Math.max(1, Number(e.target.value)),
+      })
+    }
+    className="w-24 border rounded px-2 py-1 text-sm"
+  />
+</div>
       <div>
         <label className="block text-xs font-medium mb-1">Multipliers</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm">
@@ -206,10 +193,6 @@ const calc = getCalculation(entry);
   </div>
 
   {/* STEP 2 */}
-  <div>
-    × Intensity ({calc.intensity}) ={" "}
-    <strong>{calc.afterIntensity}</strong>
-  </div>
 
   {/* STEP 3 */}
   {calc.multipliers.length > 0 && (
