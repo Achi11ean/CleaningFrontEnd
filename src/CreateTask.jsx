@@ -8,15 +8,16 @@ export default function CreateTask({ onCreated }) {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
 
+  const [repeatType, setRepeatType] = useState("none");
+  const [repeatInterval, setRepeatInterval] = useState(1);
+
   const [staff, setStaff] = useState([]);
   const [admins, setAdmins] = useState([]);
-
-  const [selected, setSelected] = useState([]); // assignments
+  const [selected, setSelected] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
 
-  // 🔹 Load assignable users
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -35,7 +36,6 @@ export default function CreateTask({ onCreated }) {
     loadUsers();
   }, []);
 
-  // 🔹 Toggle assignment
   const toggleAssign = (owner_type, owner_id) => {
     const exists = selected.find(
       (a) => a.owner_type === owner_type && a.owner_id === owner_id
@@ -53,7 +53,6 @@ export default function CreateTask({ onCreated }) {
     }
   };
 
-  // 🔹 Submit
   const submit = async (e) => {
     e.preventDefault();
 
@@ -67,6 +66,11 @@ export default function CreateTask({ onCreated }) {
       return;
     }
 
+    if (repeatType !== "none" && !dueDate) {
+      setStatus("Recurring tasks require a due date");
+      return;
+    }
+
     try {
       setLoading(true);
       setStatus(null);
@@ -75,6 +79,8 @@ export default function CreateTask({ onCreated }) {
         title,
         description,
         due_date: dueDate || null,
+        repeat_type: repeatType,
+        repeat_interval: repeatInterval,
         assignments: selected,
       });
 
@@ -83,6 +89,8 @@ export default function CreateTask({ onCreated }) {
       setTitle("");
       setDescription("");
       setDueDate("");
+      setRepeatType("none");
+      setRepeatInterval(1);
       setSelected([]);
 
       onCreated?.();
@@ -128,6 +136,71 @@ export default function CreateTask({ onCreated }) {
             className="w-full border rounded p-2"
           />
         </div>
+
+        {/* REPEAT OPTIONS */}
+       {/* REPEAT OPTIONS */}
+<div className="border rounded p-4 bg-gray-50 space-y-3">
+  <label className="font-semibold block">Repeat</label>
+
+  <select
+    value={repeatType}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      // Presets
+      if (value === "biweekly") {
+        setRepeatType("weekly");
+        setRepeatInterval(2);
+      } else if (value === "quarterly") {
+        setRepeatType("monthly");
+        setRepeatInterval(3);
+      } else if (value === "semiannual") {
+        setRepeatType("monthly");
+        setRepeatInterval(6);
+      } else if (value === "annual") {
+        setRepeatType("monthly");
+        setRepeatInterval(12);
+      } else {
+        setRepeatType(value);
+        setRepeatInterval(1);
+      }
+    }}
+    className="w-full border rounded p-2"
+  >
+    <option value="none">Does not repeat</option>
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+    <option value="biweekly">Bi-Weekly</option>
+    <option value="monthly">Monthly</option>
+    <option value="quarterly">Quarterly</option>
+    <option value="semiannual">Semi-Annually</option>
+    <option value="annual">Annually</option>
+  </select>
+
+  {/* Show interval only for basic daily/weekly/monthly */}
+  {["daily", "weekly", "monthly"].includes(repeatType) && (
+    <div className="flex items-center gap-2">
+      <span>Every</span>
+      <input
+        type="number"
+        min="1"
+        value={repeatInterval}
+        onChange={(e) =>
+          setRepeatInterval(parseInt(e.target.value) || 1)
+        }
+        className="w-20 border rounded p-2"
+      />
+      <span>
+        {repeatType === "daily"
+          ? "day(s)"
+          : repeatType === "weekly"
+          ? "week(s)"
+          : "month(s)"}
+      </span>
+    </div>
+  )}
+</div>
+      
 
         {/* ASSIGNMENTS */}
         <div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import CreateTask from "./CreateTask";
+import MyTasksPanel from "./MyTasksPanel";
+import ArchivedTasks from "./ArchivedTasks";
 export default function ManageTasks() {
 const { axios: authAxios, role } = useAuthorizedAxios();
 const [assigningTask, setAssigningTask] = useState(null);
@@ -13,7 +15,7 @@ const [allTasks, setAllTasks] = useState([]);
 const [savingTaskId, setSavingTaskId] = useState(null);
 const [showCreate, setShowCreate] = useState(false);
 const [loading, setLoading] = useState(true);
-
+const [showArchived, setShowArchived] = useState(false);
 
 const isManager = role === "admin" || role === "manager";
 
@@ -84,17 +86,24 @@ const toggleAssignment = async (id, override = false) => {
 /* ================= EDIT TASK ================= */
 
 const [editingTask, setEditingTask] = useState(null);
-
 const saveEdit = async () => {
-try {
-await authAxios.patch(`/tasks/${editingTask.id}`, editingTask);
-setEditingTask(null);
-loadData();
-} catch (err) {
-console.error("Failed updating task", err);
-}
-};
+  try {
+    const payload = {
+      title: editingTask.title,
+      description: editingTask.description,
+      due_date: editingTask.due_date || null,
+      repeat_type: editingTask.repeat_type,
+      repeat_interval: editingTask.repeat_interval,
+    };
 
+    await authAxios.patch(`/tasks/${editingTask.id}`, payload);
+
+    setEditingTask(null);
+    loadData();
+  } catch (err) {
+    console.error("Failed updating task", err);
+  }
+};
 const removeAssignment = async (assignmentId) => {
   try {
     await authAxios.delete(`/tasks/assignment/${assignmentId}`);
@@ -141,6 +150,9 @@ const deleteTask = async (taskId) => {
 
 
 const autoSaveTask = async (taskId, updatedFields) => {
+    const task = allTasks.find(t => t.id === taskId);
+  if (task?.is_archived) return;
+
   try {
     setSavingTaskId(taskId);
 
@@ -178,15 +190,24 @@ if (!d) return "—";
 const date = new Date(d);
 return date.toLocaleDateString();
 };
+const formatRepeat = (type, interval) => {
+  if (type === "none") return null;
 
-
+  return `Repeats every ${interval} ${
+    type === "daily"
+      ? "day(s)"
+      : type === "weekly"
+      ? "week(s)"
+      : "month(s)"
+  }`;
+};
 const sortByDueDate = (items, getDateFn) => {
   return [...items].sort((a, b) => {
     const dateA = getDateFn(a);
     const dateB = getDateFn(b);
 
     if (!dateA && !dateB) return 0;
-    if (!dateA) return 1;   // no due date goes last
+    if (!dateA) return 1;   
     if (!dateB) return -1;
 
     return new Date(dateA) - new Date(dateB);
@@ -194,11 +215,22 @@ const sortByDueDate = (items, getDateFn) => {
 };
 
 
-const sortedMyTasks = sortByDueDate(
-  myTasks,
-  (a) => a.task?.due_date
-);
+const sortedMyTasks = [...myTasks].sort((a, b) => {
+  // 1️⃣ Incomplete first
+  if (a.completed !== b.completed) {
+    return a.completed ? 1 : -1;
+  }
 
+  // 2️⃣ Then sort by due date
+  const dateA = a.task?.due_date;
+  const dateB = b.task?.due_date;
+
+  if (!dateA && !dateB) return 0;
+  if (!dateA) return 1;
+  if (!dateB) return -1;
+
+  return new Date(dateA) - new Date(dateB);
+});
 const sortedAllTasks = sortByDueDate(
   allTasks,
   (task) => task.due_date
@@ -231,165 +263,48 @@ return ( <div className="max-w-full px-1 bg-gradient-to-br from-yellow-200 via-y
     {/* Collapsible Create Form */}
    {/* ================= CREATE TASK MODAL ================= */}
 {showCreate && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 
-    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl  relative animate-fadeIn">
+    <div className="
+      bg-white w-full max-w-2xl
+      rounded-2xl shadow-2xl relative animate-fadeIn
+      max-h-[90vh] overflow-y-auto
+    ">
 
       {/* Close Button */}
       <button
         onClick={() => setShowCreate(false)}
-        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"
+        className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg z-10"
       >
         ✕
       </button>
 
-      <CreateTask
-        onCreated={() => {
-          setShowCreate(false);
-          loadData(true);
-        }}
-      />
+      <div className="p-6">
+        <CreateTask
+          onCreated={() => {
+            setShowCreate(false);
+            loadData(true);
+          }}
+        />
+      </div>
 
     </div>
   </div>
 )}
-
   </div>
 
 
 {/* ================= MY TASKS ================= */}
-<div className="space-y- max-w-md">
-
-  {/* Header */}
-  <div className="flex items-center justify-between">
-    <h2 className="text-lg font-bold text-slate-700 tracking-tight">
-      📝 My Tasks
-    </h2>
-
-    <span className="text-xs text-slate-400">
-      {myTasks.length} items
-    </span>
-  </div>
-
-  {/* Notepad Container */}
-  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-
-  {sortedMyTasks.map((a, index) =>  {
-      const dueDate = a.task?.due_date
-        ? new Date(a.task.due_date)
-        : null;
-
-      const isOverdue =
-        dueDate && !a.completed && dueDate < new Date();
-
-      return (
-        <div
-          key={a.id}
-          className={`
-            flex items-start gap-3 px-4 py-3
-            text-sm
-            transition
-            ${index !== myTasks.length - 1 ? "border-b border-slate-100" : ""}
-            ${a.completed ? "bg-emerald-50/50" : ""}
-          `}
-        >
-          {/* Checkbox */}
-          <button
-onClick={() => toggleAssignment(a.id)}
-            className={`
-              mt-0.5 h-4 w-4 rounded-full border flex items-center justify-center
-              transition
-              ${
-                a.completed
-                  ? "bg-emerald-500 border-emerald-500 text-white"
-                  : "border-slate-300 hover:border-blue-400"
-              }
-            `}
-          >
-            {a.completed && (
-              <span className="text-[10px]">✓</span>
-            )}
-          </button>
-
-          {/* Task Content */}
-          <div className="flex-1">
-<input
-  value={a.task?.title || ""}
-  onChange={(e) =>
-    setMyTasks(prev =>
-      prev.map(item =>
-        item.id === a.id
-          ? {
-              ...item,
-              task: { ...item.task, title: e.target.value }
-            }
-          : item
-      )
-    )
-  }
-  onBlur={() =>
-    autoSaveTask(a.task.id, { title: a.task.title })
-  }
-  className={`
-    font-medium w-full bg-transparent border-b border-transparent
-    focus:border-slate-300 outline-none
-    ${
-      a.completed
-        ? "line-through text-slate-400"
-        : "text-slate-700"
-    }
-  `}
+<MyTasksPanel
+  tasks={sortedMyTasks}
+  setMyTasks={setMyTasks}
+  toggleAssignment={toggleAssignment}
+  autoSaveTask={autoSaveTask}
+  formatDate={formatDate}
+  formatRepeat={formatRepeat}
+  onEditTask={(task) => setEditingTask(task)}
+  onDeleteTask={deleteTask}
 />
-
-       <textarea
-  value={a.task?.description || ""}
-  onChange={(e) =>
-    setMyTasks(prev =>
-      prev.map(item =>
-        item.id === a.id
-          ? {
-              ...item,
-              task: { ...item.task, description: e.target.value }
-            }
-          : item
-      )
-    )
-  }
-  onBlur={() =>
-    autoSaveTask(a.task.id, { description: a.task.description })
-  }
-  rows={2}
-  className="text-xs text-slate-400 mt-0.5 bg-transparent border border-transparent focus:border-slate-200 rounded outline-none w-full resize-none"
-/>
-
-            {a.task?.due_date && (
-              <div
-                className={`
-                  text-[11px] mt-1
-                  ${
-                    isOverdue
-                      ? "text-rose-500 font-medium"
-                      : "text-slate-400"
-                  }
-                `}
-              >
-                Due {formatDate(a.task.due_date)}
-              </div>
-            )}
-          </div>
-
-        </div>
-      );
-    })}
-
-    {myTasks.length === 0 && (
-      <div className="px-4 py-6 text-center text-slate-400 text-sm">
-        ✨ Nothing to do. You're glowing.
-      </div>
-    )}
-
-  </div>
-</div>
 {/* ================= ALL TASKS ================= */}
 <div className="space-y-4 max-w-full">
 
@@ -427,6 +342,7 @@ onClick={() => toggleAssignment(a.id)}
           <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-start">
             <div>
      <input
+       disabled={task.is_archived}
   value={task.title}
   onChange={(e) =>
     setAllTasks(prev =>
@@ -444,6 +360,7 @@ onClick={() => toggleAssignment(a.id)}
 />
 
              <textarea
+               disabled={task.is_archived}
   value={task.description || ""}
   onChange={(e) =>
     setAllTasks(prev =>
@@ -476,11 +393,22 @@ onClick={() => toggleAssignment(a.id)}
                   Due {formatDate(task.due_date)}
                 </div>
               )}
+              {task.repeat_type !== "none" && (
+  <div className="text-[11px] text-purple-500 mt-1">
+    🔁 Repeats every {task.repeat_interval}{" "}
+    {task.repeat_type === "daily"
+      ? "day(s)"
+      : task.repeat_type === "weekly"
+      ? "week(s)"
+      : "month(s)"}
+  </div>
+)}
             </div>
 
             <div className="flex gap-2 text-xs">
               <button
                 onClick={() => setEditingTask(task)}
+                disabled={task.is_archived}
                 className="text-blue-500 hover:underline"
               >
                 Edit
@@ -494,7 +422,11 @@ onClick={() => toggleAssignment(a.id)}
               </button>
             </div>
           </div>
-
+{task.is_archived && (
+  <div className="text-xs text-slate-400 mt-1">
+    🔒 Archived
+  </div>
+)}
           {/* Assignments */}
           <div className="border-t border-b border-yellow-400">
             {task.assignments.map((a, index) => (
@@ -570,13 +502,22 @@ onClick={() => toggleAssignment(a.id)}
     })}
 
   </div>
-
+<button
+  onClick={() => setShowArchived(prev => !prev)}
+  className="px-4 py-2 bg-slate-600 text-white rounded-xl text-sm font-semibold hover:brightness-110 transition"
+>
+  🗄 {showArchived ? "Hide Archived" : "View Archived"}
+</button>
   {allTasks.length === 0 && (
     <div className="text-center text-sm text-slate-400 py-6">
       No tasks created yet.
     </div>
   )}
 </div>
+
+{showArchived && (
+  <ArchivedTasks onClose={() => setShowArchived(false)} />
+)}
   {/* ================= EDIT MODAL ================= */}
   {editingTask && (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
@@ -614,7 +555,36 @@ onClick={() => toggleAssignment(a.id)}
           }
           className="w-full border p-2 rounded"
         />
+<select
+  value={editingTask.repeat_type}
+  onChange={(e) =>
+    setEditingTask({
+      ...editingTask,
+      repeat_type: e.target.value,
+    })
+  }
+  className="w-full border p-2 rounded"
+>
+  <option value="none">No Repeat</option>
+  <option value="daily">Daily</option>
+  <option value="weekly">Weekly</option>
+  <option value="monthly">Monthly</option>
+</select>
 
+{editingTask.repeat_type !== "none" && (
+  <input
+    type="number"
+    min="1"
+    value={editingTask.repeat_interval}
+    onChange={(e) =>
+      setEditingTask({
+        ...editingTask,
+        repeat_interval: parseInt(e.target.value) || 1,
+      })
+    }
+    className="w-full border p-2 rounded"
+  />
+)}
         <div className="flex justify-end gap-2">
           <button onClick={() => setEditingTask(null)}>Cancel</button>
           <button
