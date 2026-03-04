@@ -8,6 +8,8 @@ const CREW_RATES = {
   3: 125,
   4: 150
 };
+const CREW_MIN_HOURS = 1;
+
 export default function ViewConsultation({ consultationId }) {
   const { axios } = useAuthorizedAxios();
   const [consultation, setConsultation] = useState(null);
@@ -44,13 +46,17 @@ const estimatedTotal = useMemo(() => {
 
   const points = Number(consultation.total_points) || 0;
 
-  const minutes = points * 5;
+  const minutes = points * 6;
   const laborHours = minutes / 60;
   const onsiteHours = laborHours / cleaners;
 
   const rate = CREW_RATES[cleaners] || 100;
 
-  return onsiteHours * rate;
+  const calculated = onsiteHours * rate;
+
+  const minimum = rate * CREW_MIN_HOURS;
+
+  return Math.max(calculated, minimum);
 
 }, [consultation, cleaners]);
 
@@ -59,9 +65,15 @@ const [discountNotes, setDiscountNotes] = useState("");
 
 const discountedTotal = useMemo(() => {
   if (!estimatedTotal) return 0;
-  return estimatedTotal * (1 - discountPercent / 100);
-}, [estimatedTotal, discountPercent]);
 
+  const rate = CREW_RATES[cleaners];
+  const minimum = rate * CREW_MIN_HOURS;
+
+  const discounted = estimatedTotal * (1 - discountPercent / 100);
+
+  return Math.max(discounted, minimum);
+
+}, [estimatedTotal, discountPercent, cleaners]);
   useEffect(() => {
     if (!consultationId || !axios) return;
 
@@ -202,12 +214,16 @@ const totalTime = useMemo(() => {
 const maintenanceTotal = useMemo(() => {
   if (!estimatedTotal) return 0;
 
-  const MAINTENANCE_FACTOR = 0.7; // 40% faster clean
+  const MAINTENANCE_FACTOR = 0.7;
 
-  return estimatedTotal * MAINTENANCE_FACTOR;
+  const rate = CREW_RATES[cleaners];
+  const minimum = rate * CREW_MIN_HOURS;
 
-}, [estimatedTotal]);
+  const calculated = estimatedTotal * MAINTENANCE_FACTOR;
 
+  return Math.max(calculated, minimum);
+
+}, [estimatedTotal, cleaners]);
 const maintenanceTime = useMemo(() => {
   if (!totalTime) return null;
 
@@ -340,7 +356,7 @@ const maintenanceTime = useMemo(() => {
   {(() => {
 
     const points = Number(roomGroup.total_points) || 0;
-    const minutes = points * 5;
+    const minutes = points * 6;
     const onsiteHours = (minutes / 60) / cleaners;
 
     const hrs = Math.floor(onsiteHours);
@@ -508,6 +524,9 @@ const maintenanceTime = useMemo(() => {
   <div className="text-lg font-bold text-gray-800">
     ${CREW_RATES[cleaners]}/hr
   </div>
+  <div className="text-xs text-gray-500">
+  Minimum Service Charge: ${CREW_RATES[cleaners]}
+</div>
 </div>
     {/* Total points */}
     <div className="text-sm text-gray-600">
@@ -592,11 +611,14 @@ const maintenanceTime = useMemo(() => {
 
     key={JSON.stringify(pricingBreakdown)}
     document={
-    <PrintConsultation
+<PrintConsultation
   consultation={consultation}
-  groupedRooms={groupedRooms}
   pricing={pricingBreakdown}
   client={consultation.client}
+  serviceType={serviceType}
+  totalTime={totalTime}
+  maintenanceTime={maintenanceTime}
+  maintenanceTotal={maintenanceTotal}
 />
 
     }
