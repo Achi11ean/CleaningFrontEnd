@@ -12,6 +12,7 @@ export default function ViewConsultation({ consultationId }) {
   const { axios } = useAuthorizedAxios();
   const [consultation, setConsultation] = useState(null);
   const [error, setError] = useState(null);
+const [serviceType, setServiceType] = useState("one_time"); 
 
 const [cleaners, setCleaners] = useState(2);
 const clientName = useMemo(() => {
@@ -33,6 +34,11 @@ const handleDeleteRoom = async (roomId) => {
     alert("Failed to delete room");
   }
 };
+
+
+
+
+
 const estimatedTotal = useMemo(() => {
   if (!consultation) return 0;
 
@@ -189,7 +195,32 @@ const totalTime = useMemo(() => {
     onsiteHours
   };
 
+
+  
 }, [consultation, cleaners]);
+
+const maintenanceTotal = useMemo(() => {
+  if (!estimatedTotal) return 0;
+
+  const MAINTENANCE_FACTOR = 0.7; // 40% faster clean
+
+  return estimatedTotal * MAINTENANCE_FACTOR;
+
+}, [estimatedTotal]);
+
+const maintenanceTime = useMemo(() => {
+  if (!totalTime) return null;
+
+  const MAINTENANCE_FACTOR = 0.7;
+
+  return {
+    ...totalTime,
+    onsiteHours: totalTime.onsiteHours * MAINTENANCE_FACTOR
+  };
+
+}, [totalTime]);
+
+
   if (error) {
     return <div className="text-red-600">{error}</div>;
   }
@@ -197,8 +228,6 @@ const totalTime = useMemo(() => {
   if (!consultation) {
     return <div className="text-gray-500">Loading consultation…</div>;
   }
-
-
 
 
 
@@ -211,7 +240,32 @@ const totalTime = useMemo(() => {
   <h2 className="text-xl font-bold text-gray-800">
     Consultation Summary
   </h2>
+{/* Service Type */}
+<div className="flex gap-2">
 
+  <button
+    onClick={() => setServiceType("one_time")}
+    className={`px-3 py-1 rounded-full text-sm font-semibold border
+      ${serviceType === "one_time"
+        ? "bg-indigo-600 text-white border-indigo-600"
+        : "bg-white text-gray-700 hover:bg-gray-50"}
+    `}
+  >
+    One-Time Cleaning
+  </button>
+
+  <button
+    onClick={() => setServiceType("recurring")}
+    className={`px-3 py-1 rounded-full text-sm font-semibold border
+      ${serviceType === "recurring"
+        ? "bg-indigo-600 text-white border-indigo-600"
+        : "bg-white text-gray-700 hover:bg-gray-50"}
+    `}
+  >
+    Recurring Client
+  </button>
+
+</div>
   <p className="text-sm font-medium text-gray-700">
     {clientName}
   </p>
@@ -384,6 +438,67 @@ const totalTime = useMemo(() => {
 
   </div>
 )}
+
+{serviceType === "one_time" && (
+  <div className="rounded-xl border bg-emerald-50 p-5 space-y-3">
+
+    <h3 className="text-lg font-semibold">
+      One-Time Deep Clean Estimate
+    </h3>
+
+    <div className="text-xl font-bold">
+      {Math.floor(totalTime?.onsiteHours)}h{" "}
+      {Math.round((totalTime?.onsiteHours % 1) * 60)}m
+    </div>
+
+    <div className="text-2xl font-bold text-emerald-700">
+      ${discountedTotal.toFixed(2)}
+    </div>
+
+  </div>
+)}
+
+{serviceType === "recurring" && (
+  <div className="grid md:grid-cols-2 gap-4">
+
+    {/* Initial Clean */}
+    <div className="rounded-xl border bg-orange-50 p-5">
+
+      <h3 className="text-lg font-semibold">
+        Initial Deep Clean
+      </h3>
+
+      <div className="text-xl font-bold">
+        {Math.floor(totalTime?.onsiteHours)}h{" "}
+        {Math.round((totalTime?.onsiteHours % 1) * 60)}m
+      </div>
+
+      <div className="text-2xl font-bold text-orange-700">
+        ${discountedTotal.toFixed(2)}
+      </div>
+
+    </div>
+
+    {/* Maintenance */}
+    <div className="rounded-xl border bg-blue-50 p-5">
+
+      <h3 className="text-lg font-semibold">
+        Recurring Maintenance Clean
+      </h3>
+
+      <div className="text-xl font-bold">
+        {Math.floor(maintenanceTime?.onsiteHours)}h{" "}
+        {Math.round((maintenanceTime?.onsiteHours % 1) * 60)}m
+      </div>
+
+      <div className="text-2xl font-bold text-blue-700">
+        ${maintenanceTotal.toFixed(2)}
+      </div>
+
+    </div>
+
+  </div>
+)}
   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
 <div>
   <div className="text-sm font-medium text-gray-700">
@@ -470,12 +585,7 @@ const totalTime = useMemo(() => {
     {/* Footer Total */}
     <div className="pt-4 border-t flex justify-end">
       
-      <div className="text-lg font-bold text-gray-800">
-        Grand Total{" "}
-        <span className="text-green-700">
-          {Number(consultation.total_points || 0).toFixed(2)} pts
-        </span>
-      </div>
+   
     </div>
 {pricingBreakdown && consultation && (
   <PDFDownloadLink
