@@ -157,7 +157,7 @@ const pricingBreakdown = useMemo(() => {
 const roomTimeBreakdown = useMemo(() => {
   if (!groupedRooms) return [];
 
-  const POINT_TO_MINUTES = 5;
+  const POINT_TO_MINUTES = 6;
 
   return Object.values(groupedRooms).map(room => {
 
