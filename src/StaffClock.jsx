@@ -9,7 +9,8 @@ export default function StaffClock({ onRequestInventory }) {
   const [clockedIn, setClockedIn] = useState(false);
   const [entry, setEntry] = useState(null);
   const [error, setError] = useState(null);
-
+const [showInventoryPrompt, setShowInventoryPrompt] = useState(false);
+const [lastDuration, setLastDuration] = useState(null);
   const [now, setNow] = useState(new Date());
 
   // ⏱️ Live timer tick every second when clocked in
@@ -61,26 +62,28 @@ export default function StaffClock({ onRequestInventory }) {
   };
 
   // ⏹️ Clock Out
-  const clockOut = async () => {
-    try {
-      setError(null);
-      const res = await authAxios.post("/staff/clock-out");
+const clockOut = async () => {
+  try {
+    setError(null);
+    const res = await authAxios.post("/staff/clock-out");
 
-      const duration = (res.data.duration_seconds / 3600).toFixed(2);
-      const goToInventory = window.confirm(
-        `Clocked out.\nSession: ${duration} hours\n\nDo you need to report items used?`
-      );
+const seconds = res.data.duration_seconds;
+const hrs = Math.floor(seconds / 3600);
+const mins = Math.floor((seconds % 3600) / 60);
 
-      setClockedIn(false);
-      setEntry(null);
+const duration = `${hrs}h ${mins}m`;
+    setClockedIn(false);
+    setEntry(null);
 
-      if (goToInventory && typeof onRequestInventory === "function") {
-        onRequestInventory();
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to clock out");
-    }
-  };
+    setLastDuration(duration);
+    setShowInventoryPrompt(true);
+
+  } catch (err) {
+    setError(err.response?.data?.error || "Failed to clock out");
+  }
+};
+
+
   // 🧮 Current session duration
   let currentSeconds = 0;
   if (clockedIn && entry?.clock_in_at) {
@@ -184,6 +187,50 @@ export default function StaffClock({ onRequestInventory }) {
         </button>
 
       </div>
+      {showInventoryPrompt && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-xl shadow-xl p-6 w-[320px] text-center">
+
+      <h3 className="text-lg font-bold text-gray-800 mb-2">
+        Clocked Out
+      </h3>
+
+      <p className="text-sm text-gray-600 mb-4">
+        Session time: {lastDuration} 
+      </p>
+
+      <p className="text-sm text-gray-700 mb-6">
+        Report inventory used during this shift?
+      </p>
+
+      <div className="flex justify-center gap-4">
+
+        <button
+          onClick={() => setShowInventoryPrompt(false)}
+          className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+        >
+          No
+        </button>
+
+        <button
+          onClick={() => {
+            setShowInventoryPrompt(false);
+            if (typeof onRequestInventory === "function") {
+              onRequestInventory();
+            }
+          }}
+          className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          Yes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </div>
   );
 }
