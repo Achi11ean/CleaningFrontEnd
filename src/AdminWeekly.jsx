@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import WeeklyTimeCards from "./WeeklyTimeCards";
 
 export default function AdminWeekly() {
-  const { authAxios } = useAdmin();
+  const { role, axios } = useAuthorizedAxios();
 
   const [weeks, setWeeks] = useState([]);
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -12,11 +12,18 @@ export default function AdminWeekly() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Load available weeks
+  // 🔒 Block access early
+  if (!["admin", "manager"].includes(role)) {
+    return null;
+  }
+
+  // ✅ Load available weeks
   useEffect(() => {
+    if (!axios) return;
+
     const loadWeeks = async () => {
       try {
-        const res = await authAxios.get("/admin/reports/weeks");
+        const res = await axios.get("/admin/reports/weeks");
         setWeeks(res.data || []);
         if (res.data?.length > 0) {
           setSelectedWeek(res.data[0]);
@@ -25,17 +32,19 @@ export default function AdminWeekly() {
         setError("Failed to load weeks");
       }
     };
-    loadWeeks();
-  }, []);
 
-  // Load report for selected week
+    loadWeeks();
+  }, [axios]);
+
+  // ✅ Load report for selected week
   useEffect(() => {
-    if (!selectedWeek) return;
+    if (!selectedWeek || !axios) return;
+
     const loadReport = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await authAxios.get("/admin/reports/weekly", {
+        const res = await axios.get("/admin/reports/weekly", {
           params: { start: selectedWeek.week_start },
         });
         setReport(res.data);
@@ -45,8 +54,9 @@ export default function AdminWeekly() {
         setLoading(false);
       }
     };
+
     loadReport();
-  }, [selectedWeek]);
+  }, [selectedWeek, axios]);
 
   const filteredStaff = useMemo(() => {
     if (!report?.staff_totals) return [];
@@ -95,26 +105,22 @@ export default function AdminWeekly() {
         />
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="py-10 text-gray-500 font-semibold">
           Loading weekly report...
         </div>
       )}
 
-      {/* Error */}
       {error && (
         <div className="py-6 text-red-600 font-semibold">{error}</div>
       )}
 
-      {/* Cards */}
-     {!loading && !error && (
-  <WeeklyTimeCards
-    staffList={filteredStaff}
-    weekStart={selectedWeek?.week_start}
-  />
-)}
-
+      {!loading && !error && (
+        <WeeklyTimeCards
+          staffList={filteredStaff}
+          weekStart={selectedWeek?.week_start}
+        />
+      )}
     </div>
   );
 }

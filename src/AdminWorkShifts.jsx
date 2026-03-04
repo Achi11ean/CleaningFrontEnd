@@ -66,8 +66,7 @@ const openCloudinary = () => {
      Load data
      ─────────────────────────────── */
   useEffect(() => {
-    if (role !== "admin") return;
-
+if (role !== "admin" && role !== "manager") return null;
 const load = async () => {
   const [shiftRes, staffRes, adminRes, clientRes] = await Promise.all([
     axios.get("/admin/shifts"),
@@ -210,7 +209,7 @@ check_out_at: utcToLocalInputValue(shift.check_out_at),
 
   /* ─────────────────────────────── */
 
-  if (role !== "admin") return null;
+  if (role !== "admin" && role !== "manager") return;
 
   return (
     <div className="space-y-6">

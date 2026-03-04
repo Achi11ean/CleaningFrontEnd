@@ -3,12 +3,17 @@ import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PrintConsultation from "./PrintConsultation";
 import EditConsultationEntry from "./EditConsultationEntry";
-
+const CREW_RATES = {
+  2: 100,
+  3: 125,
+  4: 150
+};
 export default function ViewConsultation({ consultationId }) {
   const { axios } = useAuthorizedAxios();
   const [consultation, setConsultation] = useState(null);
   const [error, setError] = useState(null);
-const [pricePerPoint, setPricePerPoint] = useState("");
+
+const [cleaners, setCleaners] = useState(2);
 const clientName = useMemo(() => {
   if (!consultation?.client) return "Client";
   return `${consultation.client.first_name} ${consultation.client.last_name}`;
@@ -29,11 +34,20 @@ const handleDeleteRoom = async (roomId) => {
   }
 };
 const estimatedTotal = useMemo(() => {
-const points = Number(consultation?.total_points) || 0;
-  const rate = parseFloat(pricePerPoint);
-  if (!rate || rate <= 0) return 0;
-  return points * rate;
-}, [pricePerPoint, consultation]);
+  if (!consultation) return 0;
+
+  const points = Number(consultation.total_points) || 0;
+
+  const minutes = points * 5;
+  const laborHours = minutes / 60;
+  const onsiteHours = laborHours / cleaners;
+
+  const rate = CREW_RATES[cleaners] || 100;
+
+  return onsiteHours * rate;
+
+}, [consultation, cleaners]);
+
 const [discountPercent, setDiscountPercent] = useState(0);
 const [discountNotes, setDiscountNotes] = useState("");
 
@@ -109,10 +123,6 @@ roomsMap[roomId].sections[sectionKey].entries.push(entry);
 const pricingBreakdown = useMemo(() => {
   if (!consultation) return null;
 
-  const safePricePerPoint = Number(pricePerPoint);
-  const validPricePerPoint = Number.isFinite(safePricePerPoint)
-    ? safePricePerPoint
-    : 0;
 
   const base = Number.isFinite(estimatedTotal) ? estimatedTotal : 0;
   const final = Number.isFinite(discountedTotal) ? discountedTotal : 0;
@@ -121,7 +131,7 @@ const pricingBreakdown = useMemo(() => {
     discountPercent > 0 ? base - final : 0;
 
   return {
-    pricePerPoint: validPricePerPoint,
+    crewRate: CREW_RATES[cleaners],
     totalPoints: consultation.total_points ?? 0,
     baseEstimate: base,
     discountPercent,
@@ -130,7 +140,6 @@ const pricingBreakdown = useMemo(() => {
     finalTotal: final,
   };
 }, [
-  pricePerPoint,
   consultation,
   estimatedTotal,
   discountPercent,
@@ -139,7 +148,48 @@ const pricingBreakdown = useMemo(() => {
 ]);
 
 
+const roomTimeBreakdown = useMemo(() => {
+  if (!groupedRooms) return [];
 
+  const POINT_TO_MINUTES = 5;
+
+  return Object.values(groupedRooms).map(room => {
+
+    const points = Number(room.total_points) || 0;
+
+    const minutes = points * POINT_TO_MINUTES;
+    const laborHours = minutes / 60;
+    const onsiteHours = laborHours / cleaners;
+
+    return {
+      roomId: room.room.id,
+      minutes,
+      laborHours,
+      onsiteHours
+    };
+
+  });
+
+}, [groupedRooms, cleaners]);
+
+const totalTime = useMemo(() => {
+  if (!consultation) return null;
+
+  const POINT_TO_MINUTES = 5;
+
+  const points = Number(consultation.total_points) || 0;
+
+  const minutes = points * POINT_TO_MINUTES;
+  const laborHours = minutes / 60;
+  const onsiteHours = laborHours / cleaners;
+
+  return {
+    minutes,
+    laborHours,
+    onsiteHours
+  };
+
+}, [consultation, cleaners]);
   if (error) {
     return <div className="text-red-600">{error}</div>;
   }
@@ -177,6 +227,21 @@ const pricingBreakdown = useMemo(() => {
           <div className="text-lg font-bold">
 {Number(consultation.total_points || 0).toFixed(2)}          </div>
         </div>
+        <div className="flex items-center gap-3">
+  <label className="text-sm font-medium text-gray-600">
+    Cleaners
+  </label>
+
+  <select
+    value={cleaners}
+    onChange={(e) => setCleaners(Number(e.target.value))}
+    className="border rounded px-2 py-1 text-sm"
+  >
+    <option value={2}>2 Cleaners</option>
+    <option value={3}>3 Cleaners</option>
+    <option value={4}>4 Cleaners</option>
+  </select>
+</div>
       </div>
     </div>
 
@@ -217,11 +282,24 @@ const pricingBreakdown = useMemo(() => {
   </div>
 
   <div className="flex items-center gap-3">
+<div className="text-xs text-gray-600 mt-1">
+  {(() => {
 
-    {/* Points badge */}
-    <div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
-    {Number(roomGroup.total_points).toFixed(2)}  pts
-    </div>
+    const points = Number(roomGroup.total_points) || 0;
+    const minutes = points * 5;
+    const onsiteHours = (minutes / 60) / cleaners;
+
+    const hrs = Math.floor(onsiteHours);
+    const mins = Math.round((onsiteHours - hrs) * 60);
+
+    return `${hrs}h ${mins}m estimated`;
+
+  })()}
+</div>
+<div className="text-sm font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded-full">
+  {Number(roomGroup.total_points).toFixed(2)} pts
+</div>
+
 
     {/* DELETE BUTTON */}
     {roomGroup.room.id !== "no-room" && (
@@ -286,29 +364,36 @@ const pricingBreakdown = useMemo(() => {
   <h3 className="text-lg font-semibold text-gray-800">
     Cleaning Cost Estimate
   </h3>
+{totalTime && (
+  <div className="rounded-xl border bg-blue-50 p-4 flex justify-between items-center">
 
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-    {/* Price per point */}
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Dollar amount per point
-      </label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-          $
-        </span>
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          value={pricePerPoint}
-          onChange={(e) => setPricePerPoint(e.target.value)}
-          placeholder="e.g. 2.50"
-          className="w-full pl-7 pr-3 py-2 rounded-lg border focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-        />
+      <div className="text-sm text-gray-600">
+        Estimated Cleaning Time
+      </div>
+
+      <div className="text-xl font-bold text-blue-700">
+        {Math.floor(totalTime.onsiteHours)}h{" "}
+        {Math.round((totalTime.onsiteHours % 1) * 60)}m
       </div>
     </div>
 
+    <div className="text-sm text-gray-600">
+      {cleaners} cleaners
+    </div>
+
+  </div>
+)}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+<div>
+  <div className="text-sm font-medium text-gray-700">
+    Crew Rate
+  </div>
+
+  <div className="text-lg font-bold text-gray-800">
+    ${CREW_RATES[cleaners]}/hr
+  </div>
+</div>
     {/* Total points */}
     <div className="text-sm text-gray-600">
       <div className="font-medium">Total Points</div>
@@ -384,6 +469,7 @@ const pricingBreakdown = useMemo(() => {
 
     {/* Footer Total */}
     <div className="pt-4 border-t flex justify-end">
+      
       <div className="text-lg font-bold text-gray-800">
         Grand Total{" "}
         <span className="text-green-700">

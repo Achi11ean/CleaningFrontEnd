@@ -1,22 +1,32 @@
 import { useState } from "react";
-import { useAdmin } from "./AdminContext";
+import { useAuthorizedAxios } from "./useAuthorizedAxios";
 import toast from "react-hot-toast";
 
 export default function EditTimeCard({ entry, onUpdate, onDelete }) {
-  const { authAxios } = useAdmin();
+  const { role, axios } = useAuthorizedAxios();
+
   const [editing, setEditing] = useState(false);
   const [clockIn, setClockIn] = useState(entry.clock_in_at);
   const [clockOut, setClockOut] = useState(entry.clock_out_at);
   const [saving, setSaving] = useState(false);
 
+  // 🔒 Only allow admin or manager
+  if (!["admin", "manager"].includes(role)) {
+    return null;
+  }
+
   const handleSave = async () => {
+    if (!axios) return;
+
     setSaving(true);
+
     try {
-      const res = await authAxios.patch(`/admin/staff-time-entry/${entry.id}`, {
+      const res = await axios.patch(`/admin/staff-time-entry/${entry.id}`, {
         clock_in_at: clockIn,
         clock_out_at: clockOut,
       });
-      onUpdate(res.data); // update parent state
+
+      onUpdate(res.data);
       toast.success("Updated!");
       setEditing(false);
     } catch (err) {
@@ -28,24 +38,45 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
   };
 
   const handleDelete = async () => {
+    if (!axios) return;
+
     if (!window.confirm("Are you sure you want to delete this entry?")) return;
 
     try {
-      await authAxios.delete(`/admin/staff-time-entry/${entry.id}`);
-      onDelete(entry.id); // remove from parent state
+      await axios.delete(`/admin/staff-time-entry/${entry.id}`);
+      onDelete(entry.id);
       toast.success("Deleted!");
     } catch (err) {
       console.error("Delete failed", err);
       toast.error("Failed to delete.");
     }
   };
+const formatLocal = (dateStr) => {
+  if (!dateStr) return "";
 
+  const [date, time] = dateStr.split("T");
+  const [year, month, day] = date.split("-");
+  const [hour, minute] = time.split(":");
+
+  const d = new Date(year, month - 1, day, hour, minute);
+
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
   return (
     <div className="border bg-gray-50 rounded-lg p-3 shadow-sm text-sm space-y-2 relative group">
       {editing ? (
         <>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Clock In</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Clock In
+            </label>
             <input
               type="datetime-local"
               value={clockIn?.slice(0, 16)}
@@ -53,8 +84,11 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
               className="w-full border px-2 py-1 rounded"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Clock Out</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Clock Out
+            </label>
             <input
               type="datetime-local"
               value={clockOut?.slice(0, 16)}
@@ -62,6 +96,7 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
               className="w-full border px-2 py-1 rounded"
             />
           </div>
+
           <div className="flex gap-2 justify-end pt-2">
             <button
               onClick={() => setEditing(false)}
@@ -70,6 +105,7 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
             >
               Cancel
             </button>
+
             <button
               onClick={handleSave}
               disabled={saving}
@@ -84,11 +120,11 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
           <div className="text-gray-700 font-medium">
             🕒 {((entry.duration_seconds || 0) / 3600).toFixed(2)} hrs
           </div>
+
           <div className="text-gray-500 text-xs mt-1">
-            In: {new Date(entry.clock_in_at).toLocaleString()}
+In: {formatLocal(entry.clock_in_at)}
             <br />
-            Out: {new Date(entry.clock_out_at).toLocaleString()}
-          </div>
+Out: {formatLocal(entry.clock_out_at)}          </div>
         </>
       )}
 
@@ -101,6 +137,7 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
           >
             Edit
           </button>
+
           <button
             onClick={handleDelete}
             className="text-red-600 hover:underline"
