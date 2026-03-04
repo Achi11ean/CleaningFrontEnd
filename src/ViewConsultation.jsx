@@ -181,7 +181,7 @@ const roomTimeBreakdown = useMemo(() => {
 const totalTime = useMemo(() => {
   if (!consultation) return null;
 
-  const POINT_TO_MINUTES = 5;
+  const POINT_TO_MINUTES = 7;
 
   const points = Number(consultation.total_points) || 0;
 
