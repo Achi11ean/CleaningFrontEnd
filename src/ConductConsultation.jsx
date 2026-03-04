@@ -27,45 +27,81 @@ const [showConsultationModal, setShowConsultationModal] = useState(false);
 /* ───────────────────────────────
    Prefill when consultation changes
    ─────────────────────────────── */
+   async function hydrateConsultation(consultation) {
+
+  const allEntries = consultation.entries || [];
+  const roomsData = consultation.rooms || [];
+
+  setRooms(roomsData);
+
+  if (roomsData.length > 0) {
+    const firstRoomId = roomsData[0].id;
+    setActiveRoomId(firstRoomId);
+
+    const roomEntries = allEntries.filter(
+      e => e.room_id === firstRoomId
+    );
+
+    await hydrateFromEntries(roomEntries);
+
+  } else {
+
+    setSelectedSections([]);
+    setItemsBySection({});
+    setItemState({});
+
+  }
+}
 useEffect(() => {
   if (!consultationId || !axios) return;
 
-  async function loadExisting() {
+  async function initializeConsultation() {
     try {
-      const res = await axios.get(`/consultations/${consultationId}`);
 
-      const allEntries = res.data.entries || [];
-      const roomsData = res.data.rooms || [];
+      // 1️⃣ Get consultation
+      const consultationRes = await axios.get(`/consultations/${consultationId}`);
+      const consultation = consultationRes.data;
 
-      setRooms(roomsData);
-
-      // 👉 If rooms exist → select first room and hydrate it
-      if (roomsData.length > 0) {
-        const firstRoomId = roomsData[0].id;
-        setActiveRoomId(firstRoomId);
-
-        const roomEntries = allEntries.filter(
-          e => e.room_id === firstRoomId
-        );
-
-        await hydrateFromEntries(roomEntries);
-
-      } else {
-        // 👉 No rooms yet → clear UI state
-        setSelectedSections([]);
-        setItemsBySection({});
-        setItemState({});
+      // 2️⃣ If it already has rooms or entries → skip prefill
+      if ((consultation.rooms || []).length > 0 || (consultation.entries || []).length > 0) {
+        hydrateConsultation(consultation);
+        return;
       }
+
+      // 3️⃣ Find latest consultation for this client
+      const latestRes = await axios.get(
+        `/clients/${consultation.client_id}/latest-consultation`
+      );
+
+      const latestId = latestRes.data.consultation_id;
+
+      // 4️⃣ If none exists → nothing to prefill
+      if (!latestId || latestId === consultationId) {
+        hydrateConsultation(consultation);
+        return;
+      }
+
+      // 5️⃣ Get template from previous consultation
+      const templateRes = await axios.get(
+        `/consultations/${latestId}/clone-template`
+      );
+
+      // 6️⃣ Apply template to new consultation
+      await axios.post(`/consultations/${consultationId}/prefill`, templateRes.data);
+
+      // 7️⃣ Reload consultation after prefill
+      const newRes = await axios.get(`/consultations/${consultationId}`);
+
+      hydrateConsultation(newRes.data);
 
     } catch (err) {
       console.error(err);
-      setError("Failed to load existing consultation data");
+      setError("Failed to initialize consultation");
     }
   }
 
-  loadExisting();
+  initializeConsultation();
 }, [consultationId, axios]);
-
 
 async function createRoom() {
   if (!newRoomLabel.trim()) return;
