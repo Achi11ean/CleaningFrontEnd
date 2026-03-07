@@ -15,7 +15,7 @@ export default function ViewConsultation({ consultationId }) {
   const [consultation, setConsultation] = useState(null);
   const [error, setError] = useState(null);
 const [serviceType, setServiceType] = useState("one_time"); 
-
+const [recurringFrequency, setRecurringFrequency] = useState("weekly");
 const [cleaners, setCleaners] = useState(2);
 const clientName = useMemo(() => {
   if (!consultation?.client) return "Client";
@@ -190,51 +190,86 @@ const roomTimeBreakdown = useMemo(() => {
 
 }, [groupedRooms, cleaners]);
 
+
+const MAINTENANCE_FACTORS = {
+  weekly: 0.7,
+  biweekly: 0.8,
+  monthly: 0.9
+};
+
 const totalTime = useMemo(() => {
   if (!consultation) return null;
 
   const POINT_TO_MINUTES = 6;
+  const TRANSITION_MINUTES_PER_ROOM = 5;
 
   const points = Number(consultation.total_points) || 0;
 
-  const minutes = points * POINT_TO_MINUTES;
-  const laborHours = minutes / 60;
-  const onsiteHours = laborHours / cleaners;
+  const cleaningMinutes = points * POINT_TO_MINUTES;
+
+  const roomCount = consultation.rooms?.length || 0;
+  const transitionMinutes = roomCount * TRANSITION_MINUTES_PER_ROOM;
+
+  let totalMinutes = cleaningMinutes + transitionMinutes;
+
+  const laborHours = totalMinutes / 60;
+  let onsiteHours = laborHours / cleaners;
+
+  /* ───────────────────────────────
+     Break logic (crew breaks together)
+  ─────────────────────────────── */
+
+  let breakMinutes = 0;
+
+  if (onsiteHours > 6.5) {
+    breakMinutes = 30;
+  } else if (onsiteHours > 4) {
+    breakMinutes = 15;
+  }
+
+  totalMinutes += breakMinutes;
+
+  const finalLaborHours = totalMinutes / 60;
+  const finalOnsiteHours = finalLaborHours / cleaners;
 
   return {
-    minutes,
-    laborHours,
-    onsiteHours
+    minutes: totalMinutes,
+    laborHours: finalLaborHours,
+    onsiteHours: finalOnsiteHours,
+    transitionMinutes,
+    breakMinutes
   };
 
-
-  
 }, [consultation, cleaners]);
+
 
 const maintenanceTotal = useMemo(() => {
   if (!estimatedTotal) return 0;
 
-  const MAINTENANCE_FACTOR = 0.7;
+  const factor = MAINTENANCE_FACTORS[recurringFrequency] || 0.7;
 
   const rate = CREW_RATES[cleaners];
   const minimum = rate * CREW_MIN_HOURS;
 
-  const calculated = estimatedTotal * MAINTENANCE_FACTOR;
+  const calculated = estimatedTotal * factor;
 
   return Math.max(calculated, minimum);
 
-}, [estimatedTotal, cleaners]);
+}, [estimatedTotal, cleaners, recurringFrequency]);
+
+
+
 const maintenanceTime = useMemo(() => {
   if (!totalTime) return null;
 
-  const MAINTENANCE_FACTOR = 0.7;
+  const factor = MAINTENANCE_FACTORS[recurringFrequency] || 0.7;
 
   return {
     ...totalTime,
-    onsiteHours: totalTime.onsiteHours * MAINTENANCE_FACTOR
+    onsiteHours: totalTime.onsiteHours * factor
   };
 
-}, [totalTime]);
+}, [totalTime, recurringFrequency]);
 
 
   if (error) {
@@ -267,7 +302,7 @@ const maintenanceTime = useMemo(() => {
         : "bg-white text-gray-700 hover:bg-gray-50"}
     `}
   >
-    One-Time Cleaning
+    One-Time
   </button>
 
   <button
@@ -278,7 +313,7 @@ const maintenanceTime = useMemo(() => {
         : "bg-white text-gray-700 hover:bg-gray-50"}
     `}
   >
-    Recurring Client
+    Recurring
   </button>
 
 </div>
@@ -441,11 +476,25 @@ const maintenanceTime = useMemo(() => {
       <div className="text-sm text-gray-600">
         Estimated Cleaning Time
       </div>
+<div className="text-xl font-bold text-blue-700">
+  {Math.floor(totalTime.onsiteHours)}h{" "}
+  {Math.round((totalTime.onsiteHours % 1) * 60)}m
+</div>
+<div className="text-xs text-gray-500 mt-1 space-y-1">
 
-      <div className="text-xl font-bold text-blue-700">
-        {Math.floor(totalTime.onsiteHours)}h{" "}
-        {Math.round((totalTime.onsiteHours % 1) * 60)}m
-      </div>
+  {totalTime.transitionMinutes > 0 && (
+    <div>
+      Room Transitions: {totalTime.transitionMinutes} min
+    </div>
+  )}
+
+  {totalTime.breakMinutes > 0 && (
+    <div>
+      Crew Break: {totalTime.breakMinutes} min
+    </div>
+  )}
+
+</div>
     </div>
 
     <div className="text-sm text-gray-600">
@@ -475,11 +524,32 @@ const maintenanceTime = useMemo(() => {
 )}
 
 {serviceType === "recurring" && (
-  <div className="grid md:grid-cols-2 gap-4">
+  <div className="grid md:grid-cols-2 gap-2">
 
     {/* Initial Clean */}
     <div className="rounded-xl border bg-orange-50 p-5">
-
+<div className="flex gap-2 mb-3">
+  {[
+    { label: "Weekly", value: "weekly" },
+    { label: "Bi-Weekly", value: "biweekly" },
+    { label: "Monthly", value: "monthly" }
+  ].map(opt => (
+    <button
+      key={opt.value}
+      onClick={() => setRecurringFrequency(opt.value)}
+      className={`px-2 py-1 rounded-full text-sm font-semibold border
+        ${recurringFrequency === opt.value
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-white text-gray-700 hover:bg-gray-50"}
+      `}
+    >
+      {opt.label}
+    </button>
+  ))}
+</div>
+<p className="text-xs text-gray-500">
+  Maintenance factor: {(MAINTENANCE_FACTORS[recurringFrequency] * 100).toFixed(0)}%
+</p>
       <h3 className="text-lg font-semibold">
         Initial Deep Clean
       </h3>
@@ -616,11 +686,13 @@ const maintenanceTime = useMemo(() => {
   pricing={pricingBreakdown}
   client={consultation.client}
   serviceType={serviceType}
+  recurringFrequency={recurringFrequency}
   totalTime={totalTime}
+  transitionMinutes={totalTime?.transitionMinutes || 0}
+  breakMinutes={totalTime?.breakMinutes || 0}
   maintenanceTime={maintenanceTime}
   maintenanceTotal={maintenanceTotal}
 />
-
     }
     fileName={`consultation-estimate-${consultation.id}.pdf`}
   >

@@ -134,6 +134,12 @@ function formatHours(hours) {
   return `${h}h ${m}m`;
 }
 
+
+const RECUR_LABELS = {
+  weekly: "Weekly",
+  biweekly: "Bi-Weekly",
+  monthly: "Monthly",
+};
 /* ───────────────────────────────
    Component
 ─────────────────────────────── */
@@ -142,8 +148,11 @@ export default function PrintConsultation({
   consultation,
   client,
   serviceType,
+  recurringFrequency,
   pricing,
   totalTime,
+  transitionMinutes,
+  breakMinutes,
   maintenanceTime,
   maintenanceTotal,
 }) {
@@ -189,6 +198,11 @@ export default function PrintConsultation({
               ? "One-Time Cleaning"
               : "Recurring Cleaning"}
           </Text>
+          {serviceType === "recurring" && (
+  <Text style={{ marginTop: 4 }}>
+    Frequency: {RECUR_LABELS[recurringFrequency]}
+  </Text>
+)}
         </View>
 
         {/* One Time */}
@@ -204,7 +218,19 @@ export default function PrintConsultation({
               </Text>
               <Text>{formatHours(totalTime.onsiteHours)}</Text>
             </View>
+{/* {transitionMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Room Transition Time</Text>
+    <Text>{transitionMinutes} min</Text>
+  </View>
+)}
 
+{breakMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Crew Break</Text>
+    <Text>{breakMinutes} min</Text>
+  </View>
+)} */}
             <Text style={styles.totalPrice}>
               Estimated Price: ${pricing.finalTotal.toFixed(2)}
             </Text>
@@ -227,7 +253,19 @@ export default function PrintConsultation({
                 </Text>
                 <Text>{formatHours(totalTime.onsiteHours)}</Text>
               </View>
+{/* {transitionMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Room Transition Time</Text>
+    <Text>{transitionMinutes} min</Text>
+  </View>
+)}
 
+{breakMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Crew Break</Text>
+    <Text>{breakMinutes} min</Text>
+  </View>
+)} */}
               <Text style={styles.totalPrice}>
                 Estimated Price: ${pricing.finalTotal.toFixed(2)}
               </Text>
@@ -235,10 +273,13 @@ export default function PrintConsultation({
 
             {/* Maintenance */}
             <View style={styles.serviceBox}>
-              <Text style={styles.serviceTitle}>
-                Recurring Maintenance Clean
-              </Text>
+       <Text style={styles.serviceTitle}>
+  Recurring Maintenance Clean
+</Text>
 
+<Text style={{ fontSize: 10, color: "#6b7280", marginBottom: 6 }}>
+  Schedule: {RECUR_LABELS[recurringFrequency] || "Weekly"}
+</Text>
               <View style={styles.row}>
                 <Text style={styles.label}>
                   Estimated Onsite Time
@@ -247,7 +288,19 @@ export default function PrintConsultation({
                   {formatHours(maintenanceTime.onsiteHours)}
                 </Text>
               </View>
+{/* {transitionMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Room Transition Time</Text>
+    <Text>{transitionMinutes} min</Text>
+  </View>
+)}
 
+{breakMinutes > 0 && (
+  <View style={styles.row}>
+    <Text style={styles.label}>Crew Break</Text>
+    <Text>{breakMinutes} min</Text>
+  </View>
+)} */}
               <Text style={styles.totalPrice}>
                 Estimated Price: ${maintenanceTotal.toFixed(2)}
               </Text>
@@ -275,13 +328,13 @@ export default function PrintConsultation({
             Questions or Next Steps?
           </Text>
 
-          <Text style={styles.contactText}>
-            📞 (860) 940-4381
-          </Text>
-
+     
           <Text style={styles.contactText}>
             ✉️ Abreathoffreshaircs@gmail.com
           </Text>
+<Text style={styles.contactText}>
+  Phone: (860) 940-4381
+</Text>
         </View>
 
         {/* Disclaimer */}
