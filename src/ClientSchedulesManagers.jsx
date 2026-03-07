@@ -25,7 +25,16 @@ const getCleanerName = (c) => {
 const [search, setSearch] = useState("");
 const [exceptionCtx, setExceptionCtx] = useState(null);
 const [actionCtx, setActionCtx] = useState(null);
+const getDayOfWeekFromDate = (dateStr) => {
+  if (!dateStr) return null;
 
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  const jsDay = date.getDay(); // 0 = Sunday
+
+  return jsDay === 0 ? 6 : jsDay - 1; // convert to Monday = 0
+};
 const normalizedSearch = search.trim().toLowerCase();
 const formatLocalDate = (dateStr) => {
   if (!dateStr) return "";
@@ -98,8 +107,7 @@ const cleanerMatches = (schedule) => {
   end_time: s.end_time,
   description: s.description || "",
   status: s.status,
-  day_of_week: s.day_of_week ?? null,
-});
+day_of_week: getDayOfWeekFromDate(s.start_date),});
 
   };
 
@@ -330,12 +338,12 @@ const filteredSchedules = schedules.filter((s) => {
   : "No start date"}
 
         </div>
-        <div>
-          🗓️{" "}
-          {s.day_of_week !== null
-            ? DAY_NAMES[s.day_of_week]
-            : "No fixed day"}
-        </div>
+      <div>
+  🗓️{" "}
+  {s.start_date
+    ? DAY_NAMES[getDayOfWeekFromDate(s.start_date)]
+    : "No fixed day"}
+</div>
       </div>
 
       {/* TIME */}
@@ -494,14 +502,16 @@ const filteredSchedules = schedules.filter((s) => {
                 <input
                   type="date"
                   value={editForm.start_date}
-       onChange={(e) => {
+     onChange={(e) => {
   const date = e.target.value;
 
   let day = editForm.day_of_week;
 
   if (date && editForm.schedule_type !== "one_time") {
-    const jsDay = new Date(date).getDay();
-    day = jsDay === 0 ? 6 : jsDay - 1; // convert to Monday=0 format
+    const [year, month, dayNum] = date.split("-").map(Number);
+    const jsDay = new Date(year, month - 1, dayNum).getDay();
+
+    day = jsDay === 0 ? 6 : jsDay - 1;
   }
 
   setEditForm({
@@ -515,31 +525,18 @@ const filteredSchedules = schedules.filter((s) => {
                 />
               </div>
 {/* DAY OF WEEK (RECURRING ONLY) */}
+{/* DAY OF WEEK (DERIVED FROM START DATE) */}
 {editForm.schedule_type !== "one_time" && (
   <div>
     <label className="block text-sm font-semibold mb-1">
       Day of Week
     </label>
 
-    <select
-      value={editForm.day_of_week ?? ""}
-      onChange={(e) =>
-        setEditForm({
-          ...editForm,
-          day_of_week:
-            e.target.value === "" ? null : Number(e.target.value),
-        })
-      }
-      className="w-full border rounded p-2"
-    >
-      <option value="">Select Day</option>
-
-      {DAY_NAMES.map((day, index) => (
-        <option key={day} value={index}>
-          {day}
-        </option>
-      ))}
-    </select>
+    <div className="w-full border rounded p-2 bg-gray-100 text-gray-700">
+      {editForm.start_date
+        ? DAY_NAMES[getDayOfWeekFromDate(editForm.start_date)]
+        : "Select a start date"}
+    </div>
   </div>
 )}
 

@@ -27,7 +27,16 @@ const formatLocalDate = (dateStr) => {
   const [year, month, day] = dateStr.split("-");
   return new Date(year, month - 1, day).toLocaleDateString();
 };
+const getDayOfWeekFromDate = (dateStr) => {
+  if (!dateStr) return null;
 
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day); // LOCAL DATE
+  const jsDay = date.getDay(); // 0=Sunday
+
+  return jsDay === 0 ? 6 : jsDay - 1; // convert to Monday=0
+};
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -75,8 +84,7 @@ const [exceptionCtx, setExceptionCtx] = useState(null);
   end_time: s.end_time,
   description: s.description || "",
   status: s.status,
-  day_of_week: s.day_of_week ?? "",
-});
+day_of_week: getDayOfWeekFromDate(s.start_date),});
 
   };
 
@@ -459,39 +467,30 @@ day_of_week: type === "one_time" ? null : editForm.day_of_week,
               <input
                 type="date"
                 value={editForm.start_date}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, start_date: e.target.value })
-                }
+              onChange={(e) => {
+  const newDate = e.target.value;
+
+  setEditForm({
+    ...editForm,
+    start_date: newDate,
+    day_of_week: getDayOfWeekFromDate(newDate),
+  });
+}}
                 className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 {/* DAY OF WEEK (RECURRING ONLY) */}
-{editForm.schedule_type !== "one_time" && (
-  <div>
-    <label className="block text-xs font-semibold text-gray-600 mb-1">
-      Day of Week
-    </label>
+<div>
+  <label className="block text-xs font-semibold text-gray-600 mb-1">
+    Day of Week
+  </label>
 
-    <select
-value={editForm.day_of_week ?? ""}
-      onChange={(e) =>
-        setEditForm({
-          ...editForm,
-          day_of_week: Number(e.target.value),
-        })
-      }
-      className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    >
-      <option value="">Select Day</option>
-
-      {DAY_NAMES.map((day, index) => (
-        <option key={day} value={index}>
-          {day}
-        </option>
-      ))}
-    </select>
+  <div className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium">
+    {editForm.start_date
+      ? DAY_NAMES[getDayOfWeekFromDate(editForm.start_date)]
+      : "Select a start date"}
   </div>
-)}
+</div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">
