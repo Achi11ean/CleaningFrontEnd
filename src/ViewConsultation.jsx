@@ -390,13 +390,11 @@ const maintenanceTime = useMemo(() => {
 <div className="text-xs text-gray-600 mt-1">
   {(() => {
 
-    const points = Number(roomGroup.total_points) || 0;
-    const minutes = points * 6;
-    const onsiteHours = (minutes / 60) / cleaners;
+   const points = Number(roomGroup.total_points) || 0;
+const minutes = points * 6;
 
-    const hrs = Math.floor(onsiteHours);
-    const mins = Math.round((onsiteHours - hrs) * 60);
-
+const hrs = Math.floor(minutes / 60);
+const mins = Math.round(minutes % 60);
     return `${hrs}h ${mins}m estimated`;
 
   })()}
