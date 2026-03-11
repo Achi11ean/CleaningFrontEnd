@@ -272,8 +272,7 @@ async function saveItem(sectionId, item) {
     return;
   }
 
-  const state = itemState[item.id];
-
+const state = itemState[item.id] || {};
 
   setSavingItemId(item.id);
   setError(null);
@@ -285,7 +284,7 @@ async function saveItem(sectionId, item) {
   room_id: activeRoomId,
   section_id: sectionId,
   item_id: item.id,
-  multiplier_ids: state.multiplierIds || [],
+  multiplier_ids: state.multiplierIds ?? [],
   notes: state.notes || "",
   quantity: state.quantity || 1,   // ⭐ NEW
 }
@@ -321,16 +320,16 @@ async function saveAllItems() {
       const items = itemsBySection[sectionId] || [];
 
       items.forEach(item => {
-        const state = itemState[item.id];
-
+      const state = itemState[item.id] || {};
+      
         // ONLY save completed items
-if (state?.quantity || state?.multiplierIds?.length || state?.notes) {
+if (state.quantity || state.multiplierIds?.length || state.notes) {
            requests.push(
   axios.post(`/consultations/${consultationId}/entries`, {
     room_id: activeRoomId,
     section_id: sectionId,
     item_id: item.id,
-    multiplier_ids: state.multiplierIds || [],
+    multiplier_ids: state.multiplierIds ?? [],
     notes: state.notes || "",
     quantity: state.quantity || 1,   // ⭐ NEW
   })

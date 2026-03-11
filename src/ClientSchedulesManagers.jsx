@@ -524,7 +524,10 @@ const filteredSchedules = schedules.filter((s) => {
                   className="w-full border rounded p-2"
                 />
               </div>
-{/* DAY OF WEEK (RECURRING ONLY) */}
+
+
+
+              
 {/* DAY OF WEEK (DERIVED FROM START DATE) */}
 {editForm.schedule_type !== "one_time" && (
   <div>
