@@ -323,7 +323,7 @@ async function saveAllItems() {
       const state = itemState[item.id] || {};
       
         // ONLY save completed items
-if (state.quantity || state.multiplierIds?.length || state.notes) {
+if (item.id in itemState)  {
            requests.push(
   axios.post(`/consultations/${consultationId}/entries`, {
     room_id: activeRoomId,
