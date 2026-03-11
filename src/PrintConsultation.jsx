@@ -88,7 +88,46 @@ const styles = StyleSheet.create({
   label: {
     color: "#6b7280",
   },
+roomBlock: {
+  marginTop: 10,
+  padding: 10,
+  border: "1 solid #e5e7eb",
+  borderRadius: 6,
+  backgroundColor: "#ffffff",
+},
 
+roomHeader: {
+  fontSize: 12,
+  fontWeight: "bold",
+  marginBottom: 6,
+  color: "#111827",
+},
+
+sectionBlock: {
+  marginTop: 6,
+},
+
+sectionHeader: {
+  fontSize: 11,
+  fontWeight: "bold",
+  marginBottom: 2,
+  color: "#374151",
+},
+
+itemRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  fontSize: 10,
+  marginBottom: 2,
+},
+
+itemName: {
+  color: "#111827",
+},
+
+itemPoints: {
+  color: "#6b7280",
+},
   totalPrice: {
     fontSize: 16,
     fontWeight: "bold",
@@ -133,6 +172,13 @@ function formatHours(hours) {
 
   return `${h}h ${m}m`;
 }
+function formatMinutes(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+}
 
 
 const RECUR_LABELS = {
@@ -147,6 +193,7 @@ const RECUR_LABELS = {
 export default function PrintConsultation({
   consultation,
   client,
+    groupedRooms,
   serviceType,
   recurringFrequency,
   pricing,
@@ -186,7 +233,63 @@ export default function PrintConsultation({
             </Text>
           </View>
         )}
+{/* Cleaning Breakdown */}
+{groupedRooms && (
+  <View style={styles.block}>
+    <Text style={styles.sectionTitle}>
+      Cleaning Breakdown
+    </Text>
 
+    {Object.values(groupedRooms).map(room => {
+
+      const points = Number(room.total_points) || 0;
+      const minutes = points * 6;
+
+      return (
+        <View key={room.room.id} style={styles.roomBlock}>
+
+          {/* Room Header */}
+          <Text style={styles.roomHeader}>
+            {room.room.label} — {formatMinutes(minutes)}
+          </Text>
+
+          {/* Sections */}
+          {Object.values(room.sections).map(section => (
+
+            <View key={section.section_name} style={styles.sectionBlock}>
+
+              <Text style={styles.sectionHeader}>
+                {section.section_name}
+              </Text>
+
+              {section.entries.map(entry => {
+
+                const pts = Number(entry.calculated_points) || 0;
+                const mins = pts * 6;
+
+                return (
+                  <View key={entry.id} style={styles.itemRow}>
+                    <Text style={styles.itemName}>
+                      {entry.item_title}
+                    </Text>
+
+                    <Text style={styles.itemPoints}>
+                      {pts.toFixed(2)} pts • {formatMinutes(mins)}
+                    </Text>
+                  </View>
+                );
+              })}
+
+            </View>
+
+          ))}
+
+        </View>
+      );
+
+    })}
+  </View>
+)}
         {/* Service Type */}
         <View style={styles.block}>
           <Text style={styles.sectionTitle}>

@@ -681,6 +681,7 @@ const mins = Math.round(minutes % 60);
     document={
 <PrintConsultation
   consultation={consultation}
+  groupedRooms={groupedRooms}   // ⭐ ADD THIS
   pricing={pricingBreakdown}
   client={consultation.client}
   serviceType={serviceType}
