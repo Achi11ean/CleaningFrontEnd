@@ -8,7 +8,9 @@ const CREW_RATES = {
   3: 125,
   4: 150
 };
+
 const CREW_MIN_HOURS = 1;
+const CT_SALES_TAX = 0.0635;
 
 export default function ViewConsultation({ consultationId }) {
   const { axios } = useAuthorizedAxios();
@@ -38,19 +40,58 @@ const handleDeleteRoom = async (roomId) => {
 };
 
 
+const totalTime = useMemo(() => {
+  if (!consultation) return null;
 
-
-
-const estimatedTotal = useMemo(() => {
-  if (!consultation) return 0;
+  const POINT_TO_MINUTES = 6;
+  const TRANSITION_MINUTES_PER_ROOM = 5;
 
   const points = Number(consultation.total_points) || 0;
 
-  const minutes = points * 6;
-  const laborHours = minutes / 60;
-  const onsiteHours = laborHours / cleaners;
+  const cleaningMinutes = points * POINT_TO_MINUTES;
+
+  const roomCount = consultation.rooms?.length || 0;
+  const transitionMinutes = roomCount * TRANSITION_MINUTES_PER_ROOM;
+
+  let totalMinutes = cleaningMinutes + transitionMinutes;
+
+  const laborHours = totalMinutes / 60;
+  let onsiteHours = laborHours / cleaners;
+
+  /* ───────────────────────────────
+     Break logic (crew breaks together)
+  ─────────────────────────────── */
+
+  let breakMinutes = 0;
+
+  if (onsiteHours > 6.5) {
+    breakMinutes = 30;
+  } else if (onsiteHours > 4) {
+    breakMinutes = 15;
+  }
+
+  totalMinutes += breakMinutes;
+
+  const finalLaborHours = totalMinutes / 60;
+  const finalOnsiteHours = finalLaborHours / cleaners;
+
+  return {
+    minutes: totalMinutes,
+    laborHours: finalLaborHours,
+    onsiteHours: finalOnsiteHours,
+    transitionMinutes,
+    breakMinutes
+  };
+
+}, [consultation, cleaners]);
+
+
+const estimatedTotal = useMemo(() => {
+  if (!totalTime) return 0;
 
   const rate = CREW_RATES[cleaners] || 100;
+
+  const onsiteHours = totalTime.onsiteHours;
 
   const calculated = onsiteHours * rate;
 
@@ -58,7 +99,9 @@ const estimatedTotal = useMemo(() => {
 
   return Math.max(calculated, minimum);
 
-}, [consultation, cleaners]);
+}, [totalTime, cleaners]);
+
+
 
 const [discountPercent, setDiscountPercent] = useState(0);
 const [discountNotes, setDiscountNotes] = useState("");
@@ -89,6 +132,8 @@ const discountedTotal = useMemo(() => {
 
     load();
   }, [consultationId, axios]);
+
+  
 
   /* ───────────────────────────────
      Group entries by section
@@ -136,11 +181,16 @@ roomsMap[roomId].sections[sectionKey].entries.push(entry);
 
   return roomsMap;
 }, [consultation]);
+const salesTax = useMemo(() => {
+  return discountedTotal * CT_SALES_TAX;
+}, [discountedTotal]);
 
+const totalWithTax = useMemo(() => {
+  return discountedTotal + salesTax;
+}, [discountedTotal, salesTax]);
 
 const pricingBreakdown = useMemo(() => {
   if (!consultation) return null;
-
 
   const base = Number.isFinite(estimatedTotal) ? estimatedTotal : 0;
   const final = Number.isFinite(discountedTotal) ? discountedTotal : 0;
@@ -156,13 +206,19 @@ const pricingBreakdown = useMemo(() => {
     discountAmount,
     discountNotes,
     finalTotal: final,
+    salesTax,
+    totalWithTax
   };
+
 }, [
   consultation,
   estimatedTotal,
+  discountedTotal,
   discountPercent,
   discountNotes,
-  discountedTotal,
+  cleaners,
+  salesTax,
+  totalWithTax
 ]);
 
 
@@ -197,50 +253,7 @@ const MAINTENANCE_FACTORS = {
   monthly: 0.9
 };
 
-const totalTime = useMemo(() => {
-  if (!consultation) return null;
 
-  const POINT_TO_MINUTES = 6;
-  const TRANSITION_MINUTES_PER_ROOM = 5;
-
-  const points = Number(consultation.total_points) || 0;
-
-  const cleaningMinutes = points * POINT_TO_MINUTES;
-
-  const roomCount = consultation.rooms?.length || 0;
-  const transitionMinutes = roomCount * TRANSITION_MINUTES_PER_ROOM;
-
-  let totalMinutes = cleaningMinutes + transitionMinutes;
-
-  const laborHours = totalMinutes / 60;
-  let onsiteHours = laborHours / cleaners;
-
-  /* ───────────────────────────────
-     Break logic (crew breaks together)
-  ─────────────────────────────── */
-
-  let breakMinutes = 0;
-
-  if (onsiteHours > 6.5) {
-    breakMinutes = 30;
-  } else if (onsiteHours > 4) {
-    breakMinutes = 15;
-  }
-
-  totalMinutes += breakMinutes;
-
-  const finalLaborHours = totalMinutes / 60;
-  const finalOnsiteHours = finalLaborHours / cleaners;
-
-  return {
-    minutes: totalMinutes,
-    laborHours: finalLaborHours,
-    onsiteHours: finalOnsiteHours,
-    transitionMinutes,
-    breakMinutes
-  };
-
-}, [consultation, cleaners]);
 
 
 const maintenanceTotal = useMemo(() => {
@@ -624,7 +637,27 @@ const mins = Math.round(minutes % 60);
 </div>
 
   </div>
+<div className="space-y-1 text-right">
 
+  <div className="text-sm text-gray-600">
+    Subtotal
+  </div>
+  <div className="text-lg font-semibold">
+    ${discountedTotal.toFixed(2)}
+  </div>
+
+  <div className="text-sm text-gray-600">
+    CT Sales Tax (6.35%)
+  </div>
+  <div className="text-md font-semibold">
+    ${salesTax.toFixed(2)}
+  </div>
+
+  <div className="text-2xl font-bold text-emerald-700">
+    ${totalWithTax.toFixed(2)}
+  </div>
+
+</div>
   <p className="text-xs text-gray-500 italic">
     * This is an estimate based on the selected price per point.
   </p>

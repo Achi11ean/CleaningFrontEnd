@@ -250,7 +250,7 @@ export default function PrintConsultation({
 
           {/* Room Header */}
           <Text style={styles.roomHeader}>
-            {room.room.label} — {formatMinutes(minutes)}
+            {room.room.label}
           </Text>
 
           {/* Sections */}
@@ -273,9 +273,7 @@ export default function PrintConsultation({
                       {entry.item_title}
                     </Text>
 
-                    <Text style={styles.itemPoints}>
-                      {pts.toFixed(2)} pts • {formatMinutes(mins)}
-                    </Text>
+                 
                   </View>
                 );
               })}
@@ -334,9 +332,32 @@ export default function PrintConsultation({
     <Text>{breakMinutes} min</Text>
   </View>
 )} */}
-            <Text style={styles.totalPrice}>
-              Estimated Price: ${pricing.finalTotal.toFixed(2)}
-            </Text>
+            <View style={{ marginTop: 8 }}>
+
+  <View style={styles.row}>
+    <Text style={styles.label}>Subtotal</Text>
+    <Text>${pricing.finalTotal.toFixed(2)}</Text>
+  </View>
+
+  {pricing.discountPercent > 0 && (
+    <View style={styles.row}>
+      <Text style={styles.label}>
+        Discount ({pricing.discountPercent}%)
+      </Text>
+      <Text>- ${pricing.discountAmount.toFixed(2)}</Text>
+    </View>
+  )}
+
+  <View style={styles.row}>
+    <Text style={styles.label}>CT Sales Tax (6.35%)</Text>
+    <Text>${pricing.salesTax.toFixed(2)}</Text>
+  </View>
+
+  <Text style={styles.totalPrice}>
+    Total: ${pricing.totalWithTax.toFixed(2)}
+  </Text>
+
+</View>
           </View>
         )}
 
@@ -369,9 +390,32 @@ export default function PrintConsultation({
     <Text>{breakMinutes} min</Text>
   </View>
 )} */}
-              <Text style={styles.totalPrice}>
-                Estimated Price: ${pricing.finalTotal.toFixed(2)}
-              </Text>
+        <View style={{ marginTop: 8 }}>
+
+  <View style={styles.row}>
+    <Text style={styles.label}>Subtotal</Text>
+    <Text>${pricing.finalTotal.toFixed(2)}</Text>
+  </View>
+
+  {pricing.discountPercent > 0 && (
+    <View style={styles.row}>
+      <Text style={styles.label}>
+        Discount ({pricing.discountPercent}%)
+      </Text>
+      <Text>- ${pricing.discountAmount.toFixed(2)}</Text>
+    </View>
+  )}
+
+  <View style={styles.row}>
+    <Text style={styles.label}>CT Sales Tax (6.35%)</Text>
+    <Text>${pricing.salesTax.toFixed(2)}</Text>
+  </View>
+
+  <Text style={styles.totalPrice}>
+    Total: ${pricing.totalWithTax.toFixed(2)}
+  </Text>
+
+</View>
             </View>
 
             {/* Maintenance */}
@@ -403,10 +447,9 @@ export default function PrintConsultation({
     <Text style={styles.label}>Crew Break</Text>
     <Text>{breakMinutes} min</Text>
   </View>
-)} */}
-              <Text style={styles.totalPrice}>
-                Estimated Price: ${maintenanceTotal.toFixed(2)}
-              </Text>
+)} */}<Text style={styles.totalPrice}>
+  Estimated Price: ${pricing.finalTotal.toFixed(2)}
+</Text>
             </View>
 
           </View>
