@@ -54,11 +54,7 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
 const formatLocal = (dateStr) => {
   if (!dateStr) return "";
 
-  const [date, time] = dateStr.split("T");
-  const [year, month, day] = date.split("-");
-  const [hour, minute] = time.split(":");
-
-  const d = new Date(year, month - 1, day, hour, minute);
+  const d = new Date(dateStr);
 
   return d.toLocaleString("en-US", {
     year: "numeric",
