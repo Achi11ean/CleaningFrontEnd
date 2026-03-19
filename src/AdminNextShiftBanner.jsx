@@ -210,47 +210,73 @@ useEffect(() => {
     <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
 
       {/* NEXT SHIFT */}
-      {nextShift && (
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-green-700 font-semibold text-sm">
-              Your next scheduled shift
-            </p>
+{nextShift && (
+  <div className="flex justify-between items-center">
+    <div>
+      <p className="text-green-700 font-semibold text-sm">
+        Your next scheduled shift
+      </p>
 
-            <p className="text-lg font-bold text-green-900 mt-1">
-              {formatDateTime(nextShift.start)}
-            </p>
+      <p className="text-lg font-bold text-green-900 mt-1">
+        {formatDateTime(nextShift.start)}
+      </p>
 
-            <p className="text-green-800 text-sm">
-              {nextShift.resource.client.first_name}{" "}
-              {nextShift.resource.client.last_name}
-            </p>
-          </div>
+      <p className="text-green-800 text-sm">
+        {nextShift.resource.client.first_name}{" "}
+        {nextShift.resource.client.last_name}
+      </p>
 
-          <AdminStartShift
-            schedule={nextShift.resource}
-            compact
-            onStarted={refresh}
-          />
-        </div>
+      {/* 👇 ADD THIS */}
+      {nextShift.resource.client.address && (
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            nextShift.resource.client.address
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 underline hover:text-blue-800 block mt-1"
+        >
+          📍 {nextShift.resource.client.address}
+        </a>
       )}
+    </div>
 
-      {/* NEXT CONSULTATION */}
-      {nextConsultation && (
-        <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-          <p className="text-sm font-semibold text-pink-700">
-            🩷 Next Consultation
-          </p>
+    <AdminStartShift
+      schedule={nextShift.resource}
+      compact
+      onStarted={refresh}
+    />
+  </div>
+)}
+    {nextConsultation && (
+  <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
+    <p className="text-sm font-semibold text-pink-700">
+      🩷 Next Consultation
+    </p>
 
-          <p className="text-lg font-bold text-pink-900">
-            {format(new Date(nextConsultation.scheduled_for), "EEEE, MMM d • h:mm a")}
-          </p>
+    <p className="text-lg font-bold text-pink-900">
+      {format(new Date(nextConsultation.scheduled_for), "EEEE, MMM d • h:mm a")}
+    </p>
 
-          <p className="text-sm text-pink-800">
-            {nextConsultation.client_name}
-          </p>
-        </div>
-      )}
+    <p className="text-sm text-pink-800">
+      {nextConsultation.client_name}
+    </p>
+
+    {/* 👇 ADD THIS */}
+   {nextConsultation.client_address && (
+  <a
+    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      nextConsultation.client_address
+    )}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-sm text-blue-600 underline hover:text-blue-800 block mt-1"
+  >
+    📍 {nextConsultation.client_address}
+  </a>
+)}
+  </div>
+)}
 
     </div>
   );
