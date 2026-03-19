@@ -11,7 +11,7 @@ const [activeRoomId, setActiveRoomId] = useState(null);
 
 const [newRoomLabel, setNewRoomLabel] = useState("");
 const [newRoomSqft, setNewRoomSqft] = useState("");
-
+const [itemSearch, setItemSearch] = useState({});
   const [selectedSections, setSelectedSections] = useState([]);
   const [itemsBySection, setItemsBySection] = useState({});
   const [itemState, setItemState] = useState({});
@@ -52,6 +52,9 @@ const [showConsultationModal, setShowConsultationModal] = useState(false);
 
   }
 }
+
+
+
 useEffect(() => {
   if (!consultationId || !axios) return;
 
@@ -503,8 +506,16 @@ notes: e.notes || "",
 
 
       {/* Sections → Items */}
-    {selectedSections.map(sectionId => {
+{selectedSections.map(sectionId => {
   const section = sections.find(s => s.id === sectionId);
+
+  // ✅ ADD THIS HERE
+  const search = (itemSearch[sectionId] || "").toLowerCase();
+
+  const filteredItems = (itemsBySection[sectionId] || []).filter(item =>
+    item.title.toLowerCase().includes(search) ||
+    (item.notes || "").toLowerCase().includes(search)
+  );
 
   return (
     <div
@@ -625,10 +636,33 @@ notes: e.notes || "",
     {savingAll ? "Saving All…" : "💾 Save All Completed Items"}
   </button>
 </div>
+{/* SEARCH BAR */}
+<div className="mt-3">
+  <input
+    type="text"
+    placeholder="🔍 Search items..."
+    value={itemSearch[sectionId] || ""}
+    onChange={(e) =>
+      setItemSearch(prev => ({
+        ...prev,
+        [sectionId]: e.target.value
+      }))
+    }
+    className="
+      w-full
+      border
+      rounded-lg
+      px-3 py-2
+      text-sm
+      focus:ring-2 focus:ring-indigo-400
+      outline-none
+    "
+  />
+</div>
 
       {/* ITEMS GRID */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {(itemsBySection[sectionId] || []).map(item => {
+      <div className="grid gap-4 md:grid-cols-3">
+        {filteredItems.map(item => {
           const state = itemState[item.id] || {};
           const saving = savingItemId === item.id;
 
