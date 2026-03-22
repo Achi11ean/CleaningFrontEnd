@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
 
-const CLOUD_NAME = "dcw0wqlse"; // 🔁 replace if needed
-const UPLOAD_PRESET = "karaoke"; // 🔁 your unsigned preset
+const CLOUD_NAME = "dcemixedh"; // 🔁 replace if needed
+const UPLOAD_PRESET = "cleaning"; // 🔁 your unsigned preset
 
 export default function CreateGallery({ onCreated }) {
   const { axios } = useAuthorizedAxios();

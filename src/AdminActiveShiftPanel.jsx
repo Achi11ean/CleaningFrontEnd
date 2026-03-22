@@ -5,8 +5,8 @@ import ConsultationChecklist from "./ConsultationChecklist";
 export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated }) {
       const { authAxios } = useAdmin();
 
-  const CLOUD_NAME = "dcw0wqlse";
-  const UPLOAD_PRESET = "karaoke";
+const CLOUD_NAME = "dcemixedh"; // 🔁 replace if needed
+const UPLOAD_PRESET = "cleaning"; // 🔁 your unsigned preset
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);

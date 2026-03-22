@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
-
+const CLOUD_NAME = "dcemixedh";
+const UPLOAD_PRESET = "cleaning";
 const CreatePurchase = ({ onPurchaseAdded }) => {
   const { axios, role } = useAuthorizedAxios();
   
@@ -35,6 +36,7 @@ const CreatePurchase = ({ onPurchaseAdded }) => {
     if (axios) fetchItems();
   }, [axios]);
 
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -43,26 +45,28 @@ const CreatePurchase = ({ onPurchaseAdded }) => {
     }
   };
 
-  const uploadToCloudinary = async () => {
-    if (!imageFile) return null;
 
-    const formData = new FormData();
-    formData.append("file", imageFile);
-    // Be sure to replace "karaoke" and "dcw0wqlse" with your actual Cloudinary settings
-    formData.append("upload_preset", "karaoke"); 
 
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/dcw0wqlse/image/upload`,
-        { method: "POST", body: formData }
-      );
-      const data = await res.json();
-      return data.secure_url;
-    } catch (err) {
-      console.error("Cloudinary upload failed:", err);
-      return null;
-    }
-  };
+const uploadToCloudinary = async () => {
+  if (!imageFile) return null;
+
+  const formData = new FormData();
+  formData.append("file", imageFile);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    const data = await res.json();
+    return data.secure_url;
+  } catch (err) {
+    console.error("Cloudinary upload failed:", err);
+    return null;
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();

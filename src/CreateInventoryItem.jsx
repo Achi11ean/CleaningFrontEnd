@@ -11,8 +11,8 @@ const [categories, setCategories] = useState([]);
 const [categoryInput, setCategoryInput] = useState("");
 const [showCategoryInput, setShowCategoryInput] = useState(false);
   const [staffRequirements, setStaffRequirements] = useState({});
-const CLOUD_NAME = "dcw0wqlse";       // your cloud
-const UPLOAD_PRESET = "karaoke";     // unsigned preset
+const CLOUD_NAME = "dcemixedh"; // 🔁 replace if needed
+const UPLOAD_PRESET = "cleaning"; // 🔁 your unsigned preset   // unsigned preset
 const [uploadingImage, setUploadingImage] = useState(false);
 const uploadImageToCloudinary = async (file) => {
   if (!file) return;

@@ -661,7 +661,7 @@ notes: e.notes || "",
 </div>
 
       {/* ITEMS GRID */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
         {filteredItems.map(item => {
           const state = itemState[item.id] || {};
           const saving = savingItemId === item.id;
