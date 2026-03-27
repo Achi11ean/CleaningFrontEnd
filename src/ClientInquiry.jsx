@@ -86,7 +86,21 @@ const appendedNotes =
     : "";
 
 const finalMessage = `${form.message}${appendedNotes}`;
+// 🏙 Require at least a city in address
+if (!form.address || form.address.trim().length < 3) {
+  setError("Please enter at least a city in the address.");
+  setLoading(false);
+  return;
+}
 
+// simple check: must contain at least 2 words (e.g. "Middletown CT" or "Middletown")
+const hasCity = form.address.trim().split(" ").length >= 1;
+
+if (!hasCity) {
+  setError("Please include a city in the address.");
+  setLoading(false);
+  return;
+}
 
  try {
   const res = await axios.post(`${API_BASE_URL}/clients/inquiry`, {
@@ -237,8 +251,7 @@ const finalMessage = `${form.message}${appendedNotes}`;
           {/* Address */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address (Optional)
-            </label>
+Address (City Required)            </label>
             <input
               name="address"
               value={form.address}
