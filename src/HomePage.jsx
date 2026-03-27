@@ -380,11 +380,8 @@ const HomePage = () => {
         <li><Link to="/packages">Services</Link></li>
         <li><Link to="/gallery">Gallery</Link></li>
         <li><Link to="/reviews">Reviews</Link></li>
-<li>
-  <a href="https://www.honeybook.com/widget/_294956/cf_id/690ceb0d1a673a002c963efb">
-    Contact
-  </a>
-</li>
+        <li><Link to="/contact">Contact us</Link></li>
+ 
       </ul>
     </div>
 
