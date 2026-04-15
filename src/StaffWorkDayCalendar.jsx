@@ -142,11 +142,68 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
   return events;
 }
 
+function expandTimeOffRequests(rows) {
+  const events = [];
 
+  rows.forEach((r) => {
+    const name = r.owner?.display_name || "Unknown";
+
+    (r.entries || []).forEach((e, idx) => {
+      const base = new Date(`${e.request_date}T00:00:00`);
+
+      let start = new Date(base);
+      let end = new Date(base);
+
+      if (e.is_all_day) {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 0, 0);
+      } else {
+        const [sh, sm] = e.start_time.split(":").map(Number);
+        const [eh, em] = e.end_time.split(":").map(Number);
+
+        start.setHours(sh, sm, 0, 0);
+        end.setHours(eh, em, 0, 0);
+      }
+
+      events.push({
+        id: `timeoff-${r.id}-${idx}`,
+        title: `⛔ ${name}`,
+        start,
+        end,
+        allDay: e.is_all_day,
+        resource: {
+          type: "time_off",
+          request: r,
+          entry: e,
+        },
+      });
+    });
+  });
+
+  return events;
+}
 export default function StaffWorkDayCalendar() {
 const { authAxios, staff } = useStaff();
+const [showTimeOff, setShowTimeOff] = useState(false);
+const [timeOffRows, setTimeOffRows] = useState([]);
+const [timeOffLoading, setTimeOffLoading] = useState(false);
+const [selectedTimeOff, setSelectedTimeOff] = useState(null);
 const myStaffId = staff?.id;
 const isMobile = () => window.innerWidth < 640; // tailwind sm breakpoint
+const toggleTimeOff = async () => {
+  const next = !showTimeOff;
+  setShowTimeOff(next);
+
+  if (next && timeOffRows.length === 0) {
+    try {
+      setTimeOffLoading(true);
+      const res = await authAxios.get("/time-off/all");
+      setTimeOffRows(res.data || []);
+    } finally {
+      setTimeOffLoading(false);
+    }
+  }
+};
 
 const weekDayHeaderFormat = (date, culture, localizer) => {
   if (isMobile()) {
@@ -256,11 +313,21 @@ useEffect(() => {
 };
 
 
-  const events = useMemo(() => {
-    const rangeStart = addDays(new Date(), -30);
-    const rangeEnd = addDays(new Date(), 120);
-    return expandSchedules(schedules, rangeStart, rangeEnd);
-  }, [schedules]);
+const scheduleEvents = useMemo(() => {
+  const rangeStart = addDays(new Date(), -30);
+  const rangeEnd = addDays(new Date(), 120);
+  return expandSchedules(schedules, rangeStart, rangeEnd);
+}, [schedules]);
+
+const timeOffEvents = useMemo(() => {
+  return showTimeOff ? expandTimeOffRequests(timeOffRows) : [];
+}, [showTimeOff, timeOffRows]);
+
+const events = useMemo(() => {
+  return [...scheduleEvents, ...timeOffEvents];
+}, [scheduleEvents, timeOffEvents]);
+
+
 
   const nextShift = useMemo(() => {
   const now = new Date();
@@ -455,9 +522,22 @@ const myWeeklyEvents = useMemo(() => {
     </div>
   )}
 </div>
+<div className="flex justify-between items-center mt-2 mb-2">
+  <span className="font-semibold">⛔ Time Off Overlay</span>
 
+  <button
+    onClick={toggleTimeOff}
+    className={`px-3 py-1 rounded text-sm ${
+      showTimeOff
+        ? "bg-red-600 text-white"
+        : "bg-gray-200"
+    }`}
+  >
+    {showTimeOff ? "Hide" : "Show"}
+  </button>
+</div>
 
-      <div className="bg-white rounded-xl shadow p-4" style={{ height: 700 }}>
+      <div className="bg-white mt-2 rounded-xl shadow p-4" style={{ height: 700 }}>
  <Calendar
   localizer={localizer}
   events={events}
@@ -466,28 +546,48 @@ const myWeeklyEvents = useMemo(() => {
   defaultView="month"
   views={["month", "week", "day"]}
   popup
-  onSelectEvent={(event) => setSelectedEvent(event.resource)}
+onSelectEvent={(event) => {
+  if (event?.resource?.type === "time_off") {
+    setSelectedTimeOff(event.resource);
+    return;
+  }
 
+  setSelectedEvent(event.resource);
+}}
   formats={{
     dayFormat: weekDayHeaderFormat,   // 👈 THIS IS THE KEY
   }}
 
-  eventPropGetter={(event) => {
-    const assignedToMe = isAssignedToMe(event.resource);
-
+ eventPropGetter={(event) => {
+  // 🔴 TIME OFF — ALWAYS PRIORITY
+  if (event?.resource?.type === "time_off") {
     return {
       style: {
-        backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
-        borderRadius: "8px",
+        backgroundColor: "#dc2626", // strong red
+        border: "2px solid #7f1d1d",
         color: "white",
-        border: assignedToMe ? "2px solid #14532d" : "none",
-        boxShadow: assignedToMe
-          ? "0 0 8px rgba(22, 163, 74, 0.6)"
-          : "none",
-        fontWeight: assignedToMe ? "700" : "500",
+        borderRadius: "6px",
+        fontWeight: "800",
+        boxShadow: "0 0 10px rgba(220, 38, 38, 0.7)",
       },
     };
-  }}
+  }
+
+  const assignedToMe = isAssignedToMe(event.resource);
+
+  return {
+    style: {
+      backgroundColor: assignedToMe ? "#16a34a" : "#2563eb",
+      borderRadius: "8px",
+      color: "white",
+      border: assignedToMe ? "2px solid #14532d" : "none",
+      boxShadow: assignedToMe
+        ? "0 0 8px rgba(22, 163, 74, 0.6)"
+        : "none",
+      fontWeight: assignedToMe ? "700" : "500",
+    },
+  };
+}}
 />
 
       </div>
@@ -602,6 +702,52 @@ const myWeeklyEvents = useMemo(() => {
           </div>
         </div>
       )}
+      {selectedTimeOff && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg space-y-4">
+      <h3 className="text-xl font-bold text-red-700">
+        ⛔ Time Off Request
+      </h3>
+
+      <div className="space-y-2 text-sm">
+        <p>
+          <strong>Name:</strong>{" "}
+          {selectedTimeOff.request.owner.display_name}
+        </p>
+
+        <p>
+          <strong>Status:</strong>{" "}
+          {selectedTimeOff.request.status}
+        </p>
+
+        <p>
+          <strong>Date:</strong>{" "}
+          {format(
+            new Date(selectedTimeOff.entry.request_date),
+            "EEEE, MMM d, yyyy"
+          )}
+        </p>
+
+        <p>
+          <strong>Time:</strong>{" "}
+          {selectedTimeOff.entry.is_all_day
+            ? "All Day"
+            : `${selectedTimeOff.entry.start_time} → ${selectedTimeOff.entry.end_time}`}
+        </p>
+      </div>
+
+      <div className="flex justify-end pt-4">
+        <button
+          onClick={() => setSelectedTimeOff(null)}
+          className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
+        >
+          Close
+        </button>
+      </div>
     </div>
+  </div>
+)}
+    </div>
+    
   );
 }
