@@ -56,6 +56,9 @@ const formatLocal = (dateStr) => {
 
   const d = new Date(dateStr);
 
+  // 👉 FORCE +4 HOURS
+  d.setHours(d.getHours() + 4);
+
   return d.toLocaleString("en-US", {
     year: "numeric",
     month: "numeric",
