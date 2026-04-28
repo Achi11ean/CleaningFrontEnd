@@ -4,10 +4,23 @@ import toast from "react-hot-toast";
 
 export default function EditTimeCard({ entry, onUpdate, onDelete }) {
   const { role, axios } = useAuthorizedAxios();
+  const toDateTimeLocalValue = (dateStr) => {
+  if (!dateStr) return "";
 
+  const d = new Date(dateStr);
+
+  // convert to local timezone ISO without Z
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const mins = String(d.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${mins}`;
+};
   const [editing, setEditing] = useState(false);
-  const [clockIn, setClockIn] = useState(entry.clock_in_at);
-  const [clockOut, setClockOut] = useState(entry.clock_out_at);
+const [clockIn, setClockIn] = useState(toDateTimeLocalValue(entry.clock_in_at));
+const [clockOut, setClockOut] = useState(toDateTimeLocalValue(entry.clock_out_at));
   const [saving, setSaving] = useState(false);
 
   // 🔒 Only allow admin or manager
@@ -36,6 +49,7 @@ export default function EditTimeCard({ entry, onUpdate, onDelete }) {
       setSaving(false);
     }
   };
+
 
   const handleDelete = async () => {
     if (!axios) return;
