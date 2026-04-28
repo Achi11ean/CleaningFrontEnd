@@ -56,10 +56,11 @@ const formatLocal = (dateStr) => {
 
   const d = new Date(dateStr);
 
-  // 👉 FORCE +4 HOURS
-  d.setHours(d.getHours() + 4);
+  // 👉 keep your offset fix
+  d.setHours(d.getHours() );
 
   return d.toLocaleString("en-US", {
+    weekday: "short",   // 👈 THIS ADDS "Tue"
     year: "numeric",
     month: "numeric",
     day: "numeric",
