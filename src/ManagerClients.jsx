@@ -236,7 +236,19 @@ const getDisplayName = (assignment) => {
     <option value="archived">🗄️ Archived</option>
   </select>
 </div>
-
+      <div className="mt-4">
+        <label className="block font-semibold mb-1">
+          Inquiry Message
+        </label>
+        <textarea
+          className="border p-2 rounded w-full"
+          rows={4}
+          value={client.message}
+          onChange={(e) =>
+            updateClientField("message", e.target.value)
+          }
+        />
+      </div>
       {/* NOTES */}
       <textarea
         className="border p-2 rounded w-full"
