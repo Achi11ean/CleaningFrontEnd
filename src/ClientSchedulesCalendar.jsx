@@ -568,19 +568,19 @@ export default function ClientSchedulesCalendar() {
           onSelectSlot={({ start, end }) => {
             console.log("📅 Date clicked:", start, end);
           }}
-          onSelectEvent={(event) => {
-            if (event?.resource?.type === "consultation") {
-              setSelectedConsultation(event.resource.appointment);
-              return;
-            }
+     onSelectEvent={(event) => {
+  if (event?.resource?.type === "consultation") {
+    setSelectedConsultation(event.resource.appointment);
+    return;
+  }
 
-            if (event?.resource?.type === "consultation") {
-              setSelectedEvent(event.resource.appointment);
-              return;
-            }
+  if (event?.resource?.type === "time_off") {
+    setSelectedTimeOff(event.resource);
+    return;
+  }
 
-            setSelectedEvent(event.resource);
-          }}
+  setSelectedEvent(event.resource);
+}}
           eventPropGetter={(event) => {
             if (event?.resource?.type === "consultation") {
               return {
