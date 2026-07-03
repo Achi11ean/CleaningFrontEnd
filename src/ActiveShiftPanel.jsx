@@ -56,20 +56,20 @@ const UPLOAD_PRESET = "cleaning"; // 🔁 your unsigned preset
 
   const [status, setStatus] = useState(null);
 
-  // PIN flow
-  const [pinRequired, setPinRequired] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pendingCoords, setPendingCoords] = useState(null);
 
   const loadActiveShift = async () => {
     try {
       setLoading(true);
       const res = await authAxios.get("/staff/shifts/active");
-      if (res.data.active) {
-        setActiveShift(res.data);
-      } else {
-setActiveShift(null);
-      }
+   if (res.data.active) {
+  setStatus(null);
+  setPhotoUrl("");
+  setMessage("");
+  setUploadError(null);
+  setActiveShift(res.data);
+} else {
+  setActiveShift(null);
+}
     } finally {
       setLoading(false);
     }
@@ -80,130 +80,40 @@ useEffect(() => {
 }, [refreshKey]);
 
   // 🔔 Get browser GPS
-  const getCurrentLocation = () => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject("Geolocation not supported");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          resolve({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          });
-        },
-        (err) => {
-          reject("Failed to get location");
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-        }
-      );
-    });
+ 
+const sendCheckout = async () => {
+  const payload = {
+    image_urls: photoUrl ? [photoUrl] : [],
+    message: message || null,
   };
 
-  const sendCheckout = async ({ lat, lng, pinOverride = null }) => {
-    const payload = {
-      lat,
-      lng,
-      image_url: photoUrl || null,
-      message: message || null,
-    };
+  const res = await authAxios.post(
+    "/staff/shifts/check-out",
+    payload
+  );
 
-    if (pinOverride) {
-      payload.pin = pinOverride;
-    }
+  return res.data;
+};
 
-    const res = await authAxios.post(
-      "/staff/shifts/check-out",
-      payload
+ const checkOut = async () => {
+  try {
+    setStatus("Checking out...");
+
+    await sendCheckout();
+
+    setStatus("✅ Shift checked out successfully");
+    setPhotoUrl("");
+    setMessage("");
+    setUploadError(null);
+    setActiveShift(null);
+    onShiftUpdated?.();
+  } catch (err) {
+    setStatus(
+      err.response?.data?.error || "❌ Failed to check out"
     );
-
-    return res.data;
-  };
-
-  const checkOut = async () => {
-    try {
-      setStatus("📍 Getting your location...");
-
-      const coords = await getCurrentLocation();
-
-      setStatus("Checking out...");
-
-      const data = await sendCheckout({
-        lat: coords.lat,
-        lng: coords.lng,
-      });
-
-      setStatus("✅ Shift checked out successfully");
-      setActiveShift(null);
-      setPinRequired(false);
-      setPin("");
-      onShiftUpdated?.();  
-
-      setPendingCoords(null);
-
-    } catch (err) {
-      const data = err.response?.data;
-
-      // 🔐 PIN REQUIRED FLOW
-      if (data?.pin_required) {
-        setStatus(
-          `🔒 You are ${data.distance_miles} miles away. PIN required to check out.`
-        );
-        setPinRequired(true);
-        setPendingCoords({
-          lat: pendingCoords?.lat || null,
-          lng: pendingCoords?.lng || null,
-        });
-
-        // Save last coords so we can retry with PIN
-        if (!pendingCoords) {
-          try {
-            const coords = await getCurrentLocation();
-            setPendingCoords(coords);
-          } catch {
-            setStatus("Failed to get location for PIN retry");
-          }
-        }
-
-        return;
-      }
-
-      setStatus(data?.error || "❌ Failed to check out");
-    }
-  };
-
-  const submitPin = async () => {
-    if (!pin) {
-      setStatus("Enter the PIN to continue");
-      return;
-    }
-
-    try {
-      setStatus("🔐 Verifying PIN and checking out...");
-
-      const data = await sendCheckout({
-        lat: pendingCoords.lat,
-        lng: pendingCoords.lng,
-        pinOverride: pin,
-      });
-
-      setStatus("✅ Shift checked out with PIN override");
-      setActiveShift(null);
-      setPinRequired(false);
-      setPin("");
-      setPendingCoords(null);
-
-    } catch (err) {
-      setStatus(
-        err.response?.data?.error || "Invalid PIN or checkout failed"
-      );
-    }
-  };
+  }
+};
+ 
 
   if (loading) return <p>Loading shift status...</p>;
 
@@ -308,54 +218,21 @@ useEffect(() => {
         />
       </div>
 
-      {/* PIN SECTION (only when required) */}
-      {pinRequired && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 space-y-2">
-          <p className="text-sm font-semibold text-yellow-800">
-            🔒 You are too far from the client location.
-            Enter manager PIN to check out.
-          </p>
+{/* ⏹️ Check Out */}
+<div className="flex items-center justify-between pt-2">
+  <button
+    onClick={checkOut}
+    className="px-5 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700"
+  >
+    ⏹️ Check Out of Shift
+  </button>
 
-          <input
-            type="password"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="Enter PIN"
-            className="w-full border rounded px-3 py-2 text-sm"
-          />
-
-          <button
-            onClick={submitPin}
-            className="px-4 py-2 rounded bg-yellow-600 text-white font-semibold hover:bg-yellow-700"
-          >
-            🔐 Submit PIN & Check Out
-          </button>
-        </div>
-      )}
-
-      {/* Check Out Button */}
-      {!pinRequired && (
-        <div className="flex items-center justify-between pt-2">
-          <button
-            onClick={checkOut}
-            className="px-5 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700"
-          >
-            ⏹️ Check Out of Shift
-          </button>
-
-          {status && (
-            <p className="text-sm font-semibold text-gray-700">
-              {status}
-            </p>
-          )}
-        </div>
-      )}
-
-      {pinRequired && status && (
-        <p className="text-sm font-semibold text-gray-700">
-          {status}
-        </p>
-      )}
+  {status && (
+    <p className="text-sm font-semibold text-gray-700">
+      {status}
+    </p>
+  )}
+</div>
     </div>
   );
 }

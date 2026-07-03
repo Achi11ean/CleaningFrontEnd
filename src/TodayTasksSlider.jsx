@@ -32,33 +32,48 @@ const todayTasks = useMemo(() => {
 
   const overdue = [];
   const today = [];
+  const upcoming = [];
   const completedToday = [];
 
-  myTasks.forEach(a => {
+  myTasks.forEach((a) => {
     const due = a.task?.due_date;
     if (!due) return;
 
     const dueDate = new Date(due);
 
-    // OVERDUE (incomplete only)
+    // Overdue
     if (!a.completed && dueDate < todayDate) {
       overdue.push(a);
+      return;
     }
 
-    // DUE TODAY
+    // Due today
     if (due === todayStr) {
       if (a.completed) {
         completedToday.push(a);
       } else {
         today.push(a);
       }
+      return;
+    }
+
+    // Upcoming (future + incomplete)
+    if (!a.completed && dueDate > todayDate) {
+      upcoming.push(a);
     }
   });
+
+  // Optional: sort upcoming by nearest due date
+  upcoming.sort(
+    (a, b) =>
+      new Date(a.task.due_date) - new Date(b.task.due_date)
+  );
 
   return [
     ...overdue,
     ...today,
-    ...completedToday
+    ...upcoming,
+    ...completedToday,
   ];
 }, [myTasks]);
   /* ================= TOGGLE ================= */
@@ -162,9 +177,13 @@ const saveEdit = async () => {
               min-w-[280px] max-w-[280px]
               snap-start
               relative p-4 rounded-2xl shadow-md border
-              ${a.completed
-                ? "bg-emerald-50 border-emerald-200"
-                : "bg-yellow-50 border-yellow-200"}
+   ${
+  a.completed
+    ? "bg-emerald-50 border-emerald-200"
+    : new Date(a.task.due_date) > new Date().setHours(0,0,0,0)
+    ? "bg-slate-100 border-slate-300 opacity-80"
+    : "bg-yellow-50 border-yellow-200"
+}
             `}
           >
 
@@ -225,11 +244,13 @@ const saveEdit = async () => {
                 font-semibold text-sm bg-transparent outline-none
                 w-full resize-none whitespace-pre-wrap break-words
                 mb-2
-                ${
-                  a.completed
-                    ? "line-through text-slate-400"
-                    : "text-slate-700"
-                }
+             ${
+  a.completed
+    ? "line-through text-slate-400"
+    : new Date(a.task.due_date) > new Date().setHours(0,0,0,0)
+    ? "text-slate-500"
+    : "text-slate-700"
+}
               `}
             />
 
@@ -272,7 +293,21 @@ const saveEdit = async () => {
     >
       📅 {new Date(a.task.due_date).toLocaleDateString()}
     </span>
+{!a.completed && (
+  <>
+    {new Date(a.task.due_date) > new Date().setHours(0,0,0,0) && (
+      <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-semibold">
+        Upcoming
+      </span>
+    )}
 
+    {new Date(a.task.due_date) < new Date().setHours(0,0,0,0) && (
+      <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold">
+        Overdue
+      </span>
+    )}
+  </>
+)}
   </div>
 )}
             {savingTaskId === a.task.id && (

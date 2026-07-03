@@ -10,13 +10,13 @@ import ManualTimeEntry from "./ManualTimeEntry";
 import AdminWorkShifts from "./AdminWorkShifts";
 import AdminWeekly from "./AdminWeekly";
 import ManagerBooking from "./ManagerBooking";
+import TodayTasksSlider from "./TodayTasksSlider";
 import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 import StaffWorkDayCalendar from "./StaffWorkDayCalendar"; // 👈 NEW
 import ActiveShiftPanel from "./ActiveShiftPanel";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
-import TodayTasksSlider from "./TodayTasksSlider";
 import MyInventory from "./MyInventory";
 import CreateInventoryItem from "./CreateInventoryItem";
 import ManageInventory from "./ManageInventory";
@@ -911,13 +911,20 @@ useEffect(() => {
 {activeTab === "clock" && (
   <>
     {/* TIME CLOCK */}
-    {clockSubTab === "timeclock" && (
-<StaffClock
-  onRequestInventory={() => {
-    setActiveTab("workday");
-    setWorkSubTab("inventory");
-  }}
-/>    )}
+   {clockSubTab === "timeclock" && (
+  <div className="space-y-6">
+    <div className="px-4">
+      <TodayTasksSlider />
+    </div>
+
+    <StaffClock
+      onRequestInventory={() => {
+        setActiveTab("workday");
+        setWorkSubTab("inventory");
+      }}
+    />
+  </div>
+)}
 
     {/* STAFF AVAILABILITY */}
     {clockSubTab === "staff" && (
