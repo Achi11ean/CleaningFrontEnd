@@ -15,6 +15,7 @@ import StaffDashboard from "./StaffDashboard";
 import ClientInquiry from "./ClientInquiry";
 import ClientCleaning from "./ClientCleaning";
 import ForgotPassword from "./ForgotPassword";
+import Footer from "./Footer";
 import ResetPassword from "./ResetPassword";
 const App = () => (
   
@@ -38,6 +39,7 @@ const App = () => (
 
 
     </Routes>
+    <Footer/>
   </>
 );
 
