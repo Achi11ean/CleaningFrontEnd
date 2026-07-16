@@ -1,290 +1,437 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, ChevronDown, ArrowUpRight } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { useAdmin } from "./AdminContext";
 import { useStaff } from "./StaffContext";
-import { useNavigate } from "react-router-dom";
+
+/* ------------------------------------------------------------------ */
+/*  A Breath of Fresh Air — Navbar (side drawer redesign)              */
+/*  Matches HomePage / ServiceArea / ClientInquiry: slate-blue night,  */
+/*  sky→cyan accents, serif display, eyebrows, hairline rules, glass.  */
+/*  Desktop: inline nav. Below lg: elegant right-side drawer.          */
+/* ------------------------------------------------------------------ */
+
+const PUBLIC_LINKS = [
+  { label: "Home", to: "/" },
+  { label: "Services", to: "/packages" },
+  { label: "Gallery", to: "/gallery" },
+  { label: "Reviews", to: "/reviews" },
+  { label: "Contact", to: "/contact" },
+];
+
+const FACEBOOK_URL =
+  "https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [staffOpen, setStaffOpen] = useState(false); // 👈 NEW
-const { admin, logout: adminLogout } = useAdmin();
-const { staff, logout: staffLogout } = useStaff();
-const navigate = useNavigate();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-const isLoggedIn = !!admin || !!staff;
+  const { admin, logout: adminLogout } = useAdmin();
+  const { staff, logout: staffLogout } = useStaff();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const handleUniversalLogout = () => {
-  if (admin) adminLogout();
-  if (staff) staffLogout();
+  const accountRef = useRef(null);
+  const drawerRef = useRef(null);
+  const triggerRef = useRef(null);
 
-  setAdminOpen(false);
-  setStaffOpen(false);
-  setMenuOpen(false);
+  const isLoggedIn = !!admin || !!staff;
+  const dashboardPath = admin ? "/admin-dashboard" : "/staff-dashboard";
 
-  navigate("/");
-};
+  /* --------------------------- Behaviour --------------------------- */
 
+  // Solidify the bar once the hero scrolls away
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
-  const toggleAdmin = () => {
-    setAdminOpen(!adminOpen);
-    setStaffOpen(false);
+  // Close everything on route change
+  useEffect(() => {
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }, [location.pathname]);
+
+  // Escape closes drawer / dropdown
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      setAccountOpen(false);
+      if (menuOpen) {
+        setMenuOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
+  // Click outside closes the account dropdown
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onClick = (e) => {
+      if (accountRef.current && !accountRef.current.contains(e.target)) {
+        setAccountOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [accountOpen]);
+
+  // Lock body scroll while the drawer is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = menuOpen ? "hidden" : prev || "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  // Move focus into the drawer when it opens
+  useEffect(() => {
+    if (menuOpen) drawerRef.current?.focus();
+  }, [menuOpen]);
+
+  const handleUniversalLogout = () => {
+    if (admin) adminLogout();
+    if (staff) staffLogout();
+    setAccountOpen(false);
+    setMenuOpen(false);
+    navigate("/");
   };
-  const toggleStaff = () => {
-    setStaffOpen(!staffOpen);
-    setAdminOpen(false);
-  };
+
+  const isActive = (to) =>
+    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+
+  /* ----------------------------- Render ---------------------------- */
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white backdrop-blur-md shadow-lg border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="inline-block">
-          <img
-            src="/logo2.jpg"
-            alt="A Breath of Fresh Air Logo"
-            className="h-14 sm:h-16 w-auto object-contain drop-shadow-lg"
-          />
-        </Link>
+    <>
+      <style>{`
+        @keyframes nb-fade-in { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes nb-drop-in {
+          from { opacity: 0; transform: translateY(-6px) scale(0.98) }
+          to   { opacity: 1; transform: translateY(0) scale(1) }
+        }
+        @keyframes nb-item-in {
+          from { opacity: 0; transform: translateX(24px) }
+          to   { opacity: 1; transform: translateX(0) }
+        }
+        .nb-drop { animation: nb-drop-in 0.22s ease-out both; }
+        .nb-scrim { animation: nb-fade-in 0.35s ease-out both; }
+        .nb-item { animation: nb-item-in 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .nb-scroll { scrollbar-width: thin; scrollbar-color: rgba(56,189,248,0.3) transparent; }
+        .nb-scroll::-webkit-scrollbar { width: 4px; }
+        .nb-scroll::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.3); border-radius: 9999px; }
+        @media (prefers-reduced-motion: reduce) {
+          .nb-drop, .nb-scrim, .nb-item { animation: none !important; }
+          .nb-drawer { transition: none !important; }
+        }
+      `}</style>
 
-        {/* Desktop Links */}
-        <ul className="hidden md:flex space-x-8 text-gray-700 font-semibold uppercase tracking-wider items-center">
-
-{isLoggedIn ? (
-  <>
-    {/* Dashboard Link */}
-    <li>
-      <Link
-        to={admin ? "/admin-dashboard" : "/staff-dashboard"}
-        className="hover:text-blue-600 transition text-sm"
+      {/* ============================== BAR ============================== */}
+      <nav
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
+          scrolled || menuOpen
+            ? "border-b border-white/10 bg-slate-950/80 backdrop-blur-xl shadow-lg shadow-slate-950/50"
+            : "border-b border-transparent bg-gradient-to-b from-slate-950/70 to-transparent backdrop-blur-sm"
+        }`}
       >
-        Dashboard
-      </Link>
-    </li>
-
-    {/* Logout */}
-    <li>
-      <button
-        onClick={handleUniversalLogout}
-        className="px-4 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition font-semibold text-sm"
-      >
-        Logout
-      </button>
-    </li>
-  </>
-) : (
-
-  <>
-    {/* Admin Dropdown */}
-    <li className="relative">
-      <button
-        onClick={toggleAdmin}
-        className="flex items-center gap-1 hover:text-blue-600 transition text-sm"
-      >
-        Admin <ChevronDown size={16} />
-      </button>
-
-      {adminOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-white border border-gray-200 rounded-lg shadow-xl w-40 py-2 text-sm z-50">
-          {/* <Link
-            to="/admin-signup"
-            className="block px-4 py-2 hover:bg-gray-100 transition"
-            onClick={() => setAdminOpen(false)}
-          >
-            Signup
-          </Link> */}
-          <Link
-            to="/admin-login"
-            className="block px-4 py-2 hover:bg-gray-100 transition"
-            onClick={() => setAdminOpen(false)}
-          >
-            Login
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-3 md:px-6">
+          {/* Logo */}
+          <Link to="/" className="group flex items-center gap-3.5" aria-label="A Breath of Fresh Air — home">
+            <span className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] p-1 backdrop-blur-md transition-all duration-300 group-hover:border-sky-300/40 group-hover:bg-white/[0.1]">
+              <img
+                src="/logo2.jpg"
+                alt=""
+                className="h-11 w-auto rounded-lg object-contain sm:h-12"
+              />
+            </span>
+            <span className="hidden font-serif text-lg leading-tight text-white sm:block">
+              A Breath of{" "}
+              <span className="italic text-cyan-300">Fresh Air</span>
+            </span>
           </Link>
-        </div>
-      )}
-    </li>
 
-    {/* Staff Dropdown */}
-    <li className="relative">
-      <button
-        onClick={toggleStaff}
-        className="flex items-center gap-1 hover:text-blue-600 transition text-sm"
-      >
-        Staff <ChevronDown size={16} />
-      </button>
+          {/* ---------------------- Desktop nav ---------------------- */}
+          <div className="hidden items-center gap-8 lg:flex">
+            <ul className="flex items-center gap-7">
+              {PUBLIC_LINKS.map((l) => (
+                <li key={l.to}>
+                  <Link
+                    to={l.to}
+                    className={`relative text-[11px] uppercase tracking-[0.2em] transition-colors duration-300 ${
+                      isActive(l.to)
+                        ? "text-cyan-300"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {l.label}
+                    <span
+                      className={`absolute -bottom-1.5 left-0 h-px bg-gradient-to-r from-sky-400 to-cyan-300 transition-all duration-300 ${
+                        isActive(l.to) ? "w-full" : "w-0"
+                      }`}
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
 
-      {staffOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-white border border-gray-200 rounded-lg shadow-xl w-40 py-2 text-sm z-50">
-          <Link
-            to="/staff-signup"
-            className="block px-4 py-2 hover:bg-gray-100 transition"
-            onClick={() => setStaffOpen(false)}
-          >
-            Signup
-          </Link>
-          <Link
-            to="/staff-login"
-            className="block px-4 py-2 hover:bg-gray-100 transition"
-            onClick={() => setStaffOpen(false)}
-          >
-            Login
-          </Link>
-        </div>
-      )}
-    </li>
-  </>
-)}
+            <span className="h-5 w-px bg-white/10" />
 
-
-          {/* 👨‍🔧 Staff Dropdown */}
-      
- <li>
-  <Link to="/contact" className="hover:text-blue-600 transition">
-    Contact Us
-  </Link>
-</li>
-
-
-          <li>
-            <Link to="/gallery" className="hover:text-blue-600 transition">
-              Gallery
-            </Link>
-          </li>
-
-          <li>
-            <Link to="/reviews" className="hover:text-blue-600 transition">
-              Reviews
-            </Link>
-          </li>
-
-          <li>
             <a
-              href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604"
+              href={FACEBOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-600 text-xl"
+              aria-label="Facebook"
+              className="text-slate-400 transition-colors duration-300 hover:text-sky-300"
             >
-              <FaFacebook />
+              <FaFacebook size={18} />
             </a>
-          </li>
-        </ul>
 
-        {/* Mobile Menu Toggle */}
-        <button onClick={toggleMenu} className="md:hidden text-gray-800">
-          {menuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </div>
-
-      {/* Mobile Dropdown */}
-      {menuOpen && (
-        <div className="md:hidden mx-4 mt-2 mb-4 rounded-2xl border border-gray-200 bg-black/20 backdrop-blur-xl shadow-2xl p-4 text-center text-gray-800 space-y-4">
-          <ul className="flex flex-col font-serif space-y-3 text-lg font-bold">
-
-            <li>
-              <Link to="/" onClick={toggleMenu}>
-                Home
-              </Link>
-            </li>
-
-{isLoggedIn && (
-  <>
-    {/* Dashboard */}
-    <li className="border-b pb-3">
-      <Link
-        to={admin ? "/admin-dashboard" : "/staff-dashboard"}
-        onClick={toggleMenu}
-        className="block w-full px-4 py-3 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-bold"
-      >
-        Dashboard
-      </Link>
-    </li>
-
-    {/* Logout */}
-    <li className="border-b pb-3">
-      <button
-        onClick={() => {
-          handleUniversalLogout();
-          toggleMenu();
-        }}
-        className="w-full px-4 py-3 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-bold"
-      >
-        Logout
-      </button>
-    </li>
-  </>
-)}
-
-
-         
-<li>
-  <Link to="/contact" className="hover:text-blue-600 transition">
-    Contact Us
-  </Link>
-</li>
-
-
-            <li>
-              <Link to="/gallery" onClick={toggleMenu}>
-                Gallery
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/reviews" onClick={toggleMenu}>
-                Reviews
-              </Link>
-            </li>
-
-            <div className="items-center justify-center flex">
-              <li>
-                <a
-                  href="https://www.facebook.com/people/A-Breath-of-Fresh-Air-Cleaning-Service/61558246240604"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 text-2xl"
+            {/* Account area */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  to={dashboardPath}
+                  className="rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-sky-100 backdrop-blur-md transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10"
                 >
-                  <FaFacebook />
-                </a>
-              </li>
-            </div>
-            {!isLoggedIn && (
-  <>
-    {/* Mobile Admin Section */}
-    <li className="border-t pt-3">
-      <div className="text-sm uppercase text-gray-500 mb-2">Admin</div>
-      <div className="flex flex-col space-y-2">
-        {/* <Link to="/admin-signup" onClick={toggleMenu}>
-          Admin Signup
-        </Link> */}
-        <Link to="/admin-login" onClick={toggleMenu}>
-          Admin Login
-        </Link>
-      </div>
-    </li>
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleUniversalLogout}
+                  className="rounded-full border border-rose-400/25 bg-rose-400/[0.07] px-5 py-2.5 text-[11px] uppercase tracking-[0.2em] text-rose-200 backdrop-blur-md transition-all duration-300 hover:border-rose-400/50 hover:bg-rose-400/15"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <div className="relative" ref={accountRef}>
+                <button
+                  onClick={() => setAccountOpen((o) => !o)}
+                  aria-expanded={accountOpen}
+                  aria-haspopup="true"
+                  className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-slate-400 transition-colors duration-300 hover:text-white"
+                >
+                  Staff Portal
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform duration-300 ${accountOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-    {/* Mobile Staff Section */}
-    <li className="border-t pt-3">
-      <div className="text-sm uppercase text-gray-500 mb-2">Staff</div>
-      <div className="flex flex-col space-y-2">
-        <Link to="/staff-signup" onClick={toggleMenu}>
-          Staff Signup
-        </Link>
-        <Link to="/staff-login" onClick={toggleMenu}>
-          Staff Login
-        </Link>
-      </div>
-    </li>
-  </>
-)}
+                {accountOpen && (
+                  <div className="nb-drop absolute right-0 top-full mt-4 w-56 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-sky-500/10 backdrop-blur-xl">
+                    <p className="px-3 pb-2 pt-2 text-[10px] uppercase tracking-[0.25em] text-sky-300">
+                      Staff
+                    </p>
+                    <Link
+                      to="/staff-login"
+                      onClick={() => setAccountOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                      Staff login
+                    </Link>
+                    <Link
+                      to="/staff-signup"
+                      onClick={() => setAccountOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                      Staff signup
+                    </Link>
 
+                    <div className="my-2 h-px bg-white/10" />
 
-          </ul>
+                    <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.25em] text-sky-300">
+                      Admin
+                    </p>
+                    <Link
+                      to="/admin-login"
+                      onClick={() => setAccountOpen(false)}
+                      className="block rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+                    >
+                      Admin login
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Link to="/contact">
+              <button className="rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-950 shadow-lg shadow-sky-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-cyan-400/40">
+                Get a quote
+              </button>
+            </Link>
+          </div>
+
+          {/* ---------------------- Drawer trigger ---------------------- */}
+          <button
+            ref={triggerRef}
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            className="flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[10px] uppercase tracking-[0.25em] text-sky-100 backdrop-blur-md transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10 lg:hidden"
+          >
+            Menu
+            <Menu size={16} />
+          </button>
         </div>
+      </nav>
+
+      {/* ============================ SCRIM ============================ */}
+      {menuOpen && (
+        <div
+          className="nb-scrim fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-md lg:hidden"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        />
       )}
-    </nav>
+
+      {/* ============================ DRAWER =========================== */}
+      <aside
+        ref={drawerRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        className={`nb-drawer fixed inset-y-0 right-0 z-[70] flex w-[86%] max-w-sm flex-col border-l border-white/10 bg-slate-950/95 shadow-2xl shadow-slate-950 backdrop-blur-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none lg:hidden ${
+          menuOpen ? "translate-x-0" : "pointer-events-none translate-x-full"
+        }`}
+      >
+        {/* Drawer atmosphere */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(56,189,248,0.16),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(16,185,129,0.1),transparent_60%)]" />
+
+        {/* Drawer header */}
+        <div className="relative flex items-center justify-between border-b border-white/10 px-6 py-5">
+          <p className="font-serif text-xl leading-tight text-white">
+            A Breath of <span className="italic text-cyan-300">Fresh Air</span>
+          </p>
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              triggerRef.current?.focus();
+            }}
+            aria-label="Close menu"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-slate-300 transition-all duration-300 hover:border-cyan-300/40 hover:bg-cyan-400/10 hover:text-white"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Drawer body */}
+        <div className="nb-scroll relative flex-1 overflow-y-auto px-6 py-8">
+          {/* Primary links — large serif, hairline ruled */}
+          <nav aria-label="Primary">
+            <ul>
+              {PUBLIC_LINKS.map((l, i) => (
+                <li key={l.to} className="border-b border-white/[0.08]">
+                  <Link
+                    to={l.to}
+                    onClick={() => setMenuOpen(false)}
+                    className={`nb-item group flex items-center justify-between py-4 font-serif text-2xl transition-colors duration-300 ${
+                      isActive(l.to) ? "text-cyan-300" : "text-white hover:text-cyan-300"
+                    }`}
+                    style={{ animationDelay: menuOpen ? `${80 + i * 55}ms` : "0ms" }}
+                  >
+                    {l.label}
+                    <ArrowUpRight
+                      size={18}
+                      className="text-sky-500/50 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-cyan-300"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Account section */}
+          <div className="nb-item mt-10" style={{ animationDelay: menuOpen ? "380ms" : "0ms" }}>
+            {isLoggedIn ? (
+              <>
+                <div className="mb-5 flex items-center gap-4">
+                  <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.3em] text-sky-300">
+                    Signed in as {admin ? "Admin" : "Staff"}
+                  </span>
+                  <span className="h-px w-full bg-gradient-to-r from-sky-500/40 to-transparent" />
+                </div>
+                <Link to={dashboardPath} onClick={() => setMenuOpen(false)}>
+                  <button className="w-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-3.5 text-sm font-semibold tracking-wide text-slate-950 shadow-lg shadow-sky-500/25 transition-transform duration-300 hover:-translate-y-0.5">
+                    Go to dashboard
+                  </button>
+                </Link>
+                <button
+                  onClick={handleUniversalLogout}
+                  className="mt-3 w-full rounded-full border border-rose-400/25 bg-rose-400/[0.07] px-6 py-3.5 text-sm font-semibold tracking-wide text-rose-200 transition-all duration-300 hover:border-rose-400/50 hover:bg-rose-400/15"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center gap-4">
+                  <span className="whitespace-nowrap text-[11px] uppercase tracking-[0.3em] text-sky-300">
+                    Staff portal
+                  </span>
+                  <span className="h-px w-full bg-gradient-to-r from-sky-500/40 to-transparent" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ["Staff login", "/staff-login"],
+                    ["Staff signup", "/staff-signup"],
+                  ].map(([label, to]) => (
+                    <Link key={to} to={to} onClick={() => setMenuOpen(false)}>
+                      <button className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs uppercase tracking-[0.15em] text-slate-300 transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10 hover:text-white">
+                        {label}
+                      </button>
+                    </Link>
+                  ))}
+                </div>
+                <Link to="/admin-login" onClick={() => setMenuOpen(false)}>
+                  <button className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs uppercase tracking-[0.15em] text-slate-300 transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10 hover:text-white">
+                    Admin login
+                  </button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Drawer footer — the one loud action */}
+        <div
+          className="nb-item relative border-t border-white/10 px-6 py-6"
+          style={{ animationDelay: menuOpen ? "440ms" : "0ms" }}
+        >
+          <Link to="/contact" onClick={() => setMenuOpen(false)}>
+            <button className="w-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-4 text-sm font-semibold tracking-wide text-slate-950 shadow-lg shadow-sky-500/25 transition-transform duration-300 hover:-translate-y-0.5">
+              Get a free quote
+            </button>
+          </Link>
+
+          <div className="mt-5 flex items-center justify-between">
+            <a
+              href="mailto:abofacs.inquiries@gmail.com"
+              className="text-xs text-slate-500 underline decoration-sky-500/30 underline-offset-4 transition-colors hover:text-cyan-300"
+            >
+              abofacs.inquiries@gmail.com
+            </a>
+            <a
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-slate-400 transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10 hover:text-sky-300"
+            >
+              <FaFacebook size={16} />
+            </a>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 };
 
