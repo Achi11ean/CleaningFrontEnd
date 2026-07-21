@@ -294,59 +294,498 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-200 pt-20 lg:pt-24 pb-10 px-3 sm:px-4 lg:px-6">
+    <div className="min-h-screen   ">
       {/* Self-contained utilities so the layout never depends on plugins */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl shadow-slate-300/40 border border-slate-200 overflow-hidden">
+      <div className=" mx-auto bg-white  shadow-xl shadow-slate-300/40 border border-slate-200 overflow-hidden">
         {/* ================= HEADER ================= */}
-        <header className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 px-5 py-7 sm:py-9 text-center">
-          {/* Ambient accents */}
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-            <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
-          </div>
+       <header
+  className="
+    relative isolate overflow-hidden
+    bg-gradient-to-br
+    from-[#071323] via-[#0A2342] to-[#07111F]
+    px-3 pb-7 pt-20
+    text-center
+    sm:px-6 sm:pb-10 sm:pt-24
+    lg:px-8 lg:pb-12 lg:pt-24
+  "
+>
+  <style>{`
+    @keyframes adminBubbleFloat {
+      0% {
+        transform: translate3d(0, 20px, 0) scale(0.9);
+        opacity: 0;
+      }
+      12% {
+        opacity: var(--bubble-opacity, 0.5);
+      }
+      50% {
+        transform: translate3d(var(--bubble-drift, 20px), -55px, 0)
+          scale(1.08);
+      }
+      100% {
+        transform: translate3d(calc(var(--bubble-drift, 20px) * -0.5), -150px, 0)
+          scale(0.92);
+        opacity: 0;
+      }
+    }
 
-          <div className="relative">
-            <p className="text-[11px] sm:text-xs uppercase tracking-[0.3em] text-cyan-300/80 mb-2">
-              Admin Dashboard
-            </p>
-            <h1 className="font-[Aspire] text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Welcome back, Amanda
-            </h1>
-            <p className="mt-2 text-sm text-blue-100/70">
-              Everything is up to date and running smoothly.
-            </p>
+    @keyframes adminGlowPulse {
+      0%, 100% {
+        opacity: 0.45;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.72;
+        transform: scale(1.08);
+      }
+    }
 
-            {/* Quick jumps */}
-            <div className="mt-5 flex justify-center gap-2.5 flex-wrap">
-              <button
-                onClick={() => {
-                  setActiveTab("employees");
-                  setEmployeesSubTab("profile");
-                  setProfileSubTab("me");
-                }}
-                className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/15 backdrop-blur hover:bg-white/20 hover:border-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 transition-all duration-200"
-              >
-                Profiles
-              </button>
+    @keyframes adminShimmer {
+      0% {
+        transform: translateX(-160%) skewX(-20deg);
+      }
+      100% {
+        transform: translateX(260%) skewX(-20deg);
+      }
+    }
 
-              <button
-                onClick={() => {
-                  setActiveTab("tasks");
-                  setTasksSubTab("manage");
-                }}
-                className="px-5 py-2 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/15 backdrop-blur hover:bg-white/20 hover:border-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 transition-all duration-200"
-              >
-                Tasks
-              </button>
-            </div>
-          </div>
-        </header>
+    @keyframes adminFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
+    .admin-header-reveal {
+      animation: adminFadeUp 0.7s ease-out both;
+    }
+
+    .admin-bubble {
+      animation: adminBubbleFloat var(--bubble-duration, 9s)
+        var(--bubble-delay, 0s) infinite ease-in-out;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .admin-glow {
+      animation: adminGlowPulse 7s ease-in-out infinite;
+    }
+
+    .admin-action-shimmer::after {
+      content: "";
+      position: absolute;
+      inset: -40% auto -40% -35%;
+      width: 28%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.38),
+        transparent
+      );
+      animation: adminShimmer 4.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .admin-bubble,
+      .admin-glow,
+      .admin-header-reveal,
+      .admin-action-shimmer::after {
+        animation: none !important;
+      }
+
+      .admin-bubble {
+        opacity: 0.25;
+      }
+    }
+  `}</style>
+
+  {/* Background atmosphere */}
+  <div
+    className="pointer-events-none absolute inset-0 -z-20"
+    aria-hidden="true"
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_38%)]" />
+
+    <div
+      className="
+        admin-glow
+        absolute -left-24 top-4
+        h-64 w-64 rounded-full
+        bg-cyan-400/15 blur-[80px]
+        sm:h-80 sm:w-80
+      "
+    />
+
+    <div
+      className="
+        admin-glow
+        absolute -right-28 bottom-[-5rem]
+        h-72 w-72 rounded-full
+        bg-blue-600/20 blur-[90px]
+        sm:h-96 sm:w-96
+      "
+      style={{ animationDelay: "-3s" }}
+    />
+
+    <div
+      className="
+        absolute left-1/2 top-1/2
+        h-44 w-[85%] max-w-3xl
+        -translate-x-1/2 -translate-y-1/2
+        rounded-full bg-sky-300/5 blur-3xl
+      "
+    />
+
+    {/* Fine grid */}
+    <div
+      className="
+        absolute inset-0 opacity-[0.045]
+        [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)]
+        [background-size:34px_34px]
+        [mask-image:linear-gradient(to_bottom,black,transparent_92%)]
+      "
+    />
+  </div>
+
+  {/* Floating bubbles */}
+  <div
+    className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+    aria-hidden="true"
+  >
+    {[
+      {
+        left: "6%",
+        bottom: "-18px",
+        size: 20,
+        duration: "8s",
+        delay: "-2s",
+        drift: "18px",
+        opacity: 0.42,
+      },
+      {
+        left: "15%",
+        bottom: "-30px",
+        size: 38,
+        duration: "11s",
+        delay: "-7s",
+        drift: "-24px",
+        opacity: 0.32,
+      },
+      {
+        left: "27%",
+        bottom: "-22px",
+        size: 16,
+        duration: "7.5s",
+        delay: "-4s",
+        drift: "30px",
+        opacity: 0.5,
+      },
+      {
+        left: "42%",
+        bottom: "-38px",
+        size: 48,
+        duration: "13s",
+        delay: "-9s",
+        drift: "-18px",
+        opacity: 0.22,
+      },
+      {
+        left: "58%",
+        bottom: "-20px",
+        size: 24,
+        duration: "9.5s",
+        delay: "-5s",
+        drift: "26px",
+        opacity: 0.4,
+      },
+      {
+        left: "70%",
+        bottom: "-40px",
+        size: 54,
+        duration: "14s",
+        delay: "-11s",
+        drift: "-30px",
+        opacity: 0.2,
+      },
+      {
+        left: "82%",
+        bottom: "-22px",
+        size: 18,
+        duration: "8.5s",
+        delay: "-3s",
+        drift: "16px",
+        opacity: 0.46,
+      },
+      {
+        left: "92%",
+        bottom: "-32px",
+        size: 34,
+        duration: "12s",
+        delay: "-8s",
+        drift: "-22px",
+        opacity: 0.28,
+      },
+    ].map((bubble, index) => (
+      <span
+        key={index}
+        className="
+          admin-bubble absolute rounded-full
+          border border-cyan-100/25
+          bg-gradient-to-br
+          from-white/20 via-cyan-200/10 to-blue-500/10
+          shadow-[inset_0_0_14px_rgba(255,255,255,0.14),0_0_18px_rgba(56,189,248,0.12)]
+          backdrop-blur-[2px]
+        "
+        style={{
+          left: bubble.left,
+          bottom: bubble.bottom,
+          width: bubble.size,
+          height: bubble.size,
+          "--bubble-duration": bubble.duration,
+          "--bubble-delay": bubble.delay,
+          "--bubble-drift": bubble.drift,
+          "--bubble-opacity": bubble.opacity,
+        }}
+      />
+    ))}
+  </div>
+
+  {/* Main glass panel */}
+  <div
+    className="
+      admin-header-reveal
+      relative mx-auto w-full max-w-4xl
+      overflow-hidden rounded-[1.75rem]
+      border border-white/10
+      bg-white/[0.055]
+      px-4 py-6
+      shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
+      backdrop-blur-xl
+      sm:rounded-[2rem] sm:px-8 sm:py-8
+      lg:px-12 lg:py-10
+    "
+  >
+    {/* Panel highlights */}
+    <div
+      className="
+        pointer-events-none absolute inset-x-8 top-0
+        h-px bg-gradient-to-r
+        from-transparent via-cyan-200/70 to-transparent
+      "
+      aria-hidden="true"
+    />
+
+    <div
+      className="
+        pointer-events-none absolute -right-16 -top-20
+        h-44 w-44 rounded-full
+        bg-cyan-300/10 blur-3xl
+      "
+      aria-hidden="true"
+    />
+
+    <div className="relative z-10">
+      {/* Dashboard badge */}
+      <div className="mb-3 flex justify-center sm:mb-4">
+        <div
+          className="
+            inline-flex items-center gap-2
+            rounded-full border border-cyan-200/20
+            bg-cyan-300/[0.07]
+            px-3 py-1.5
+            shadow-[0_8px_30px_rgba(34,211,238,0.08)]
+            backdrop-blur-md
+          "
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
+          </span>
+
+          <span
+            className="
+              text-[9px] font-bold uppercase
+              tracking-[0.28em] text-cyan-100/90
+              sm:text-[10px] sm:tracking-[0.34em]
+            "
+          >
+            Admin Dashboard
+          </span>
+        </div>
+      </div>
+
+      <h1
+        className="
+          mx-auto max-w-3xl
+          font-[Aspire]
+          text-[clamp(2rem,9vw,4rem)]
+          font-extrabold leading-[0.95]
+          tracking-[-0.035em] text-white
+          drop-shadow-[0_5px_24px_rgba(56,189,248,0.18)]
+        "
+      >
+        Welcome back,
+        <span
+          className="
+            mt-1 block
+            bg-gradient-to-r
+            from-cyan-200 via-white to-blue-200
+            bg-clip-text text-transparent
+            sm:inline sm:ml-3
+          "
+        >
+          Amanda
+        </span>
+      </h1>
+
+      <p
+        className="
+          mx-auto mt-4 max-w-xl
+          text-xs leading-relaxed text-blue-100/65
+          sm:text-sm lg:text-base
+        "
+      >
+        Everything is up to date and running smoothly.
+      </p>
+
+      {/* Status strip */}
+      <div
+        className="
+          mx-auto mt-5 flex w-fit max-w-full
+          items-center justify-center gap-2
+          rounded-full border border-emerald-300/15
+          bg-emerald-300/[0.055]
+          px-3 py-1.5
+          text-[10px] font-semibold text-emerald-100/85
+          sm:text-xs
+        "
+      >
+        <span className="text-emerald-300">●</span>
+        All systems operational
+      </div>
+
+      {/* Quick actions */}
+      <div
+        className="
+          mt-6 grid grid-cols-2 gap-2.5
+          sm:mx-auto sm:mt-7 sm:flex sm:w-fit sm:gap-3
+        "
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("employees");
+            setEmployeesSubTab("profile");
+            setProfileSubTab("me");
+          }}
+          className="
+            admin-action-shimmer
+            group relative min-w-0 overflow-hidden
+            rounded-2xl border border-cyan-200/20
+            bg-gradient-to-br
+            from-cyan-300/20 via-blue-400/10 to-white/[0.06]
+            px-3 py-3
+            text-xs font-bold text-white
+            shadow-[0_10px_30px_rgba(8,145,178,0.13)]
+            backdrop-blur-md
+            transition duration-300
+            hover:-translate-y-0.5
+            hover:border-cyan-200/40
+            hover:bg-cyan-300/20
+            hover:shadow-[0_14px_35px_rgba(8,145,178,0.22)]
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-cyan-300
+            focus-visible:ring-offset-2
+            focus-visible:ring-offset-[#071323]
+            active:translate-y-0
+            sm:min-w-[148px] sm:px-6 sm:py-3.5 sm:text-sm
+          "
+        >
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            <span
+              className="
+                flex h-7 w-7 items-center justify-center
+                rounded-full bg-white/10
+                text-sm transition-transform duration-300
+                group-hover:scale-110
+              "
+              aria-hidden="true"
+            >
+              👤
+            </span>
+            Profiles
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("tasks");
+            setTasksSubTab("manage");
+          }}
+          className="
+            admin-action-shimmer
+            group relative min-w-0 overflow-hidden
+            rounded-2xl border border-white/15
+            bg-white/[0.075]
+            px-3 py-3
+            text-xs font-bold text-white
+            shadow-[0_10px_30px_rgba(0,0,0,0.18)]
+            backdrop-blur-md
+            transition duration-300
+            hover:-translate-y-0.5
+            hover:border-white/30
+            hover:bg-white/[0.13]
+            hover:shadow-[0_14px_35px_rgba(0,0,0,0.28)]
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-cyan-300
+            focus-visible:ring-offset-2
+            focus-visible:ring-offset-[#071323]
+            active:translate-y-0
+            sm:min-w-[148px] sm:px-6 sm:py-3.5 sm:text-sm
+          "
+        >
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            <span
+              className="
+                flex h-7 w-7 items-center justify-center
+                rounded-full bg-white/10
+                text-sm transition-transform duration-300
+                group-hover:scale-110
+              "
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+            Tasks
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Bottom transition */}
+  <div
+    className="
+      pointer-events-none absolute inset-x-0 bottom-0
+      h-16 bg-gradient-to-t
+      from-slate-950/35 to-transparent
+    "
+    aria-hidden="true"
+  />
+</header>
         {/* ================= BODY ================= */}
         <div className="px-3 sm:px-5 lg:px-6 py-5">
           {/* Primary navigation */}
