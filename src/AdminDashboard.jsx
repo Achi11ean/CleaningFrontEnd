@@ -787,7 +787,7 @@ export default function AdminDashboard() {
   />
 </header>
         {/* ================= BODY ================= */}
-        <div className="px-3 sm:px-5 lg:px-6 py-5">
+        <div className=" sm:px-5 lg:px-6 py-5">
           {/* Primary navigation */}
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5 pb-5 border-b border-slate-200">
             {sections.map(({ key, label, subTab, badge }) => (
@@ -886,7 +886,7 @@ export default function AdminDashboard() {
                     <>
                       {acceptingClients !== null && (
                         <div className="mb-6 flex justify-center">
-                          <div className="flex items-center gap-5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                          <div className="flex items-center gap-5 rounded-2xl border border-slate-200 bg-white px-1 py-4 shadow-sm">
                             <div className="text-left">
                               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                                 Client Intake
