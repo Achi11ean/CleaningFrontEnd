@@ -1089,12 +1089,12 @@ export default function StaffWorkDayCalendar() {
                 {selectedTimeOff.request.status}
               </span>
             </Field>
-            <Field label="Date">
-              {format(
-                new Date(selectedTimeOff.entry.request_date),
-                "EEEE, MMM d, yyyy",
-              )}
-            </Field>
+  <Field label="Date">
+  {format(
+    new Date(`${selectedTimeOff.entry.request_date}T00:00:00`),
+    "EEEE, MMM d, yyyy",
+  )}
+</Field>
             <Field label="Time">
               {selectedTimeOff.entry.is_all_day
                 ? "All day"
