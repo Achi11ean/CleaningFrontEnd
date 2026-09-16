@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useStaff } from "./StaffContext";
 import StaffClock from "./StaffClock";
 import UserProfile from "./UserProfile";
@@ -13,7 +13,6 @@ import ManagerBooking from "./ManagerBooking";
 import TodayTasksSlider from "./TodayTasksSlider";
 import LiveActiveShiftsManager from "./LiveActiveShiftsManager";
 import StaffWorkDayCalendar from "./StaffWorkDayCalendar"; // 👈 NEW
-import ActiveShiftPanel from "./ActiveShiftPanel";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
@@ -49,9 +48,10 @@ import Booking from "./Booking";
 import ConsultationSelector from "./ConsultationSelector";
 import ConductConsultation from "./ConductConsultation";
 import ConsultationList from "./ConsultationList";
-import CreateTask from "./CreateTask";
 import ManageTasks from "./ManageTasks";
 import ViewConsultation from "./ViewConsultation";
+import CleaningTheme, { CleaningSparkle } from "./CleaningTheme";
+
 export default function StaffDashboard() {
 const { staff, authAxios } = useStaff();
 const [timeOffSubTab, setTimeOffSubTab] = useState("create");
@@ -120,215 +120,87 @@ useEffect(() => {
     setClientsListMode("all");
   }
 }, [clientSubTab]);
+  const isManager = staff?.role === "manager";
+  const navigation = [
+    { key: "clock", label: "Time", icon: "clock", description: "Clock in, time off & shift history", count: pendingTimeOffCount },
+    { key: "workday", label: "Work", icon: "work", description: "Your workday, calendar & supplies", alert: inventoryShortageAlert },
+    { key: "clients", label: "Clients", icon: "clients", description: "Client information & scheduling", count: newRequestCount },
+    ...(isManager ? [
+      { key: "consultations", label: "Consults", icon: "consult", description: "Consultations, estimates & setup" },
+      { key: "services", label: "Services", icon: "sparkle", description: "Services & photo gallery" },
+      { key: "reviews", label: "Reviews", icon: "review", description: "Review and manage customer feedback", count: pendingReviewCount },
+      { key: "tasks", label: "Tasks", icon: "task", description: "Organize the details of a great clean" },
+    ] : []),
+    { key: "profile", label: "Profile", icon: "profile", description: "Your details & availability" },
+  ];
+  const selected = navigation.find(item => item.key === activeTab) || navigation[0];
+  const selectTab = (key) => {
+    setActiveTab(key);
+    if (key === "clients") setClientSubTab("list");
+    if (key === "tasks") setTasksSubTab("manage");
+    if (key === "services") setServicesSubTab("create");
+  };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-600 via-black to-slate-700  text-center  pt-20">
-      <div className="max-w-8xl mx-auto bg-white pb-4 rounded-none shadow-none border border-gray-200 ">
-{/* DASHBOARD HERO HEADER */}
-<div className="relative overflow-hidden rounded-none mb-4">
-
-  {/* Background Gradient */}
-  <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
-
-  {/* Subtle Glow Accents */}
-  <div className="absolute -top-20 -left-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl" />
-  <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
-
-  {/* Content */}
-  <div className="relative z-10 px-8 py-3 text-center text-white">
-
-    <p className="uppercase tracking-[0.3em] text-xs text-cyan-300/80 mb-4">
-      Welcome 
-    </p>
-
-    <h2 className="
-      text-6xl sm:text-6xl lg:text-7xl
-      font-extrabold font-[Aspire]
-      tracking-tight
-      drop-shadow-lg
-    ">
-      Staff Dashboard
-    </h2>
-
-    <div className="mt-1 flex justify-center items-center gap-3 text-sm">
-    
-
-<button
-  onClick={() => setActiveTab("profile")}
-  className={`
-    px-4 py-1.5 rounded-full text-xs font-bold uppercase
-    transition-all duration-200
-    shadow-md
-    ${
-      activeTab === "profile"
-        ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white scale-105"
-        : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:brightness-110"
-    }
-  `}
->
-  👤 My Profile
-</button>
-
-{staff?.role === "manager" && (
-  <button
-    onClick={() => {
-      setActiveTab("tasks");
-      setTasksSubTab("manage");
-    }}
-    className={`
-      px-4 py-1.5 rounded-full text-xs font-bold uppercase
-      transition-all duration-200 shadow-md
-      ${
-        activeTab === "tasks"
-          ? "bg-gradient-to-r from-fuchsia-400 to-indigo-500 text-white scale-105"
-          : "bg-gradient-to-r from-fuchsia-500 to-indigo-600 text-white hover:brightness-110"
-      }
-    `}
-  >
-    ✅ Tasks
-  </button>
-)}
-    </div>
-
-  </div>
-</div>
-
-
-
-        {/* Main Tabs */}
-<div
-  className="
-    grid grid-cols-3 gap-3
-    border-b border-gray-200 pb-4 mb-8
-  "
->
-  {[
-    { key: "clock", label: "Time", color: "cyan" },
-    { key: "workday", label: "Work", color: "cyan" },
-
-    {
-      key: "clients",
-      color: "cyan",
-      label: (
-        <span className="relative">
-          Clients
-          {newRequestCount > 0 && (
-            <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
-              {newRequestCount}
-            </span>
-          )}
-        </span>
-      ),
-    },
-
-
-
-
-
-
-
- ...(staff?.role === "manager"
-  ? [
-      { key: "consultations", label: "Consults", color: "cyan" },
-
-      { key: "services", label: "Services", color: "cyan" },
-
-      {
-        key: "reviews",
-        color: "cyan",
-        label: (
-          <span className="relative">
-            Reviews
-            {pendingReviewCount > 0 && (
-              <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
-                {pendingReviewCount}
-              </span>
-            )}
-          </span>
-        ),
-      },
-    ]
-  : []),
-  ].map(({ key, label, color }) => (
-    <button
-      key={key}
-      onClick={() => {
-        setActiveTab(key);
-        if (key === "clients") setClientSubTab("list");
-        if (key === "timeoff") setTimeOffSubTab("create");
-        if (key === "tasks") setTasksSubTab("manage");
-        if (key === "services") setServicesSubTab("create");
-        if (key === "myshifts") setShiftsSubTab("shifts");
-      }}
-      className={`
-        w-full px-4 py-2 text-sm sm:text-base font-semibold rounded-xl
-        text-center transition-all duration-200
-        ${
-          activeTab === key
-            ? `bg-gradient-to-br from-${color}-400 via-${color}-500 to-${color}-600 text-white shadow-md`
-            : "bg-gradient-to-br from-slate-800 via-slate-800 to-black text-white hover:brightness-110"
-        }
-      `}
-    >
-      {label}
-    </button>
-  ))}
-</div>
-
-
+    <CleaningTheme className="staff-dashboard">
+      <style>{dashboardStyles}</style>
+      <div className="sd-shell">
+        <header className="sd-header">
+          <div className="sd-heading-group"><div className="sd-brand-icon"><CleaningSparkle /></div><div><p className="sd-eyebrow">A Breath of Fresh Air · Team workspace</p><h1>Staff dashboard</h1><p className="sd-welcome">Everything you need for a beautifully organized day.</p></div></div>
+          <button type="button" className="sd-account" onClick={() => { setProfileSubTab("me"); selectTab("profile"); }} aria-label="Open my profile"><DashboardIcon name="profile"/><span><strong>My profile</strong><small>{isManager ? "Manager" : "Team member"}</small></span><span aria-hidden="true">↗</span></button>
+        </header>
+        <div className="sd-layout">
+          <aside className="sd-sidebar">
+            <p className="sd-nav-label">Your workspace</p>
+            <nav className="sd-navigation" aria-label="Dashboard sections">{navigation.map(item => <button type="button" key={item.key} className={`sd-nav-button ${activeTab === item.key ? "is-active" : ""}`} onClick={() => selectTab(item.key)} aria-pressed={activeTab === item.key} aria-controls="sd-workspace"><DashboardIcon name={item.icon}/><span>{item.label}</span>{isManager && item.count > 0 && <span className="sd-count" aria-label={`${item.count} pending`}>{item.count > 99 ? "99+" : item.count}</span>}{isManager && item.alert && <span className="sd-warning" aria-label="Inventory needs attention">!</span>}</button>)}</nav>
+            <div className="sd-sidebar-note"><CleaningSparkle/><p>A little care.<br/><strong>A sparkling difference.</strong></p></div>
+          </aside>
+          <main className="sd-main" id="sd-workspace" aria-labelledby="sd-section-title">
+            <div className="sd-section-heading"><div><p className="sd-eyebrow">Workspace / {selected.label}</p><h2 id="sd-section-title">{selected.label === "Time" ? "Time & attendance" : selected.label === "Work" ? "Your workday" : selected.label}</h2><p>{selected.description}</p></div><span className="sd-section-icon"><DashboardIcon name={selected.icon}/></span></div>
+            {isManager && (newRequestCount > 0 || pendingTimeOffCount > 0 || pendingReviewCount > 0 || inventoryShortageAlert) && <nav className="sd-alerts" aria-label="Items needing attention">
+              {newRequestCount > 0 && <button type="button" onClick={() => { setActiveTab("clients"); setClientSubTab("list"); setClientsListMode("requests"); }}><span className="sd-count">{newRequestCount}</span> New requests <span aria-hidden="true">↗</span></button>}
+              {pendingTimeOffCount > 0 && <button type="button" onClick={() => { setActiveTab("clock"); setClockSubTab("off"); setTimeOffSubTab("manage"); }}><span className="sd-count">{pendingTimeOffCount}</span> Time off <span aria-hidden="true">↗</span></button>}
+              {pendingReviewCount > 0 && <button type="button" onClick={() => setActiveTab("reviews")}><span className="sd-count">{pendingReviewCount}</span> Reviews <span aria-hidden="true">↗</span></button>}
+              {inventoryShortageAlert && <button type="button" onClick={() => { setActiveTab("workday"); setWorkSubTab("inventory"); setInventorySubTab("staff"); }}><span className="sd-warning">!</span> Supplies <span aria-hidden="true">↗</span></button>}
+            </nav>}
+            <div className="sd-module">
         {/* CLIENT SUB-TABS */}
   {activeTab === "clients" && (
-  <div className="ml-2 space-y-2">
+  <div className="sd-client-tabs">
 
     {/* PRIMARY CLIENT TABS */}
-    <div className="flex space-x-4 border-b">
-      <button
+    <div className="sd-subnav">
+      <button type="button"
         onClick={() => {
           setClientSubTab("list");
           setClientsListMode("all");
         }}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          clientSubTab === "list"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${clientSubTab === "list" ? "is-active" : ""}`} aria-pressed={clientSubTab === "list"}
       >
-        📋 Client List
+        Client List
       </button>
 {staff?.role === "manager" && (
-  <button
+  <button type="button"
     onClick={() => setClientSubTab("new")}
-    className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-      clientSubTab === "new"
-        ? "border-indigo-600 text-indigo-600"
-        : "border-transparent text-gray-500 hover:text-gray-700"
-    }`}
+    className={`sd-sub-button ${clientSubTab === "new" ? "is-active" : ""}`} aria-pressed={clientSubTab === "new"}
   >
-    🆕 New
+    New
   </button>
 )}
 
       {staff?.role === "manager" && (
         <>
-          <button
+          <button type="button"
             onClick={() => setClientSubTab("schedules")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-              clientSubTab === "schedules"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={`sd-sub-button ${clientSubTab === "schedules" ? "is-active" : ""}`} aria-pressed={clientSubTab === "schedules"}
           >
-            🗓️ Schedules
+            Schedules
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setClientSubTab("create")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-              clientSubTab === "create"
-                ? "border-green-600 text-green-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={`sd-sub-button ${clientSubTab === "create" ? "is-active" : ""}`} aria-pressed={clientSubTab === "create"}
           >
-            ➕ Create
+            Create
           </button>
         </>
       )}
@@ -337,25 +209,17 @@ useEffect(() => {
 
     {/* 🔽 NESTED TABS UNDER CLIENT LIST (MANAGERS ONLY) */}
     {clientSubTab === "list" && staff?.role === "manager" && (
-      <div className="flex space-x-4 border-b pl-1">
-        <button
+      <div className="sd-subnav">
+        <button type="button"
           onClick={() => setClientsListMode("all")}
-          className={`px-3 py-1.5 text-xs font-semibold border-b-2 transition ${
-            clientsListMode === "all"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
+          className={`sd-sub-button ${clientsListMode === "all" ? "is-active" : ""}`} aria-pressed={clientsListMode === "all"}
         >
           All
         </button>
 
-        <button
+        <button type="button"
           onClick={() => setClientsListMode("requests")}
-          className={`px-3 py-1.5 text-xs font-semibold border-b-2 transition ${
-            clientsListMode === "requests"
-              ? "border-purple-600 text-purple-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
+          className={`sd-sub-button ${clientsListMode === "requests" ? "is-active" : ""}`} aria-pressed={clientsListMode === "requests"}
         >
           Requests
         </button>
@@ -366,16 +230,12 @@ useEffect(() => {
 {activeTab === "tasks" && staff?.role === "manager" && (
   <>
     {/* TASKS SUB TABS */}
-    <div className="flex space-x-4 border-b mb-6 ml-2">
+    <div className="sd-subnav">
 
 
-      <button
+      <button type="button"
         onClick={() => setTasksSubTab("manage")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          tasksSubTab === "manage"
-            ? "border-fuchsia-600 text-fuchsia-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${tasksSubTab === "manage" ? "is-active" : ""}`} aria-pressed={tasksSubTab === "manage"}
       >
        Tasks
       </button>
@@ -386,41 +246,29 @@ useEffect(() => {
   </>
 )}
 
-{activeTab === "consultations" && (
+{activeTab === "consultations" && isManager && (
   <>
     {/* MAIN SUB TABS */}
-    <div className="flex space-x-4 border-b mb-6 ml-2">
-      <button
+    <div className="sd-subnav">
+      <button type="button"
         onClick={() => setConsultationsSubTab("new")}
-        className={`px-3 py-2 font-semibold border-b-2 ${
-          consultationsSubTab === "new"
-            ? "border-green-600 text-green-600"
-            : "border-transparent text-gray-500"
-        }`}
+        className={`sd-sub-button ${consultationsSubTab === "new" ? "is-active" : ""}`} aria-pressed={consultationsSubTab === "new"}
       >
         Begin
       </button>
 
       {staff?.role === "manager" && (
-        <button
+        <button type="button"
           onClick={() => setConsultationsSubTab("create")}
-          className={`px-3 py-2 font-semibold border-b-2 ${
-            consultationsSubTab === "create"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500"
-          }`}
+          className={`sd-sub-button ${consultationsSubTab === "create" ? "is-active" : ""}`} aria-pressed={consultationsSubTab === "create"}
         >
           Tools
         </button>
       )}
 
-      <button
+      <button type="button"
         onClick={() => setConsultationsSubTab("list")}
-        className={`px-3 py-2 font-semibold border-b-2 ${
-          consultationsSubTab === "list"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500"
-        }`}
+        className={`sd-sub-button ${consultationsSubTab === "list" ? "is-active" : ""}`} aria-pressed={consultationsSubTab === "list"}
       >
         All
       </button>
@@ -445,23 +293,19 @@ useEffect(() => {
       <div className="space-y-6">
 
         {/* Setup Tabs */}
-        <div className="flex flex-wrap gap-2 border-b pb-3">
+        <div className="sd-subnav">
           {[
             ["consultation", "Consultation"],
             ["modules", "Modules"],
             ["multipliers", "Multipliers"],
           ].map(([key, label]) => (
-            <button
+            <button type="button"
               key={key}
               onClick={() => {
                 setConsultSetupTab(key);
                 setConsultSetupMode("create");
               }}
-              className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-                consultSetupTab === key
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500"
-              }`}
+              className={`sd-sub-button ${consultSetupTab === key ? "is-active" : ""}`} aria-pressed={consultSetupTab === key}
             >
               {label}
             </button>
@@ -469,16 +313,12 @@ useEffect(() => {
         </div>
 
         {/* Create/Manage toggle */}
-        <div className="flex gap-3 border-b pb-3">
+        <div className="sd-subnav">
           {["create", "manage"].map((mode) => (
-            <button
+            <button type="button"
               key={mode}
               onClick={() => setConsultSetupMode(mode)}
-              className={`px-3 py-1 text-sm rounded ${
-                consultSetupMode === mode
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500"
-              }`}
+              className={`sd-sub-button ${consultSetupMode === mode ? "is-active" : ""}`} aria-pressed={consultSetupMode === mode}
             >
               {mode === "create" ? "Create" : "Manage"}
             </button>
@@ -547,49 +387,33 @@ useEffect(() => {
 )}
 {activeTab === "services" && staff?.role === "manager" && (
   <>
-    <div className="flex flex-wrap gap-3 border-b mb-6 ml-2">
-      <button
+    <div className="sd-subnav">
+      <button type="button"
         onClick={() => setServicesSubTab("create")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          servicesSubTab === "create"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${servicesSubTab === "create" ? "is-active" : ""}`} aria-pressed={servicesSubTab === "create"}
       >
-        ➕ Create Service
+        Create Service
       </button>
 
-      <button
+      <button type="button"
         onClick={() => setServicesSubTab("manage")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          servicesSubTab === "manage"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${servicesSubTab === "manage" ? "is-active" : ""}`} aria-pressed={servicesSubTab === "manage"}
       >
-        🛠️ Manage Services
+        Manage Services
       </button>
 
-      <button
+      <button type="button"
         onClick={() => setServicesSubTab("gallery-create")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          servicesSubTab === "gallery-create"
-            ? "border-cyan-600 text-cyan-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${servicesSubTab === "gallery-create" ? "is-active" : ""}`} aria-pressed={servicesSubTab === "gallery-create"}
       >
-        🖼️ Gallery +
+        Gallery +
       </button>
 
-      <button
+      <button type="button"
         onClick={() => setServicesSubTab("gallery-manage")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          servicesSubTab === "gallery-manage"
-            ? "border-cyan-600 text-cyan-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${servicesSubTab === "gallery-manage" ? "is-active" : ""}`} aria-pressed={servicesSubTab === "gallery-manage"}
       >
-        🗂️ Manage Gallery
+        Manage Gallery
       </button>
     </div>
 
@@ -606,37 +430,25 @@ useEffect(() => {
 {activeTab === "workday" && (
   <>
     {/* WORK SUB TABS */}
-    <div className="flex space-x-4 border-b mb-6 ml-2">
+    <div className="sd-subnav">
 
 
-      <button
+      <button type="button"
         onClick={() => setWorkSubTab("active")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          workSubTab === "active"
-            ? "border-indigo-600 text-indigo-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${workSubTab === "active" ? "is-active" : ""}`} aria-pressed={workSubTab === "active"}
       >
         Work
       </button>
-            <button
+            <button type="button"
         onClick={() => setWorkSubTab("calendar")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          workSubTab === "calendar"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${workSubTab === "calendar" ? "is-active" : ""}`} aria-pressed={workSubTab === "calendar"}
       >
          Calendar
       </button>
 
-      <button
+      <button type="button"
   onClick={() => setWorkSubTab("inventory")}
-  className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-    workSubTab === "inventory"
-      ? "border-emerald-600 text-emerald-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
+  className={`sd-sub-button ${workSubTab === "inventory" ? "is-active" : ""}`} aria-pressed={workSubTab === "inventory"}
 >
   Inventory
   {inventoryShortageAlert && (
@@ -645,15 +457,11 @@ useEffect(() => {
 </button>
 
       {staff?.role === "manager" && (
-        <button
+        <button type="button"
           onClick={() => setWorkSubTab("live")}
-          className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-            workSubTab === "live"
-              ? "border-emerald-600 text-emerald-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
+          className={`sd-sub-button ${workSubTab === "live" ? "is-active" : ""}`} aria-pressed={workSubTab === "live"}
         >
-          🟢 Live
+          Live
         </button>
       )}
     </div>
@@ -683,60 +491,40 @@ useEffect(() => {
     {staff?.role === "manager" ? (
       <>
         {/* Inventory Sub Tabs */}
-        <div className="flex space-x-4 border-b mb-6 ml-2">
-          <button
+        <div className="sd-subnav">
+          <button type="button"
             onClick={() => setInventorySubTab("my")}
-            className={`px-3 py-2 font-semibold border-b-2 ${
-              inventorySubTab === "my"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${inventorySubTab === "my" ? "is-active" : ""}`} aria-pressed={inventorySubTab === "my"}
           >
-            🧾 My Inventory
+            My Inventory
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setInventorySubTab("create")}
-            className={`px-3 py-2 font-semibold border-b-2 ${
-              inventorySubTab === "create"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${inventorySubTab === "create" ? "is-active" : ""}`} aria-pressed={inventorySubTab === "create"}
           >
-            ➕ Create
+            Create
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setInventorySubTab("manage")}
-            className={`px-3 py-2 font-semibold border-b-2 ${
-              inventorySubTab === "manage"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${inventorySubTab === "manage" ? "is-active" : ""}`} aria-pressed={inventorySubTab === "manage"}
           >
-            🛠️ Manage
+            Manage
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setInventorySubTab("staff")}
-            className={`px-3 py-2 font-semibold border-b-2 ${
-              inventorySubTab === "staff"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${inventorySubTab === "staff" ? "is-active" : ""}`} aria-pressed={inventorySubTab === "staff"}
           >
-            👥 Staff
+            Staff
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setInventorySubTab("purchases")}
-            className={`px-3 py-2 font-semibold border-b-2 ${
-              inventorySubTab === "purchases"
-                ? "border-emerald-600 text-emerald-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${inventorySubTab === "purchases" ? "is-active" : ""}`} aria-pressed={inventorySubTab === "purchases"}
           >
-            💰 Purchases
+            Purchases
           </button>
         </div>
 
@@ -750,29 +538,21 @@ useEffect(() => {
         )}
 
    {inventorySubTab === "purchases" && (
-  <div className="mt-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+  <div className="sd-nested">
 
-    <div className="flex space-x-8 mb-6 justify-center">
-      <button
+    <div className="sd-subnav">
+      <button type="button"
         onClick={() => setPurchaseSubTab("create")}
-        className={`pb-2 text-sm font-bold uppercase tracking-wider transition ${
-          purchaseSubTab === "create"
-            ? "text-emerald-700 border-b-2 border-emerald-700"
-            : "text-gray-400 hover:text-gray-600"
-        }`}
+        className={`sd-sub-button ${purchaseSubTab === "create" ? "is-active" : ""}`} aria-pressed={purchaseSubTab === "create"}
       >
-        🛒 Add Purchase
+        Add Purchase
       </button>
 
-      <button
+      <button type="button"
         onClick={() => setPurchaseSubTab("history")}
-        className={`pb-2 text-sm font-bold uppercase tracking-wider transition ${
-          purchaseSubTab === "history"
-            ? "text-emerald-700 border-b-2 border-emerald-700"
-            : "text-gray-400 hover:text-gray-600"
-        }`}
+        className={`sd-sub-button ${purchaseSubTab === "history" ? "is-active" : ""}`} aria-pressed={purchaseSubTab === "history"}
       >
-        📜 Purchase History
+        Purchase History
       </button>
     </div>
 
@@ -799,51 +579,35 @@ useEffect(() => {
 )}
 
 {activeTab === "timeoff" && (
-  <div className="flex space-x-2 border-b mb-6 ml-2">
-    <button
+  <div className="sd-subnav">
+    <button type="button"
       onClick={() => setTimeOffSubTab("create")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-        timeOffSubTab === "create"
-          ? "border-rose-600 text-rose-600"
-          : "border-transparent text-gray-500 hover:text-gray-700"
-      }`}
+      className={`sd-sub-button ${timeOffSubTab === "create" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "create"}
     >
-      ➕ Request 
+      Request 
     </button>
 
-    <button
+    <button type="button"
       onClick={() => setTimeOffSubTab("my")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-        timeOffSubTab === "my"
-          ? "border-rose-600 text-rose-600"
-          : "border-transparent text-gray-500 hover:text-gray-700"
-      }`}
+      className={`sd-sub-button ${timeOffSubTab === "my" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "my"}
     >
-      📄 Requests
+      Requests
     </button>
 
     {staff?.role === "manager" && (
-      <button
+      <button type="button"
         onClick={() => setTimeOffSubTab("manage")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          timeOffSubTab === "manage"
-            ? "border-rose-600 text-rose-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${timeOffSubTab === "manage" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "manage"}
       >
-        🧠 Approvals
+        Approvals
       </button>
     )}
     {staff?.role === "manager" && (
-  <button
+  <button type="button"
     onClick={() => setTimeOffSubTab("availability")}
-    className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-      timeOffSubTab === "availability"
-        ? "border-indigo-600 text-indigo-600"
-        : "border-transparent text-gray-500 hover:text-gray-700"
-    }`}
+    className={`sd-sub-button ${timeOffSubTab === "availability" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "availability"}
   >
-    📅 Availability
+    Availability
   </button>
 )}
   </div>
@@ -853,52 +617,36 @@ useEffect(() => {
 
 {/* CLOCK SUB-TABS */}
 {activeTab === "clock" && (
-  <div className="flex space-x-4 border-b mb-6 ml-2">
+  <div className="sd-subnav">
 
-    <button
+    <button type="button"
       onClick={() => setClockSubTab("timeclock")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-        clockSubTab === "timeclock"
-          ? "border-blue-600 text-blue-600"
-          : "border-transparent text-gray-500 hover:text-gray-700"
-      }`}
+      className={`sd-sub-button ${clockSubTab === "timeclock" ? "is-active" : ""}`} aria-pressed={clockSubTab === "timeclock"}
     >
-      ⏱️ Time
+      Time
     </button>
 
-    <button
+    <button type="button"
       onClick={() => setClockSubTab("staff")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-        clockSubTab === "staff"
-          ? "border-indigo-600 text-indigo-600"
-          : "border-transparent text-gray-500 hover:text-gray-700"
-      }`}
+      className={`sd-sub-button ${clockSubTab === "staff" ? "is-active" : ""}`} aria-pressed={clockSubTab === "staff"}
     >
-      👥 Staff
+      Staff
     </button>
 
-    <button
+    <button type="button"
       onClick={() => setClockSubTab("off")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 transition relative ${
-        clockSubTab === "off"
-          ? "border-rose-600 text-rose-600"
-          : "border-transparent text-gray-500 hover:text-gray-700"
-      }`}
+      className={`sd-sub-button ${clockSubTab === "off" ? "is-active" : ""}`} aria-pressed={clockSubTab === "off"}
     >
-      🗓️ Off
+      Off
       {pendingTimeOffCount > 0 && (
-        <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+        <span className="sd-count">
           {pendingTimeOffCount}
         </span>
       )}
     </button>
-    <button
+    <button type="button"
   onClick={() => setClockSubTab("shifts")}
-  className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-    clockSubTab === "shifts"
-      ? "border-emerald-600 text-emerald-600"
-      : "border-transparent text-gray-500 hover:text-gray-700"
-  }`}
+  className={`sd-sub-button ${clockSubTab === "shifts" ? "is-active" : ""}`} aria-pressed={clockSubTab === "shifts"}
 >
   History
 </button>
@@ -936,51 +684,35 @@ useEffect(() => {
     {/* TIME OFF */}
     {clockSubTab === "off" && (
       <>
-        <div className="flex space-x-2 border-b mb-6 ml-2">
-          <button
+        <div className="sd-subnav">
+          <button type="button"
             onClick={() => setTimeOffSubTab("create")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-              timeOffSubTab === "create"
-                ? "border-rose-600 text-rose-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${timeOffSubTab === "create" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "create"}
           >
-            ➕ New
+            New
           </button>
 
-          <button
+          <button type="button"
             onClick={() => setTimeOffSubTab("my")}
-            className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-              timeOffSubTab === "my"
-                ? "border-rose-600 text-rose-600"
-                : "border-transparent text-gray-500"
-            }`}
+            className={`sd-sub-button ${timeOffSubTab === "my" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "my"}
           >
-            📄 Requests
+            Requests
           </button>
 
           {staff?.role === "manager" && (
             <>
-              <button
+              <button type="button"
                 onClick={() => setTimeOffSubTab("manage")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-                  timeOffSubTab === "manage"
-                    ? "border-rose-600 text-rose-600"
-                    : "border-transparent text-gray-500"
-                }`}
+                className={`sd-sub-button ${timeOffSubTab === "manage" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "manage"}
               >
-                🧠 Approvals
+                Approvals
               </button>
 
-              <button
+              <button type="button"
                 onClick={() => setTimeOffSubTab("availability")}
-                className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-                  timeOffSubTab === "availability"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500"
-                }`}
+                className={`sd-sub-button ${timeOffSubTab === "availability" ? "is-active" : ""}`} aria-pressed={timeOffSubTab === "availability"}
               >
-                📅 Availability
+                Availability
               </button>
             </>
           )}
@@ -1000,66 +732,46 @@ useEffect(() => {
       <>
         {/* SHIFTS SUB TABS */}
        {/* HISTORY SUB TABS */}
-<div className="flex flex-wrap gap-4 border-b mb-6 ml-2">
+<div className="sd-subnav">
 
-  <button
+  <button type="button"
     onClick={() => setShiftsSubTab("shifts")}
-    className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-      shiftsSubTab === "shifts"
-        ? "border-emerald-600 text-emerald-600"
-        : "border-transparent text-gray-500"
-    }`}
+    className={`sd-sub-button ${shiftsSubTab === "shifts" ? "is-active" : ""}`} aria-pressed={shiftsSubTab === "shifts"}
   >
-    🧹 My Shifts
+    My Shifts
   </button>
 
-  <button
+  <button type="button"
     onClick={() => setShiftsSubTab("week")}
-    className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-      shiftsSubTab === "week"
-        ? "border-indigo-600 text-indigo-600"
-        : "border-transparent text-gray-500"
-    }`}
+    className={`sd-sub-button ${shiftsSubTab === "week" ? "is-active" : ""}`} aria-pressed={shiftsSubTab === "week"}
   >
-    🕒 My Week
+    My Week
   </button>
 
   {/* {staff?.role === "manager" && (
-    <button
+    <button type="button"
       onClick={() => setShiftsSubTab("manual")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-        shiftsSubTab === "manual"
-          ? "border-blue-600 text-blue-600"
-          : "border-transparent text-gray-500"
-      }`}
+      className={`sd-sub-button ${shiftsSubTab === "manual" ? "is-active" : ""}`} aria-pressed={shiftsSubTab === "manual"}
     >
-      ✍️ Manual
+      Manual
     </button>
   )} */}
 
   {staff?.role === "manager" && (
-    <button
+    <button type="button"
       onClick={() => setShiftsSubTab("admin")}
-      className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-        shiftsSubTab === "admin"
-          ? "border-rose-600 text-rose-600"
-          : "border-transparent text-gray-500"
-      }`}
+      className={`sd-sub-button ${shiftsSubTab === "admin" ? "is-active" : ""}`} aria-pressed={shiftsSubTab === "admin"}
     >
-      🛡️ Shifts
+      Shifts
     </button>
     
   )}
 {staff?.role === "manager" && (
-  <button
+  <button type="button"
     onClick={() => setShiftsSubTab("hours")}
-    className={`px-3 py-2 text-sm font-semibold border-b-2 ${
-      shiftsSubTab === "hours"
-        ? "border-blue-600 text-blue-600"
-        : "border-transparent text-gray-500"
-    }`}
+    className={`sd-sub-button ${shiftsSubTab === "hours" ? "is-active" : ""}`} aria-pressed={shiftsSubTab === "hours"}
   >
-    ⏳ Hours
+    Hours
   </button>
 )}
 </div>
@@ -1128,28 +840,20 @@ useEffect(() => {
 {activeTab === "profile" && (
   <>
     {/* PROFILE SUB-TABS */}
-    <div className="flex space-x-4 border-b mb-6 ml-2">
-      <button
+    <div className="sd-subnav">
+      <button type="button"
         onClick={() => setProfileSubTab("me")}
-        className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-          profileSubTab === "me"
-            ? "border-blue-600 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700"
-        }`}
+        className={`sd-sub-button ${profileSubTab === "me" ? "is-active" : ""}`} aria-pressed={profileSubTab === "me"}
       >
-        👤 My Profile
+        My Profile
       </button>
 
       {staff?.role === "manager" && (
-        <button
+        <button type="button"
           onClick={() => setProfileSubTab("staff")}
-          className={`px-3 py-2 text-sm font-semibold border-b-2 transition ${
-            profileSubTab === "staff"
-              ? "border-indigo-600 text-indigo-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-          }`}
+          className={`sd-sub-button ${profileSubTab === "staff" ? "is-active" : ""}`} aria-pressed={profileSubTab === "staff"}
         >
-          🗒️ Staff Notes
+          Staff Notes
         </button>
       )}
     </div>
@@ -1168,7 +872,32 @@ useEffect(() => {
   </>
 )}
 
+            </div>
+          </main>
+        </div>
+        <p className="sd-footer">A Breath of Fresh Air Cleaning Services <span>·</span> Team workspace</p>
       </div>
-    </div>
+    </CleaningTheme>
   );
 }
+
+function DashboardIcon({ name }) {
+  const paths = {
+    clock: <><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></>,
+    work: <><rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7V4h8v3M3 12q9 5 18 0M10 13h4"/></>,
+    clients: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4q3 1 3 6"/></>,
+    consult: <><path d="M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><rect x="7" y="2" width="10" height="5" rx="2"/><path d="M7 12h10M7 17h6"/></>,
+    sparkle: <><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path d="M20 2v4m-2-2h4"/></>,
+    review: <path d="m12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"/>,
+    task: <><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 12 3 3 7-7"/></>,
+    profile: <><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></>,
+  };
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{paths[name] || paths.sparkle}</svg>;
+}
+
+const dashboardStyles = `
+.staff-dashboard{--sd-panel:#0b192e;--sd-line:#7dd3fc26}.sd-shell{width:min(1500px,calc(100% - 48px));margin:0 auto;padding:110px 0 24px}.sd-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:8px 0 26px}.sd-heading-group{display:flex;align-items:center;gap:15px;min-width:0}.sd-brand-icon{display:grid;place-items:center;width:52px;height:52px;flex-shrink:0;border:1px solid #67e8f94d;border-radius:17px;background:linear-gradient(140deg,#174568,#103238);box-shadow:0 0 28px #38bdf816}.sd-brand-icon svg{width:27px;color:#9bf8e1}.sd-eyebrow{font-size:9px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:#8edcea;line-height:1.7}.staff-dashboard .sd-header h1{font-family:inherit;font-size:clamp(24px,3vw,35px);font-weight:700;letter-spacing:-.045em;line-height:1.15;margin:5px 0 7px}.sd-welcome{font-size:12px;color:#a9c0d3;line-height:1.6}.sd-account{display:flex;align-items:center;gap:12px;border:1px solid var(--sd-line);padding:11px 15px;border-radius:15px;background:#0c1d32;color:#e6f6ff;text-align:left;flex-shrink:0}.sd-account>svg{width:20px}.sd-account strong{display:block;font-size:12px;font-weight:650}.sd-account small{display:block;font-size:10px;color:#9bb4c8;margin-top:3px}.sd-account>span:last-child{color:#7dd3fc}.sd-layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:22px;align-items:start}.sd-sidebar{position:sticky;top:100px;background:linear-gradient(155deg,#0d2239ee,#060f1fee);border:1px solid var(--sd-line);border-radius:20px;padding:16px 10px}.sd-nav-label{font-size:9px;font-weight:750;color:#8aa6bd;text-transform:uppercase;letter-spacing:.18em;padding:0 12px 14px}.sd-navigation{display:flex;flex-direction:column;gap:5px}.sd-nav-button{display:flex;align-items:center;gap:11px;min-height:46px;width:100%;padding:10px 12px;background:transparent;border:1px solid transparent;border-radius:12px;color:#b5cbdc;text-align:left;font-size:12px!important;font-weight:650!important;transition:background .2s,color .2s}.sd-nav-button>svg{width:19px;height:19px;flex-shrink:0}.sd-nav-button:hover{background:#18344e;color:#effcff}.sd-nav-button.is-active{color:#051726;background:linear-gradient(110deg,#7dd3fc,#70efcf);box-shadow:0 4px 18px #38bdf824}.sd-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px;padding:2px 5px;font-size:10px;line-height:1.3;font-weight:750;color:#071828;background:#8ce8fa;border-radius:7px;flex-shrink:0}.sd-nav-button .sd-count,.sd-nav-button .sd-warning{margin-left:auto}.sd-nav-button.is-active .sd-count{background:#092b42;color:#d9fbff}.sd-warning{display:inline-grid;place-items:center;width:20px;height:20px;background:#ffdab0;color:#663600;border-radius:7px;font-size:12px;font-weight:800}.sd-sidebar-note{display:flex;align-items:center;gap:10px;padding:22px 9px 7px;margin-top:20px;border-top:1px solid var(--sd-line)}.sd-sidebar-note svg{width:20px;color:#6ee7b7;flex-shrink:0}.sd-sidebar-note p{font-size:10px;line-height:1.8;color:#8aa9be}.sd-sidebar-note strong{font-weight:500;color:#c5e7ed}.sd-main{min-width:0}.sd-section-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:2px 0 18px}.staff-dashboard .sd-section-heading h2{font-family:inherit;font-size:23px;font-weight:650;letter-spacing:-.025em;line-height:1.2;margin:5px 0 7px}.sd-section-heading>div>p:last-child{font-size:12px;color:#a9c0d3}.sd-section-icon{display:grid;place-items:center;background:#13314a;border:1px solid var(--sd-line);border-radius:14px;width:43px;height:43px;color:#8fedec;flex-shrink:0}.sd-section-icon svg{width:22px}.sd-alerts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}.sd-alerts button{display:inline-flex;align-items:center;gap:8px;min-height:38px;background:#11263e;border:1px solid #7dd3fc33;border-radius:10px;color:#d4edf6;padding:7px 10px;font-size:10px!important;font-weight:600!important}.sd-alerts button:hover{background:#1d3b54}.sd-module{min-width:0;background:#f8fafc;color:#172c40;border:1px solid #8acfea40;border-radius:18px;padding:16px;box-shadow:0 16px 50px #0003;overflow-wrap:anywhere}.sd-module>div{min-width:0}.sd-subnav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0d2139;border:1px solid #7dd3fc26;border-radius:13px;padding:6px;margin:0 0 16px;max-width:100%}.sd-sub-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;min-width:0;padding:9px 13px;border:1px solid transparent;border-radius:9px;color:#bfd6e4;background:transparent;font-size:12px!important;font-weight:600!important;line-height:1.4;text-align:center;transition:background .2s}.sd-sub-button:hover{background:#20415b;color:#efffff}.sd-sub-button.is-active{background:#d9f7fa;color:#0c4254;border-color:#b5eff3;box-shadow:0 2px 6px #0001}.sd-client-tabs{margin-bottom:14px}.sd-client-tabs .sd-subnav:last-child{margin-bottom:0}.sd-nested{padding:8px;border:1px solid #dbe8ee;border-radius:14px}.sd-footer{font-size:10px;line-height:1.8;color:#799aaf;text-align:center;margin-top:24px!important}.sd-footer span{margin:0 8px}
+@media(max-width:1050px){.sd-shell{width:calc(100% - 32px)}.sd-layout{grid-template-columns:160px minmax(0,1fr);gap:16px}.sd-sidebar{padding:12px 7px}.sd-nav-button{padding-inline:9px;gap:8px}.sd-module{padding:12px}.sd-sub-button{padding-inline:10px}}
+@media(max-width:760px){.sd-shell{width:calc(100% - 24px);padding-top:98px}.sd-header{gap:10px;padding-bottom:18px}.sd-heading-group{gap:10px}.sd-brand-icon{width:39px;height:39px;border-radius:12px}.sd-brand-icon svg{width:21px}.sd-header .sd-eyebrow{font-size:8px;letter-spacing:.1em;max-width:240px}.staff-dashboard .sd-header h1{font-size:25px}.sd-welcome{display:none}.sd-account{padding:10px;border-radius:12px}.sd-account>span{display:none}.sd-account>svg{width:19px;height:19px}.sd-layout{display:block}.sd-sidebar{position:static;padding:8px;border-radius:16px;margin-bottom:18px}.sd-nav-label,.sd-sidebar-note{display:none}.sd-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.sd-nav-button{position:relative;flex-direction:column;justify-content:center;gap:5px;padding:9px 3px;min-height:61px;font-size:10px!important;border-radius:10px}.sd-nav-button>svg{width:19px;height:19px}.sd-nav-button .sd-count,.sd-nav-button .sd-warning{position:absolute;top:3px;right:3px;min-width:16px;min-height:16px;height:auto;font-size:8px;padding:1px 3px;border-radius:5px}.sd-section-heading{margin:0 2px 14px}.staff-dashboard .sd-section-heading h2{font-size:21px}.sd-section-heading>div>p:last-child{font-size:11px;line-height:1.5}.sd-section-heading .sd-eyebrow{font-size:8px}.sd-section-icon{width:35px;height:35px;border-radius:10px}.sd-section-icon svg{width:18px}.sd-alerts{gap:6px}.sd-alerts button{flex:1 1 auto;justify-content:center;font-size:10px!important;padding:6px 8px}.sd-module{padding:9px;border-radius:14px}.sd-subnav{gap:4px;padding:5px;margin-bottom:12px;border-radius:11px}.sd-sub-button{flex:1 1 auto;min-height:44px;padding:8px;font-size:11px!important}.sd-nested{padding:5px}.sd-footer{font-size:9px;padding-inline:10px}.sd-module input,.sd-module select,.sd-module textarea{max-width:100%;font-size:16px}.sd-module img{max-width:100%}}
+@media(max-width:360px){.sd-shell{width:calc(100% - 16px)}.sd-module{padding:6px}.sd-header .sd-eyebrow{font-size:7px}.staff-dashboard .sd-header h1{font-size:23px}}
+`;

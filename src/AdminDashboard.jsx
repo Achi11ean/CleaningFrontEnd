@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAdmin } from "./AdminContext";
 import StaffClock from "./StaffClock";
 import AdminWeekly from "./AdminWeekly";
@@ -43,7 +43,7 @@ import CreateGallery from "./CreateGallery";
 import ManageGallery from "./ManageGallery";
 import CreateTask from "./CreateTask";
 import ManageTasks from "./ManageTasks";
-import axios from "axios";
+import CleaningTheme, { CleaningSparkle } from "./CleaningTheme";
 import "./App.css";
 
 import CreatePurchase from "./CreatePurchase";
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
     }
   }, [activeTab]);
   const toggleIntake = async () => {
-    if (acceptingClients === null) return;
+    if (acceptingClients === null || savingIntake) return;
 
     const newValue = !acceptingClients;
 
@@ -174,14 +174,14 @@ export default function AdminDashboard() {
     authAxios.get("/clients").then((res) => {
       const count = res.data.filter((c) => c.status === "new").length;
       setNewClientCount(count);
-    });
+    }).catch(err => console.error("Failed to load client count", err));
   }, []);
 
   useEffect(() => {
     authAxios.get("/client-requests").then((res) => {
       const count = res.data.filter((r) => r.status === "new").length;
       setNewRequestCount(count);
-    });
+    }).catch(err => console.error("Failed to load request count", err));
   }, []);
 
   const [consultSetupTab, setConsultSetupTab] = useState("consultation");
@@ -208,7 +208,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (activeTab !== "workday") {
       setWorkDaySubTab("workday"); // reset to default
-      setInventorySubTab("create"); // 👈 reset inventory
     }
   }, [activeTab]);
 
@@ -275,555 +274,54 @@ export default function AdminDashboard() {
   };
 
   const sections = [
-    { key: "workday", label: "Workday", subTab: "workday" },
-    {
-      key: "clients",
-      label: "Clients",
-      subTab: undefined,
-      badge: newClientCount + newRequestCount,
-    },
-    { key: "consultations", label: "Consults", subTab: "create" },
-    {
-      key: "employees",
-      label: "Employees",
-      subTab: undefined,
-      badge: pendingTimeOffCount,
-    },
-    { key: "services", label: "Services", subTab: "create" },
-    { key: "reviews", label: "Reviews", subTab: undefined, badge: pendingReviewCount },
+    { key: "workday", label: "Workday", icon: "work", description: "Today’s schedule, active shifts & checklists" },
+    { key: "clients", label: "Clients", icon: "clients", description: "Client care, intake & scheduling", badge: newClientCount + newRequestCount },
+    { key: "consultations", label: "Consults", icon: "consult", description: "Consultations, estimates & setup" },
+    { key: "employees", label: "Team", icon: "clock", description: "Hours, time off, shifts & supplies", badge: pendingTimeOffCount },
+    { key: "services", label: "Services", icon: "sparkle", description: "Your services & photo gallery" },
+    { key: "reviews", label: "Reviews", icon: "review", description: "Customer feedback & pending reviews", badge: pendingReviewCount },
+    { key: "tasks", label: "Tasks", icon: "task", description: "Keep every detail of your operation organized" },
+    { key: "people", label: "Profiles", icon: "profile", description: "Profiles, staff accounts & administrators" },
   ];
-
+  const selectedKey = activeTab === "employees" && employeesSubTab === "profile" ? "people" : activeTab;
+  const currentSection = sections.find(item => item.key === selectedKey) || sections[0];
+  const selectSection = (key) => {
+    if (key === "people") {
+      setActiveTab("employees"); setEmployeesSubTab("profile"); setProfileSubTab("me"); return;
+    }
+    setActiveTab(key);
+    if (key === "workday") setWorkDaySubTab("workday");
+    if (key === "consultations") setConsultationsSubTab("create");
+    if (key === "services") setServicesSubTab("create");
+    if (key === "tasks") setTasksSubTab("manage");
+    if (key === "employees") { setEmployeesSubTab("hours"); setEmployeesHoursSubTab("weekly"); }
+  };
   return (
-    <div className="min-h-screen   ">
-      {/* Self-contained utilities so the layout never depends on plugins */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      <div className=" mx-auto bg-white  shadow-xl shadow-slate-300/40 border border-slate-200 overflow-hidden">
-        {/* ================= HEADER ================= */}
-       <header
-  className="
-    relative isolate overflow-hidden
-    bg-gradient-to-br
-    from-[#071323] via-[#0A2342] to-[#07111F]
-    px-3 pb-7 pt-20
-    text-center
-    sm:px-6 sm:pb-10 sm:pt-24
-    lg:px-8 lg:pb-12 lg:pt-24
-  "
->
-  <style>{`
-    @keyframes adminBubbleFloat {
-      0% {
-        transform: translate3d(0, 20px, 0) scale(0.9);
-        opacity: 0;
-      }
-      12% {
-        opacity: var(--bubble-opacity, 0.5);
-      }
-      50% {
-        transform: translate3d(var(--bubble-drift, 20px), -55px, 0)
-          scale(1.08);
-      }
-      100% {
-        transform: translate3d(calc(var(--bubble-drift, 20px) * -0.5), -150px, 0)
-          scale(0.92);
-        opacity: 0;
-      }
-    }
-
-    @keyframes adminGlowPulse {
-      0%, 100% {
-        opacity: 0.45;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.72;
-        transform: scale(1.08);
-      }
-    }
-
-    @keyframes adminShimmer {
-      0% {
-        transform: translateX(-160%) skewX(-20deg);
-      }
-      100% {
-        transform: translateX(260%) skewX(-20deg);
-      }
-    }
-
-    @keyframes adminFadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .admin-header-reveal {
-      animation: adminFadeUp 0.7s ease-out both;
-    }
-
-    .admin-bubble {
-      animation: adminBubbleFloat var(--bubble-duration, 9s)
-        var(--bubble-delay, 0s) infinite ease-in-out;
-      opacity: 0;
-      will-change: transform, opacity;
-    }
-
-    .admin-glow {
-      animation: adminGlowPulse 7s ease-in-out infinite;
-    }
-
-    .admin-action-shimmer::after {
-      content: "";
-      position: absolute;
-      inset: -40% auto -40% -35%;
-      width: 28%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.38),
-        transparent
-      );
-      animation: adminShimmer 4.8s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .admin-bubble,
-      .admin-glow,
-      .admin-header-reveal,
-      .admin-action-shimmer::after {
-        animation: none !important;
-      }
-
-      .admin-bubble {
-        opacity: 0.25;
-      }
-    }
-  `}</style>
-
-  {/* Background atmosphere */}
-  <div
-    className="pointer-events-none absolute inset-0 -z-20"
-    aria-hidden="true"
-  >
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_38%)]" />
-
-    <div
-      className="
-        admin-glow
-        absolute -left-24 top-4
-        h-64 w-64 rounded-full
-        bg-cyan-400/15 blur-[80px]
-        sm:h-80 sm:w-80
-      "
-    />
-
-    <div
-      className="
-        admin-glow
-        absolute -right-28 bottom-[-5rem]
-        h-72 w-72 rounded-full
-        bg-blue-600/20 blur-[90px]
-        sm:h-96 sm:w-96
-      "
-      style={{ animationDelay: "-3s" }}
-    />
-
-    <div
-      className="
-        absolute left-1/2 top-1/2
-        h-44 w-[85%] max-w-3xl
-        -translate-x-1/2 -translate-y-1/2
-        rounded-full bg-sky-300/5 blur-3xl
-      "
-    />
-
-    {/* Fine grid */}
-    <div
-      className="
-        absolute inset-0 opacity-[0.045]
-        [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)]
-        [background-size:34px_34px]
-        [mask-image:linear-gradient(to_bottom,black,transparent_92%)]
-      "
-    />
-  </div>
-
-  {/* Floating bubbles */}
-  <div
-    className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-    aria-hidden="true"
-  >
-    {[
-      {
-        left: "6%",
-        bottom: "-18px",
-        size: 20,
-        duration: "8s",
-        delay: "-2s",
-        drift: "18px",
-        opacity: 0.42,
-      },
-      {
-        left: "15%",
-        bottom: "-30px",
-        size: 38,
-        duration: "11s",
-        delay: "-7s",
-        drift: "-24px",
-        opacity: 0.32,
-      },
-      {
-        left: "27%",
-        bottom: "-22px",
-        size: 16,
-        duration: "7.5s",
-        delay: "-4s",
-        drift: "30px",
-        opacity: 0.5,
-      },
-      {
-        left: "42%",
-        bottom: "-38px",
-        size: 48,
-        duration: "13s",
-        delay: "-9s",
-        drift: "-18px",
-        opacity: 0.22,
-      },
-      {
-        left: "58%",
-        bottom: "-20px",
-        size: 24,
-        duration: "9.5s",
-        delay: "-5s",
-        drift: "26px",
-        opacity: 0.4,
-      },
-      {
-        left: "70%",
-        bottom: "-40px",
-        size: 54,
-        duration: "14s",
-        delay: "-11s",
-        drift: "-30px",
-        opacity: 0.2,
-      },
-      {
-        left: "82%",
-        bottom: "-22px",
-        size: 18,
-        duration: "8.5s",
-        delay: "-3s",
-        drift: "16px",
-        opacity: 0.46,
-      },
-      {
-        left: "92%",
-        bottom: "-32px",
-        size: 34,
-        duration: "12s",
-        delay: "-8s",
-        drift: "-22px",
-        opacity: 0.28,
-      },
-    ].map((bubble, index) => (
-      <span
-        key={index}
-        className="
-          admin-bubble absolute rounded-full
-          border border-cyan-100/25
-          bg-gradient-to-br
-          from-white/20 via-cyan-200/10 to-blue-500/10
-          shadow-[inset_0_0_14px_rgba(255,255,255,0.14),0_0_18px_rgba(56,189,248,0.12)]
-          backdrop-blur-[2px]
-        "
-        style={{
-          left: bubble.left,
-          bottom: bubble.bottom,
-          width: bubble.size,
-          height: bubble.size,
-          "--bubble-duration": bubble.duration,
-          "--bubble-delay": bubble.delay,
-          "--bubble-drift": bubble.drift,
-          "--bubble-opacity": bubble.opacity,
-        }}
-      />
-    ))}
-  </div>
-
-  {/* Main glass panel */}
-  <div
-    className="
-      admin-header-reveal
-      relative mx-auto w-full max-w-4xl
-      overflow-hidden rounded-[1.75rem]
-      border border-white/10
-      bg-white/[0.055]
-      px-4 py-6
-      shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
-      backdrop-blur-xl
-      sm:rounded-[2rem] sm:px-8 sm:py-8
-      lg:px-12 lg:py-10
-    "
-  >
-    {/* Panel highlights */}
-    <div
-      className="
-        pointer-events-none absolute inset-x-8 top-0
-        h-px bg-gradient-to-r
-        from-transparent via-cyan-200/70 to-transparent
-      "
-      aria-hidden="true"
-    />
-
-    <div
-      className="
-        pointer-events-none absolute -right-16 -top-20
-        h-44 w-44 rounded-full
-        bg-cyan-300/10 blur-3xl
-      "
-      aria-hidden="true"
-    />
-
-    <div className="relative z-10">
-      {/* Dashboard badge */}
-      <div className="mb-3 flex justify-center sm:mb-4">
-        <div
-          className="
-            inline-flex items-center gap-2
-            rounded-full border border-cyan-200/20
-            bg-cyan-300/[0.07]
-            px-3 py-1.5
-            shadow-[0_8px_30px_rgba(34,211,238,0.08)]
-            backdrop-blur-md
-          "
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-          </span>
-
-          <span
-            className="
-              text-[9px] font-bold uppercase
-              tracking-[0.28em] text-cyan-100/90
-              sm:text-[10px] sm:tracking-[0.34em]
-            "
-          >
-            Admin Dashboard
-          </span>
-        </div>
-      </div>
-
-      <h1
-        className="
-          mx-auto max-w-3xl
-          font-[Aspire]
-          text-[clamp(2rem,9vw,4rem)]
-          font-extrabold leading-[0.95]
-          tracking-[-0.035em] text-white
-          drop-shadow-[0_5px_24px_rgba(56,189,248,0.18)]
-        "
-      >
-        Welcome back,
-        <span
-          className="
-            mt-1 block
-            bg-gradient-to-r
-            from-cyan-200 via-white to-blue-200
-            bg-clip-text text-transparent
-            sm:inline sm:ml-3
-          "
-        >
-          Amanda
-        </span>
-      </h1>
-
-      <p
-        className="
-          mx-auto mt-4 max-w-xl
-          text-xs leading-relaxed text-blue-100/65
-          sm:text-sm lg:text-base
-        "
-      >
-        Everything is up to date and running smoothly.
-      </p>
-
-      {/* Status strip */}
-      <div
-        className="
-          mx-auto mt-5 flex w-fit max-w-full
-          items-center justify-center gap-2
-          rounded-full border border-emerald-300/15
-          bg-emerald-300/[0.055]
-          px-3 py-1.5
-          text-[10px] font-semibold text-emerald-100/85
-          sm:text-xs
-        "
-      >
-        <span className="text-emerald-300">●</span>
-        All systems operational
-      </div>
-
-      {/* Quick actions */}
-      <div
-        className="
-          mt-6 grid grid-cols-2 gap-2.5
-          sm:mx-auto sm:mt-7 sm:flex sm:w-fit sm:gap-3
-        "
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("employees");
-            setEmployeesSubTab("profile");
-            setProfileSubTab("me");
-          }}
-          className="
-            admin-action-shimmer
-            group relative min-w-0 overflow-hidden
-            rounded-2xl border border-cyan-200/20
-            bg-gradient-to-br
-            from-cyan-300/20 via-blue-400/10 to-white/[0.06]
-            px-3 py-3
-            text-xs font-bold text-white
-            shadow-[0_10px_30px_rgba(8,145,178,0.13)]
-            backdrop-blur-md
-            transition duration-300
-            hover:-translate-y-0.5
-            hover:border-cyan-200/40
-            hover:bg-cyan-300/20
-            hover:shadow-[0_14px_35px_rgba(8,145,178,0.22)]
-            focus:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-cyan-300
-            focus-visible:ring-offset-2
-            focus-visible:ring-offset-[#071323]
-            active:translate-y-0
-            sm:min-w-[148px] sm:px-6 sm:py-3.5 sm:text-sm
-          "
-        >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            <span
-              className="
-                flex h-7 w-7 items-center justify-center
-                rounded-full bg-white/10
-                text-sm transition-transform duration-300
-                group-hover:scale-110
-              "
-              aria-hidden="true"
-            >
-              👤
-            </span>
-            Profiles
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("tasks");
-            setTasksSubTab("manage");
-          }}
-          className="
-            admin-action-shimmer
-            group relative min-w-0 overflow-hidden
-            rounded-2xl border border-white/15
-            bg-white/[0.075]
-            px-3 py-3
-            text-xs font-bold text-white
-            shadow-[0_10px_30px_rgba(0,0,0,0.18)]
-            backdrop-blur-md
-            transition duration-300
-            hover:-translate-y-0.5
-            hover:border-white/30
-            hover:bg-white/[0.13]
-            hover:shadow-[0_14px_35px_rgba(0,0,0,0.28)]
-            focus:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-cyan-300
-            focus-visible:ring-offset-2
-            focus-visible:ring-offset-[#071323]
-            active:translate-y-0
-            sm:min-w-[148px] sm:px-6 sm:py-3.5 sm:text-sm
-          "
-        >
-          <span className="relative z-10 flex items-center justify-center gap-2">
-            <span
-              className="
-                flex h-7 w-7 items-center justify-center
-                rounded-full bg-white/10
-                text-sm transition-transform duration-300
-                group-hover:scale-110
-              "
-              aria-hidden="true"
-            >
-              ✓
-            </span>
-            Tasks
-          </span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {/* Bottom transition */}
-  <div
-    className="
-      pointer-events-none absolute inset-x-0 bottom-0
-      h-16 bg-gradient-to-t
-      from-slate-950/35 to-transparent
-    "
-    aria-hidden="true"
-  />
-</header>
-        {/* ================= BODY ================= */}
-        <div className=" sm:px-5 lg:px-6 py-5">
-          {/* Primary navigation */}
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5 pb-5 border-b border-slate-200">
-            {sections.map(({ key, label, subTab, badge }) => (
-              <SectionTab
-                key={key}
-                active={activeTab === key}
-                badge={badge}
-                onClick={() => {
-                  setActiveTab(key);
-                  if (key === "workday") setWorkDaySubTab(subTab);
-                  if (key === "consultations") setConsultationsSubTab(subTab);
-                  if (key === "shifts") setShiftsSubTab(subTab);
-                  if (key === "profile") setProfileSubTab(subTab);
-                  if (key === "services") setServicesSubTab(subTab);
-                  if (key === "tasks") setTasksSubTab(subTab);
-                  if (key === "timeoff") setTimeOffSubTab(subTab);
-                  if (key === "employees") {
-                    setEmployeesSubTab("hours");
-                    setEmployeesHoursSubTab("weekly");
-                  }
-                }}
-              >
-                {label}
-              </SectionTab>
-            ))}
-          </div>
-
+    <CleaningTheme className="admin-dashboard">
+      <style>{dashboardStyles}</style>
+      <div className="ad-shell">
+        <header className="ad-header"><div className="ad-heading-group"><div className="ad-brand-icon"><CleaningSparkle/></div><div><p className="ad-eyebrow">A Breath of Fresh Air · Administration</p><h1>Admin dashboard</h1><p className="ad-welcome">Your team, your clients, every detail in one place.</p></div></div><button type="button" className="ad-account" aria-label="Open my profile" onClick={() => selectSection("people")}><DashboardIcon name="profile"/><span><strong>{admin?.username || "My profile"}</strong><small>Administrator</small></span><span aria-hidden="true">↗</span></button></header>
+        <div className="ad-layout">
+          <aside className="ad-sidebar"><p className="ad-nav-label">Your workspace</p><nav className="ad-navigation" aria-label="Admin sections">{sections.map(item => <button type="button" key={item.key} className={`ad-nav-button ${selectedKey === item.key ? "is-active" : ""}`} onClick={() => selectSection(item.key)} aria-pressed={selectedKey === item.key} aria-controls="ad-workspace"><DashboardIcon name={item.icon}/><span>{item.label}</span>{item.badge > 0 && <span className="ad-count" aria-label={`${item.badge} pending`}>{item.badge > 99 ? "99+" : item.badge}</span>}</button>)}</nav><div className="ad-sidebar-note"><CleaningSparkle/><p>A little care.<br/><strong>A sparkling difference.</strong></p></div></aside>
+          <main className="ad-main" id="ad-workspace" aria-labelledby="ad-section-title">
+            <div className="ad-section-heading"><div><p className="ad-eyebrow">Administration / {currentSection.label}</p><h2 id="ad-section-title">{currentSection.label === "Workday" ? "Your workday" : currentSection.label === "Team" ? "Team operations" : currentSection.label}</h2><p>{currentSection.description}</p></div><span className="ad-section-icon"><DashboardIcon name={currentSection.icon}/></span></div>
+            <nav className="ad-alerts" aria-label="Admin shortcuts">
+              <button type="button" onClick={() => { setActiveTab("clients"); setClientsSubTab("list"); setClientsListMode("all"); }}><span className={`ad-intake-dot ${acceptingClients ? "is-open" : ""}`}/>{acceptingClients === null ? "Client intake" : acceptingClients ? "Intake open" : "Waitlist mode"} <span aria-hidden="true">↗</span></button>
+              {newRequestCount > 0 && <button type="button" onClick={() => { setActiveTab("clients"); setClientsSubTab("list"); setClientsListMode("requests"); }}><span className="ad-count">{newRequestCount}</span> Requests ↗</button>}
+              {pendingTimeOffCount > 0 && <button type="button" onClick={() => { setActiveTab("employees"); setEmployeesSubTab("off"); setTimeOffSubTab("manage"); }}><span className="ad-count">{pendingTimeOffCount}</span> Time off ↗</button>}
+              {pendingReviewCount > 0 && <button type="button" onClick={() => setActiveTab("reviews")}><span className="ad-count">{pendingReviewCount}</span> Reviews ↗</button>}
+              {inventoryShortageAlert && <button type="button" onClick={() => { setActiveTab("employees"); setEmployeesSubTab("inventory"); setInventorySubTab("staff"); }}><span className="ad-warning">!</span> Supplies ↗</button>}
+            </nav>
+            <div className="ad-module">
           {/* Status */}
-          {loading && (
+          {loading && activeTab === "employees" && employeesSubTab === "profile" && (
             <div className="flex items-center justify-center gap-3 py-12 text-slate-500">
               <span className="h-4 w-4 rounded-full border-2 border-slate-300 border-t-blue-600 animate-spin" />
               <span className="text-sm font-medium">Loading…</span>
             </div>
           )}
 
-          {error && (
+          {error && activeTab === "employees" && employeesSubTab === "profile" && (
             <div className="my-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm font-medium text-rose-700">
               {error}
             </div>
@@ -847,7 +345,7 @@ export default function AdminDashboard() {
                 </Tab>
               </TabBar>
 
-              {!loading && !error && clientsSubTab === "consultations" && (
+              {clientsSubTab === "consultations" && (
                 <div>
                   <TabBar>
                     <Tab active={appointmentsSubTab === "create"} onClick={() => setAppointmentsSubTab("create")}>
@@ -863,7 +361,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {!loading && !error && clientsSubTab === "list" && (
+              {clientsSubTab === "list" && (
                 <>
                   <TabBar>
                     <Tab active={clientsListMode === "all"} onClick={() => setClientsListMode("all")} badge={newClientCount}>
@@ -885,8 +383,8 @@ export default function AdminDashboard() {
                   {clientsListMode === "all" && (
                     <>
                       {acceptingClients !== null && (
-                        <div className="mb-6 flex justify-center">
-                          <div className="flex items-center gap-5 rounded-2xl border border-slate-200 bg-white px-1 py-4 shadow-sm">
+                        <div className="ad-intake-wrap">
+                          <div className="ad-intake-card">
                             <div className="text-left">
                               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                                 Client Intake
@@ -900,10 +398,10 @@ export default function AdminDashboard() {
                               </p>
                             </div>
 
-                            <button
+                            <button type="button"
                               onClick={toggleIntake}
                               disabled={savingIntake}
-                              aria-label="Toggle client intake"
+                              aria-label="Accept new clients" role="switch" aria-checked={Boolean(acceptingClients)}
                               className={`relative w-14 h-8 rounded-full transition-colors duration-300 disabled:opacity-60 ${
                                 acceptingClients ? "bg-emerald-500" : "bg-slate-300"
                               }`}
@@ -925,14 +423,14 @@ export default function AdminDashboard() {
                 </>
               )}
 
-              {!loading && !error && clientsSubTab === "create" && (
+              {clientsSubTab === "create" && (
                 <div className="space-y-8">
                   <CreateSchedules />
                   <Booking />
                 </div>
               )}
 
-              {!loading && !error && clientsSubTab === "schedules" && (
+              {clientsSubTab === "schedules" && (
                 <div className="space-y-8">
                   <Booking />
                   <ClientSchedulesAdmin />
@@ -1057,14 +555,14 @@ export default function AdminDashboard() {
                 </Tab>
               </TabBar>
 
-              {!loading && !error && tasksSubTab === "manage" && <ManageTasks />}
+              {tasksSubTab === "manage" && <ManageTasks />}
             </div>
           )}
 
           {/* ===================== EMPLOYEES ===================== */}
           {activeTab === "employees" && (
             <div className="mt-6">
-              <TabBar>
+              {employeesSubTab !== "profile" && <TabBar>
                 <Tab active={employeesSubTab === "hours"} onClick={() => setEmployeesSubTab("hours")}>
                   Hours
                 </Tab>
@@ -1084,7 +582,7 @@ export default function AdminDashboard() {
                 <Tab active={employeesSubTab === "availability"} onClick={() => setEmployeesSubTab("availability")}>
                   Availability
                 </Tab>
-              </TabBar>
+              </TabBar>}
 
               {/* INVENTORY */}
               {employeesSubTab === "inventory" && (
@@ -1201,7 +699,7 @@ export default function AdminDashboard() {
                   {profileSubTab === "me" && <UserProfile />}
                   {profileSubTab === "all" && <AdminAllProfiles />}
 
-                  {profileSubTab === "users" && usersSubTab === "staff" && (
+                  {profileSubTab === "users" && usersSubTab === "staff" && !loading && !error && (
                     <StaffTable
                       staff={staff}
                       onActivate={activateStaff}
@@ -1212,7 +710,7 @@ export default function AdminDashboard() {
                     />
                   )}
 
-                  {profileSubTab === "users" && usersSubTab === "admins" && (
+                  {profileSubTab === "users" && usersSubTab === "admins" && !loading && !error && (
                     <AdminTable admins={admins} />
                   )}
                 </>
@@ -1255,7 +753,7 @@ export default function AdminDashboard() {
           )}
 
           {/* ===================== CONDUCT CONSULTATION ===================== */}
-          {consultationsSubTab === "new" && (
+          {activeTab === "consultations" && consultationsSubTab === "new" && (
             <div className="mt-6 space-y-6">
               <ConsultationSelector value={activeConsultationId} onSelect={setActiveConsultationId} />
 
@@ -1288,15 +786,15 @@ export default function AdminDashboard() {
                 </Tab>
               </TabBar>
 
-              {!loading && !error && servicesSubTab === "create" && <CreateServices />}
-              {!loading && !error && servicesSubTab === "manage" && <ManageServices />}
-              {!loading && !error && servicesSubTab === "gallery" && <CreateGallery />}
-              {!loading && !error && servicesSubTab === "manage-gallery" && <ManageGallery />}
+              {servicesSubTab === "create" && <CreateServices />}
+              {servicesSubTab === "manage" && <ManageServices />}
+              {servicesSubTab === "gallery" && <CreateGallery />}
+              {servicesSubTab === "manage-gallery" && <ManageGallery />}
             </div>
           )}
 
           {/* ===================== REVIEWS ===================== */}
-          {!loading && !error && activeTab === "reviews" && (
+          {activeTab === "reviews" && (
             <div className="mt-6">
               <ManageReviews />
             </div>
@@ -1322,9 +820,9 @@ export default function AdminDashboard() {
 
               {workDaySubTab === "calendar" && <ClientSchedulesCalendar />}
 
-              {!loading && !error && workDaySubTab === "checklists" && <AdminChecklistOverview />}
+              {workDaySubTab === "checklists" && <AdminChecklistOverview />}
 
-              {!loading && !error && workDaySubTab === "workday" && (
+              {workDaySubTab === "workday" && (
                 <div className="space-y-6">
                   <div className="px-1">
                     <TodayTasksSlider />
@@ -1333,7 +831,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {!loading && !error && workDaySubTab === "staff" && (
+              {workDaySubTab === "staff" && (
                 <div className="space-y-6">
                   <AdminWorkDay />
                   <LiveActiveShiftsManager />
@@ -1343,14 +841,14 @@ export default function AdminDashboard() {
           )}
 
           {/* ===================== INDEPENDENT PANELS ===================== */}
-          {!loading && !error && employeesSubTab === "availability" && (
+          {activeTab === "employees" && employeesSubTab === "availability" && (
             <div className="mt-6">
               <ManageAvailability />
             </div>
           )}
 
           {activeTab === "profile" && profileSubTab === "me" && <UserProfile />}
-          {activeTab === "profile" && profileSubTab === "users" && usersSubTab === "staff" && (
+          {activeTab === "profile" && profileSubTab === "users" && usersSubTab === "staff" && !loading && !error && (
             <StaffTable
               staff={staff}
               onActivate={activateStaff}
@@ -1361,13 +859,13 @@ export default function AdminDashboard() {
             />
           )}
 
-          {activeTab === "profile" && profileSubTab === "users" && usersSubTab === "admins" && (
+          {activeTab === "profile" && profileSubTab === "users" && usersSubTab === "admins" && !loading && !error && (
             <AdminTable admins={admins} />
           )}
 
           {activeTab === "profile" && profileSubTab === "all" && <AdminAllProfiles />}
 
-          {!loading && !error && activeTab === "staff" && (
+          {activeTab === "staff" && (
             <StaffTable
               staff={staff}
               onActivate={activateStaff}
@@ -1376,87 +874,29 @@ export default function AdminDashboard() {
               onUpdateRole={updateRole}
             />
           )}
+            </div>
+          </main>
         </div>
+        <p className="ad-footer">A Breath of Fresh Air Cleaning Services <span>·</span> Admin workspace</p>
       </div>
-    </div>
+    </CleaningTheme>
   );
 }
+
 
 /* ============================================================
    Reusable navigation primitives
    One consistent look for every tab level in the dashboard.
    ============================================================ */
 
-/* Top-level section button */
-function SectionTab({ active, onClick, children, badge }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative flex items-center justify-center min-h-[44px] w-full px-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
-        active
-          ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-600/25"
-          : "bg-white text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50"
-      }`}
-    >
-      {children}
-      {badge > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow ring-2 ring-white">
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
-/* Horizontal, scroll-safe container for a row of sub-tabs */
 function TabBar({ children }) {
-  return (
-    <div className="mb-6 flex items-center gap-1 overflow-x-auto border-b border-slate-200 scrollbar-hide">
-      {children}
-    </div>
-  );
+  return <div className="ad-subnav">{children}</div>;
 }
-
-/* Underline sub-tab (primary sub-navigation) */
 function Tab({ active, onClick, children, badge, alert }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative -mb-px shrink-0 whitespace-nowrap border-b-2 px-3.5 py-2.5 text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:text-blue-700 ${
-        active
-          ? "border-blue-600 text-blue-700"
-          : "border-transparent text-slate-500 hover:text-slate-800"
-      }`}
-    >
-      {children}
-      {badge > 0 && (
-        <span className="absolute top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-          {badge}
-        </span>
-      )}
-      {alert && (
-        <span className="absolute top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
-          !
-        </span>
-      )}
-    </button>
-  );
+  return <button type="button" onClick={onClick} className={`ad-sub-button ${active ? "is-active" : ""}`} aria-pressed={active}>{children}{badge > 0 && <span className="ad-count">{badge}</span>}{alert && <span className="ad-warning" aria-label="Needs attention">!</span>}</button>;
 }
-
-/* Soft pill (secondary create/manage style toggles) */
 function Pill({ active, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
-        active
-          ? "bg-blue-600 text-white shadow-sm shadow-blue-600/25"
-          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-      }`}
-    >
-      {children}
-    </button>
-  );
+  return <button type="button" onClick={onClick} className={`ad-pill ${active ? "is-active" : ""}`} aria-pressed={active}>{children}</button>;
 }
 
 /* ===================== */
@@ -1476,8 +916,8 @@ function StaffTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
-      <table className="w-full text-sm">
+    <div className="ad-table-wrap">
+      <table className="ad-table">
         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3 text-left font-semibold">Username</th>
@@ -1492,12 +932,13 @@ function StaffTable({
         <tbody className="divide-y divide-slate-100">
           {staff.map((s) => (
             <tr key={s.id} className="transition-colors hover:bg-slate-50/70">
-              <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-800">
+              <td data-label="Username" className="whitespace-nowrap px-4 py-3 font-semibold text-slate-800">
                 {s.username}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-600">{s.email}</td>
-              <td className="px-4 py-3">
+              <td data-label="Email" className="whitespace-nowrap px-4 py-3 text-slate-600">{s.email}</td>
+              <td data-label="Role" className="px-4 py-3">
                 <select
+                  aria-label={`Role for ${s.username}`}
                   value={s.role}
                   onChange={(e) => onUpdateRole(s.id, e.target.value)}
                   className="rounded-lg border border-slate-300 px-2 py-1 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
@@ -1507,7 +948,7 @@ function StaffTable({
                 </select>
               </td>
 
-              <td className="px-4 py-3">
+              <td data-label="Status" className="px-4 py-3">
                 {s.is_active ? (
                   <span className="inline-flex items-center gap-1.5 font-medium text-emerald-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1521,21 +962,21 @@ function StaffTable({
                 )}
               </td>
 
-              <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
+              <td data-label="Created" className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
                 {s.created_at ? new Date(s.created_at).toLocaleString() : "-"}
               </td>
 
-              <td className="px-4 py-3">
+              <td data-label="Actions" className="px-4 py-3">
                 <div className="flex flex-wrap gap-2">
                   {s.is_active ? (
-                    <button
+                    <button type="button"
                       onClick={() => onDeactivate(s.id)}
                       className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
                     >
                       Deactivate
                     </button>
                   ) : (
-                    <button
+                    <button type="button"
                       onClick={() => onActivate(s.id)}
                       className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
                     >
@@ -1543,18 +984,18 @@ function StaffTable({
                     </button>
                   )}
 
-                  <button
+                  <button type="button"
                     onClick={() => onDelete(s.id)}
                     className="rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
                   >
                     Delete
                   </button>
-                  <button
+                  {onSetPassword && <button type="button"
                     onClick={() => onSetPassword(s.id)}
                     className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
                   >
                     Set Password
-                  </button>
+                  </button>}
                 </div>
               </td>
             </tr>
@@ -1575,8 +1016,8 @@ function AdminTable({ admins }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
-      <table className="w-full text-sm">
+    <div className="ad-table-wrap">
+      <table className="ad-table">
         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3 text-left font-semibold">Username</th>
@@ -1590,11 +1031,11 @@ function AdminTable({ admins }) {
         <tbody className="divide-y divide-slate-100">
           {admins.map((a) => (
             <tr key={a.id} className="transition-colors hover:bg-slate-50/70">
-              <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-800">
+              <td data-label="Username" className="whitespace-nowrap px-4 py-3 font-semibold text-slate-800">
                 {a.username}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-slate-600">{a.email}</td>
-              <td className="px-4 py-3">
+              <td data-label="Email" className="whitespace-nowrap px-4 py-3 text-slate-600">{a.email}</td>
+              <td data-label="Status" className="px-4 py-3">
                 {a.is_active ? (
                   <span className="inline-flex items-center gap-1.5 font-medium text-emerald-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -1607,10 +1048,10 @@ function AdminTable({ admins }) {
                   </span>
                 )}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
+              <td data-label="Last login" className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
                 {a.last_login_at ? new Date(a.last_login_at).toLocaleString() : "Never"}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
+              <td data-label="Created" className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
                 {a.created_at ? new Date(a.created_at).toLocaleString() : "-"}
               </td>
             </tr>
@@ -1620,3 +1061,27 @@ function AdminTable({ admins }) {
     </div>
   );
 }
+function DashboardIcon({ name }) {
+  const paths = {
+    clock: <><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></>,
+    work: <><rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7V4h8v3M3 12q9 5 18 0M10 13h4"/></>,
+    clients: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4q3 1 3 6"/></>,
+    consult: <><path d="M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><rect x="7" y="2" width="10" height="5" rx="2"/><path d="M7 12h10M7 17h6"/></>,
+    sparkle: <><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><path d="M20 2v4m-2-2h4"/></>,
+    review: <path d="m12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"/>,
+    task: <><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 12 3 3 7-7"/></>,
+    profile: <><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></>,
+  };
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{paths[name] || paths.sparkle}</svg>;
+}
+
+const dashboardStyles = `
+.ad-module > .mt-6{margin-top:0}.ad-intake-dot{width:7px;height:7px;border-radius:50%;background:#f6cd8b}.ad-intake-dot.is-open{background:#6ee7b7}.ad-intake-wrap{margin-bottom:18px}.ad-intake-card{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 16px;border:1px solid #d4e6e9;background:#eef8f7;border-radius:14px}.ad-intake-card button{flex-shrink:0}.ad-pill{min-height:44px;padding:9px 15px;background:#e5eef4;border:1px solid #d0e0e9;border-radius:10px;color:#395267;font-size:12px!important;font-weight:650!important}.ad-pill.is-active{background:#123955;color:#d9fcff;border-color:#17657a}.ad-table-wrap{max-width:100%;overflow-x:auto;border:1px solid #dbe6ed;border-radius:14px;background:white}.ad-table{width:100%;font-size:12px;border-collapse:collapse}.ad-table th{font-size:10px!important;white-space:nowrap;background:#ecf3f7}.ad-table td{padding:13px 12px;vertical-align:top}.ad-table td button{min-height:38px}.ad-table select{min-height:40px}.ad-table td[data-label="Email"]{white-space:normal;overflow-wrap:anywhere}.ad-table tbody tr+tr{border-top:1px solid #e3edf2}
+@media(max-width:900px){.ad-table-wrap{border:0;background:transparent;overflow:visible}.ad-table,.ad-table tbody{display:block}.ad-table thead{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}.ad-table tbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ad-table tbody tr{display:block;min-width:0;border:1px solid #d5e4ec!important;border-radius:14px;background:white;padding:12px;box-shadow:0 4px 14px #17384b08}.ad-table td{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;white-space:normal!important;overflow-wrap:anywhere;min-width:0;font-size:12px}.ad-table td::before{content:attr(data-label);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#648196;flex-shrink:0}.ad-table td[data-label="Username"]{font-size:16px;font-weight:700;border-bottom:1px solid #e1ebf1;padding:2px 0 12px;margin-bottom:5px}.ad-table td[data-label="Username"]::before{display:none}.ad-table td[data-label="Email"]{display:block}.ad-table td[data-label="Email"]::before{display:block;margin-bottom:4px}.ad-table td[data-label="Actions"]{display:block;border-top:1px solid #e1ebf1;margin-top:5px;padding-top:12px}.ad-table td[data-label="Actions"]::before{display:none}.ad-table td[data-label="Actions"]>div{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ad-table td button{min-height:44px;font-size:11px}.ad-table select{font-size:16px}}
+@media(max-width:600px){.ad-table tbody{grid-template-columns:1fr}.ad-intake-card{padding:12px}.ad-intake-card p{font-size:12px}}
+
+.admin-dashboard{--ad-panel:#0b192e;--ad-line:#7dd3fc26}.ad-shell{width:min(1500px,calc(100% - 48px));margin:0 auto;padding:110px 0 24px}.ad-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:8px 0 26px}.ad-heading-group{display:flex;align-items:center;gap:15px;min-width:0}.ad-brand-icon{display:grid;place-items:center;width:52px;height:52px;flex-shrink:0;border:1px solid #67e8f94d;border-radius:17px;background:linear-gradient(140deg,#174568,#103238);box-shadow:0 0 28px #38bdf816}.ad-brand-icon svg{width:27px;color:#9bf8e1}.ad-eyebrow{font-size:9px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:#8edcea;line-height:1.7}.admin-dashboard .ad-header h1{font-family:inherit;font-size:clamp(24px,3vw,35px);font-weight:700;letter-spacing:-.045em;line-height:1.15;margin:5px 0 7px}.ad-welcome{font-size:12px;color:#a9c0d3;line-height:1.6}.ad-account{display:flex;align-items:center;gap:12px;border:1px solid var(--ad-line);padding:11px 15px;border-radius:15px;background:#0c1d32;color:#e6f6ff;text-align:left;flex-shrink:0}.ad-account>svg{width:20px}.ad-account strong{display:block;font-size:12px;font-weight:650}.ad-account small{display:block;font-size:10px;color:#9bb4c8;margin-top:3px}.ad-account>span:last-child{color:#7dd3fc}.ad-layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:22px;align-items:start}.ad-sidebar{position:sticky;top:100px;background:linear-gradient(155deg,#0d2239ee,#060f1fee);border:1px solid var(--ad-line);border-radius:20px;padding:16px 10px}.ad-nav-label{font-size:9px;font-weight:750;color:#8aa6bd;text-transform:uppercase;letter-spacing:.18em;padding:0 12px 14px}.ad-navigation{display:flex;flex-direction:column;gap:5px}.ad-nav-button{display:flex;align-items:center;gap:11px;min-height:46px;width:100%;padding:10px 12px;background:transparent;border:1px solid transparent;border-radius:12px;color:#b5cbdc;text-align:left;font-size:12px!important;font-weight:650!important;transition:background .2s,color .2s}.ad-nav-button>svg{width:19px;height:19px;flex-shrink:0}.ad-nav-button:hover{background:#18344e;color:#effcff}.ad-nav-button.is-active{color:#051726;background:linear-gradient(110deg,#7dd3fc,#70efcf);box-shadow:0 4px 18px #38bdf824}.ad-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px;padding:2px 5px;font-size:10px;line-height:1.3;font-weight:750;color:#071828;background:#8ce8fa;border-radius:7px;flex-shrink:0}.ad-nav-button .ad-count,.ad-nav-button .ad-warning{margin-left:auto}.ad-nav-button.is-active .ad-count{background:#092b42;color:#d9fbff}.ad-warning{display:inline-grid;place-items:center;width:20px;height:20px;background:#ffdab0;color:#663600;border-radius:7px;font-size:12px;font-weight:800}.ad-sidebar-note{display:flex;align-items:center;gap:10px;padding:22px 9px 7px;margin-top:20px;border-top:1px solid var(--ad-line)}.ad-sidebar-note svg{width:20px;color:#6ee7b7;flex-shrink:0}.ad-sidebar-note p{font-size:10px;line-height:1.8;color:#8aa9be}.ad-sidebar-note strong{font-weight:500;color:#c5e7ed}.ad-main{min-width:0}.ad-section-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:2px 0 18px}.admin-dashboard .ad-section-heading h2{font-family:inherit;font-size:23px;font-weight:650;letter-spacing:-.025em;line-height:1.2;margin:5px 0 7px}.ad-section-heading>div>p:last-child{font-size:12px;color:#a9c0d3}.ad-section-icon{display:grid;place-items:center;background:#13314a;border:1px solid var(--ad-line);border-radius:14px;width:43px;height:43px;color:#8fedec;flex-shrink:0}.ad-section-icon svg{width:22px}.ad-alerts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}.ad-alerts button{display:inline-flex;align-items:center;gap:8px;min-height:38px;background:#11263e;border:1px solid #7dd3fc33;border-radius:10px;color:#d4edf6;padding:7px 10px;font-size:10px!important;font-weight:600!important}.ad-alerts button:hover{background:#1d3b54}.ad-module{min-width:0;background:#f8fafc;color:#172c40;border:1px solid #8acfea40;border-radius:18px;padding:16px;box-shadow:0 16px 50px #0003;overflow-wrap:anywhere}.ad-module>div{min-width:0}.ad-subnav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0d2139;border:1px solid #7dd3fc26;border-radius:13px;padding:6px;margin:0 0 16px;max-width:100%}.ad-sub-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;min-width:0;padding:9px 13px;border:1px solid transparent;border-radius:9px;color:#bfd6e4;background:transparent;font-size:12px!important;font-weight:600!important;line-height:1.4;text-align:center;transition:background .2s}.ad-sub-button:hover{background:#20415b;color:#efffff}.ad-sub-button.is-active{background:#d9f7fa;color:#0c4254;border-color:#b5eff3;box-shadow:0 2px 6px #0001}.ad-client-tabs{margin-bottom:14px}.ad-client-tabs .ad-subnav:last-child{margin-bottom:0}.ad-nested{padding:8px;border:1px solid #dbe8ee;border-radius:14px}.ad-footer{font-size:10px;line-height:1.8;color:#799aaf;text-align:center;margin-top:24px!important}.ad-footer span{margin:0 8px}
+@media(max-width:1050px){.ad-shell{width:calc(100% - 32px)}.ad-layout{grid-template-columns:160px minmax(0,1fr);gap:16px}.ad-sidebar{padding:12px 7px}.ad-nav-button{padding-inline:9px;gap:8px}.ad-module{padding:12px}.ad-sub-button{padding-inline:10px}}
+@media(max-width:760px){.ad-shell{width:calc(100% - 24px);padding-top:98px}.ad-header{gap:10px;padding-bottom:18px}.ad-heading-group{gap:10px}.ad-brand-icon{width:39px;height:39px;border-radius:12px}.ad-brand-icon svg{width:21px}.ad-header .ad-eyebrow{font-size:8px;letter-spacing:.1em;max-width:240px}.admin-dashboard .ad-header h1{font-size:25px}.ad-welcome{display:none}.ad-account{padding:10px;border-radius:12px}.ad-account>span{display:none}.ad-account>svg{width:19px;height:19px}.ad-layout{display:block}.ad-sidebar{position:static;padding:8px;border-radius:16px;margin-bottom:18px}.ad-nav-label,.ad-sidebar-note{display:none}.ad-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.ad-nav-button{position:relative;flex-direction:column;justify-content:center;gap:5px;padding:9px 3px;min-height:61px;font-size:10px!important;border-radius:10px}.ad-nav-button>svg{width:19px;height:19px}.ad-nav-button .ad-count,.ad-nav-button .ad-warning{position:absolute;top:3px;right:3px;min-width:16px;min-height:16px;height:auto;font-size:8px;padding:1px 3px;border-radius:5px}.ad-section-heading{margin:0 2px 14px}.admin-dashboard .ad-section-heading h2{font-size:21px}.ad-section-heading>div>p:last-child{font-size:11px;line-height:1.5}.ad-section-heading .ad-eyebrow{font-size:8px}.ad-section-icon{width:35px;height:35px;border-radius:10px}.ad-section-icon svg{width:18px}.ad-alerts{gap:6px}.ad-alerts button{flex:1 1 auto;justify-content:center;font-size:10px!important;padding:6px 8px}.ad-module{padding:9px;border-radius:14px}.ad-subnav{gap:4px;padding:5px;margin-bottom:12px;border-radius:11px}.ad-sub-button{flex:1 1 auto;min-height:44px;padding:8px;font-size:11px!important}.ad-nested{padding:5px}.ad-footer{font-size:9px;padding-inline:10px}.ad-module input,.ad-module select,.ad-module textarea{max-width:100%;font-size:16px}.ad-module img{max-width:100%}}
+@media(max-width:360px){.ad-shell{width:calc(100% - 16px)}.ad-module{padding:6px}.ad-header .ad-eyebrow{font-size:7px}.admin-dashboard .ad-header h1{font-size:23px}}
+`;
