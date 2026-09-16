@@ -50,6 +50,7 @@ export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated, hasC
   const [listDiagnostic, setListDiagnostic] = useState("");
   const [busyTask, setBusyTask] = useState(null);
   const [starting, setStarting] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [filter, setFilter] = useState("all");
   const [photoUrl, setPhotoUrl] = useState("");
@@ -148,7 +149,7 @@ export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated, hasC
       log("schedule matching", {requestId,scheduleId,templateCount:templates.length,
         matchingSessionIds:open.map(item=>item.id),
         excludedSessions:(sessionRes.data.cleaning_sessions || []).filter(item=>!sameId(item.schedule_id,scheduleId)).map(item=>({id:item.id,scheduleId:item.schedule_id,taskListId:item.task_list_id}))});
-      setLists(templates); setSessions(open);
+      setLists(templates); setSessions(previous => [...open, ...previous.filter(item => item.status === "completed" && !open.some(other => sameId(other.id,item.id)))]);
       setListId(previous => templates.some(list=>sameId(list.id,previous)) || open.some(session=>sameId(session.task_list_id,previous)) ? previous : String(open[0]?.task_list_id ?? templates[0]?.id ?? ""));
       setSessionId(previous => open.some(session=>sameId(session.id,previous)) ? previous : "");
       setLastSynced(new Date());
@@ -211,7 +212,7 @@ export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated, hasC
     });
     return [...groups.entries()];
   },[taskRows,filter]);
-  const busy = starting || busyTask !== null || checkingOut;
+  const busy = starting || finalizing || busyTask !== null || checkingOut;
   useEffect(() => {
     const reason = loading ? "Active shift is loading"
       : !activeShift ? "No active shift"
@@ -279,6 +280,47 @@ export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated, hasC
       }
     } finally { actionLock.current=false; if(mounted.current)setBusyTask(null); }
   };
+  const completeChecklist = async () => {
+    if (actionLock.current || tasksLoading || loading || shiftError || !session || session.status !== "in_progress") return;
+    actionLock.current = true; setFinalizing(true); setTaskError(""); setStatus("");
+    const currentSessionId = session.id;
+    const currentShiftId = shiftId;
+    taskRequest.current++;
+    const isCurrent = () => mounted.current && sameId(shiftRef.current?.shift?.id,currentShiftId);
+    const applySession = fresh => {
+      if (!fresh || !sameId(fresh.id,currentSessionId) || !isCurrent()) return;
+      setSessions(previous => previous.map(item => sameId(item.id,currentSessionId) ? fresh : item));
+      setLastSynced(new Date());
+    };
+    try {
+      // Admin IDs must never be passed as staff IDs. The server validates
+      // required tasks against current shared progress before closing.
+      const {data} = await authAxios.post(`/cleaning/sessions/${currentSessionId}/finalize`, {});
+      const closed = data.cleaning_session;
+      if (!closed || !sameId(closed.id,currentSessionId) || closed.status !== "completed") {
+        throw new Error("The server did not confirm checklist completion.");
+      }
+      applySession(closed);
+      if (isCurrent()) setStatus("Checklist completed and closed for the team. You are still checked in to your shift.");
+    } catch (error) {
+      // Recover a lost success response, or a partner finalizing first.
+      let fresh;
+      try {
+        fresh = (await authAxios.get(`/cleaning/sessions/${currentSessionId}`)).data.cleaning_session;
+        applySession(fresh);
+      } catch { /* Preserve the completion error if refreshing also fails. */ }
+      if (isCurrent()) {
+        if (sameId(fresh?.id,currentSessionId) && fresh?.status === "completed") {
+          setStatus("Checklist completed and closed for the team. You are still checked in to your shift.");
+        } else {
+          setTaskError(errorText(error,"Could not complete the checklist. Refresh and try again."));
+        }
+      }
+    } finally {
+      actionLock.current = false;
+      if (mounted.current) setFinalizing(false);
+    }
+  };
   const refresh = async () => {
     if (actionLock.current || tasksLoading || uploading) return;
     setConsultationVersion(v=>v+1);
@@ -335,17 +377,23 @@ export default function AdminActiveShiftPanel({ refreshKey, onShiftUpdated, hasC
         {session && <>
           <div className="asp-progress"><div><strong>{completed} of {taskRows.length} tasks complete</strong><span>{percent}%</span></div><progress max="100" value={percent} aria-label="Cleaning task completion"/><div className="asp-progress-meta"><small>{lastSynced ? `Refreshed ${lastSynced.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}` : "Shared cleaning checklist"}</small><button type="button" aria-pressed={filter==="remaining"} onClick={()=>setFilter(value=>value==="all"?"remaining":"all")}>{filter==="remaining" ? "Show all tasks" : "Only remaining"}</button></div></div>
           {session.status!=="in_progress" && <p className="asp-feedback">This checklist is {session.status}. Task changes are locked.</p>}
-          {grouped.map(([room,tasks])=><section className="asp-room" key={room}><h4>{room}<span>{tasks.filter(task=>task.is_completed).length}/{tasks.length}</span></h4>{tasks.map(task=><label key={task.id} className={`asp-task ${task.is_completed?"is-done":""}`}><input type="checkbox" checked={Boolean(task.is_completed)} disabled={busy || tasksLoading || loading || Boolean(shiftError) || session.status!=="in_progress"} onChange={()=>toggleTask(task)}/><span className="asp-task-copy"><strong>{task.title}</strong>{task.description && <span>{task.description}</span>}<small>{busyTask===task.id ? "Saving…" : task.is_completed ? `Completed${cleanerName(task)?` by ${cleanerName(task)}`:""}${task.completed_at?` · ${dateTime(task.completed_at)}`:""}` : task.is_required ? "Required" : "Optional"}</small>{task.completion_notes && <span className="asp-task-note">{task.completion_notes}</span>}</span></label>)}</section>)}
-          {!grouped.length && <p className="asp-empty">{taskRows.length ? "All tasks are complete. Beautiful work." : "This cleaning session has no tasks."}</p>}
+          {session.status!=="completed" && grouped.map(([room,tasks])=><section className="asp-room" key={room}><h4>{room}<span>{tasks.filter(task=>task.is_completed).length}/{tasks.length}</span></h4>{tasks.map(task=><label key={task.id} className={`asp-task ${task.is_completed?"is-done":""}`}><input type="checkbox" checked={Boolean(task.is_completed)} disabled={busy || tasksLoading || loading || Boolean(shiftError) || session.status!=="in_progress"} onChange={()=>toggleTask(task)}/><span className="asp-task-copy"><strong>{task.title}</strong>{task.description && <span>{task.description}</span>}<small>{busyTask===task.id ? "Saving…" : task.is_completed ? `Completed${cleanerName(task)?` by ${cleanerName(task)}`:""}${task.completed_at?` · ${dateTime(task.completed_at)}`:""}` : task.is_required ? "Required" : "Optional"}</small>{task.completion_notes && <span className="asp-task-note">{task.completion_notes}</span>}</span></label>)}</section>)}
+          {session.status!=="completed" && !grouped.length && <p className="asp-empty">{taskRows.length ? "All tasks are complete. Beautiful work." : "This cleaning session has no tasks."}</p>}
+          {session.status === "in_progress" && <div className="asp-complete">
+            <p>Finished this cleaning? Complete closes this shared checklist for everyone. All required tasks must be checked off; optional tasks may remain.</p>
+            <button type="button" className="asp-primary" disabled={busy || tasksLoading || loading || Boolean(shiftError)} onClick={completeChecklist}>{finalizing ? "Completing…" : "✓ Complete"}</button>
+          </div>}
         </>}
       </div>}
       <details className="asp-wrapup"><summary>Photo & shift notes <span>Optional</span></summary><div className="asp-wrapup-body"><label className="asp-upload">{uploading?"Uploading photo…":photoUrl?"Replace shift photo":"Add a shift photo"}<input ref={fileRef} type="file" accept="image/*" capture="environment" disabled={uploading || busy || loading} onChange={event=>uploadPhoto(event.target.files?.[0])}/></label>{uploadError && <p className="asp-error" role="alert">{uploadError}</p>}{photoUrl && <div className="asp-photo"><img src={photoUrl} alt="Photo to attach to this shift"/><button type="button" disabled={uploading || checkingOut} onClick={()=>setPhotoUrl("")}>Remove photo</button></div>}<label className="asp-notes">Shift notes<textarea rows={3} value={message} disabled={checkingOut} onChange={event=>setMessage(event.target.value)} placeholder="Work completed, issues, or a note for the team…"/></label></div></details>
-      <footer className="asp-checkout"><p>Your checklist is shared. Checking out ends your shift and leaves the cleaning open for your partner.</p><button type="button" disabled={busy || uploading || tasksLoading || loading || Boolean(shiftError)} onClick={checkOut}>{checkingOut?"Checking out…":"Check out of shift"}</button></footer>
+      <footer className="asp-checkout"><p>Your checklist is shared. Complete closes the checklist for the team. Check out ends only your shift; any unfinished checklist stays open for your partner.</p><button type="button" disabled={busy || uploading || tasksLoading || loading || Boolean(shiftError)} onClick={checkOut}>{checkingOut?"Checking out…":"Check out of shift"}</button></footer>
     </>}
   </section></CleaningTheme>;
 }
 
 const styles = `
+.asp-complete{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;padding:14px;border:1px solid #6ee7b744;border-radius:12px;background:#103331}.asp-complete p{flex:1 1 210px;font-size:11px;line-height:1.7;color:#b8ddd6}.asp-complete .asp-primary{flex:1 0 120px;margin:0}
+
 .cleaning-theme.asp-theme{min-height:0;background:radial-gradient(ellipse at top right,#16485d66,transparent 60%),#061121;border-radius:18px;overflow:visible}.cleaning-theme .asp-theme .ct-page-atmosphere{display:none}.asp-panel{padding:21px;color:#dceefa;min-width:0}.asp-header{display:flex;align-items:center;gap:11px;margin-bottom:17px}.asp-mark{width:39px;height:39px;display:grid;place-items:center;background:#153e4c;border:1px solid #76e9dc44;border-radius:12px;flex-shrink:0}.asp-mark svg{width:22px;height:22px;color:#9ff2dd}.asp-eyebrow{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#89d8df;font-weight:700}.asp-header h3{font-size:21px;line-height:1.3;margin-top:4px;letter-spacing:-.03em;font-weight:700}.asp-live{margin-left:auto;white-space:nowrap;background:#123e36;border:1px solid #6ee7b744;color:#9df1cb;font-size:9px;padding:6px 9px;border-radius:99px}.asp-live:before{content:"";display:inline-block;height:5px;width:5px;background:#7ae8b5;border-radius:50%;margin-right:5px}.asp-shift{background:#11253a;border:1px solid #7dd3fc2b;border-radius:14px;padding:15px;margin-bottom:17px}.asp-shift h4{font-size:18px;line-height:1.4;font-weight:650;margin:0 0 11px;overflow-wrap:anywhere}.asp-shift>div{display:flex;flex-wrap:wrap;gap:11px 30px}.asp-shift>div>span{display:flex;flex-direction:column;gap:4px;font-size:9px;color:#90b5ca}.asp-shift strong{font-size:12px;color:#d1e8f3;font-weight:550}.asp-tabbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;margin-bottom:13px}.asp-tabs{display:flex;gap:4px;background:#0b1b2e;border:1px solid #7dd3fc33;padding:4px;border-radius:11px}.asp-tabs button{min-height:40px;padding:8px 13px;border:0;border-radius:7px;background:transparent;color:#a9c6d8;font-size:12px!important;font-weight:600!important}.asp-tabs button[aria-pressed=true]{background:linear-gradient(110deg,#8cdef3,#8bf0d6);color:#103744}.asp-refresh{min-height:43px;border:1px solid #7dd3fc44;background:#123047;border-radius:10px;padding:9px 13px;color:#c6f2ef;font-size:11px!important;font-weight:650!important}.asp-help{font-size:11px;color:#9abacd;line-height:1.7;margin-bottom:14px!important}.asp-select{display:flex;flex-direction:column;gap:6px;font-size:10px;font-weight:650;color:#a9cedd;margin:12px 0}.asp-select select{width:100%;min-height:45px;padding:9px 12px;border-radius:10px;border:1px solid #7dd3fc44;background:#10263c;color:#dcf3fc;font-size:13px}.asp-start{padding:19px;border:1px dashed #7dd3fc44;border-radius:13px;background:#0c2135}.asp-start h4{font-size:16px;font-weight:650;margin:0 0 8px}.asp-start p{font-size:12px;color:#a2c0d1;line-height:1.7;margin:8px 0}.asp-primary{min-height:44px;border:0;border-radius:10px;padding:10px 17px;background:linear-gradient(110deg,#8bdff3,#83efd4);color:#0d3343;font-size:12px!important;font-weight:700!important;margin-top:7px}.asp-progress{border:1px solid #7dd3fc26;background:#0d2337;padding:13px 15px;border-radius:13px;margin:14px 0}.asp-progress>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}.asp-progress strong{font-weight:650}.asp-progress>div>span{color:#96eedb}.asp-progress progress{appearance:none;display:block;border:0;width:100%;height:6px;margin:12px 0;border-radius:99px;overflow:hidden;background:#224159;color:#7ce6d5}.asp-progress progress::-webkit-progress-bar{background:#224159}.asp-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#7dd3fc,#6ee7b7);border-radius:99px}.asp-progress progress::-moz-progress-bar{background:#7ce6d5}.asp-progress-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.asp-progress-meta small{font-size:10px;color:#8fb3c6}.asp-progress-meta button{border:1px solid #7dd3fc33;padding:6px 9px;min-height:34px;border-radius:7px;background:#15354a;color:#b6eee8;font-size:10px!important}.asp-room{margin-top:18px}.asp-room h4{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;font-weight:700;margin:0 2px 9px;color:#d4edf7}.asp-room h4>span{font-size:10px;color:#86b2c7;font-weight:500}.asp-task{display:flex;align-items:flex-start;gap:12px;padding:14px;margin:7px 0;border:1px solid #7dd3fc29;border-radius:12px;background:#102339;cursor:pointer;transition:background .18s,border-color .18s}.asp-task:hover{background:#153149;border-color:#8bdded55}.asp-task.is-done{background:#0e302f;border-color:#6ee7b72b}.asp-task input{accent-color:#65dcb9;width:21px;height:21px;min-width:21px;margin:1px 0 0;cursor:pointer}.asp-task-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1;overflow-wrap:anywhere}.asp-task-copy strong{font-size:13px;line-height:1.5;font-weight:650}.asp-task-copy>span{font-size:11px;line-height:1.7;color:#a6c3d4;white-space:pre-wrap}.asp-task-copy small{font-size:9px;line-height:1.6;color:#90b6c6}.asp-task.is-done strong{color:#bcf2dc}.asp-task.is-done small{color:#87cbb8}.asp-task-note{font-style:italic}.asp-wrapup{margin-top:21px;border:1px solid #7dd3fc2b;background:#0c1e31;border-radius:13px}.asp-wrapup summary{cursor:pointer;padding:15px;font-size:12px;font-weight:650;min-height:47px}.asp-wrapup summary>span{float:right;font-size:10px;color:#7fa5bc;font-weight:500}.asp-wrapup-body{padding:0 15px 15px;display:flex;flex-direction:column;gap:14px}.asp-upload{display:flex;flex-direction:column;gap:12px;border:1px dashed #7dd3fc55;border-radius:11px;padding:13px;font-size:12px;color:#bdeaf1}.asp-upload input{font-size:11px;max-width:100%;color:#a6c6d9}.asp-upload input::file-selector-button{min-height:40px;background:#21465b;border:1px solid #7dd3fc44;color:#d3f2f9;border-radius:8px;padding:8px 12px;margin-right:8px;cursor:pointer}.asp-photo{display:flex;align-items:center;gap:12px}.asp-photo img{width:105px;height:105px;object-fit:cover;border-radius:12px;border:1px solid #7dd3fc44}.asp-photo button{min-height:40px;padding:9px 12px;border:1px solid #7dd3fc33;border-radius:8px;background:#173249;color:#c9e9f0;font-size:11px!important}.asp-notes{display:flex;flex-direction:column;gap:8px;font-size:11px;font-weight:600;color:#b9d8e7}.asp-notes textarea{resize:vertical;width:100%;min-height:90px;background:#071729;border:1px solid #7dd3fc3b;color:#daeff8;border-radius:10px;padding:12px;font-size:13px;line-height:1.6}.asp-notes textarea::placeholder{color:#789caf}.asp-checkout{display:flex;align-items:center;justify-content:space-between;gap:17px;padding-top:19px;margin-top:18px;border-top:1px solid #7dd3fc25}.asp-checkout p{font-size:10px;color:#91b1c5;line-height:1.8;max-width:360px}.asp-checkout button{min-height:46px;flex-shrink:0;background:#742d42;border:1px solid #efa7b577;border-radius:11px;color:#ffe8ed;font-size:12px!important;font-weight:650!important;padding:11px 18px}.asp-checkout button:hover{background:#923951}.asp-panel button:disabled,.asp-panel select:disabled{opacity:.5;cursor:wait}.asp-task input:disabled{cursor:wait}.asp-empty{font-size:12px;line-height:1.7;padding:20px 14px;background:#0d2235;border:1px dashed #7dd3fc33;border-radius:12px;color:#a4c6d8;text-align:center}.asp-error{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px;line-height:1.7;background:#462039;color:#ffcfdf;border:1px solid #f6a0bb44;border-radius:10px;padding:11px;margin:10px 0!important}.asp-error button{background:#752f4b;color:#ffe6ee;padding:8px 13px;border:1px solid #ee9cbb55;border-radius:8px;min-height:40px}.asp-feedback{font-size:11px;line-height:1.7;background:#123438;color:#b9f2df;border:1px solid #6ee7b72b;border-radius:10px;padding:10px 12px;margin:12px 0!important}.asp-consultation{background:#f6fafc;color:#193b4b;padding:12px;border-radius:13px;margin-top:12px}
 @media(max-width:640px){.asp-panel{padding:13px}.asp-header{gap:8px}.asp-header h3{font-size:19px}.asp-eyebrow{font-size:8px;letter-spacing:.08em}.asp-mark{width:34px;height:34px;border-radius:10px}.asp-live{font-size:8px;padding:5px 7px}.asp-shift{padding:12px}.asp-shift h4{font-size:16px}.asp-shift>div{gap:10px 18px}.asp-shift strong{font-size:11px}.asp-tabbar{gap:7px}.asp-tabs{flex:1}.asp-tabs button{flex:1;font-size:11px!important;padding:8px;min-height:42px}.asp-refresh{font-size:10px!important;padding:9px;min-height:44px}.asp-select select,.asp-notes textarea{font-size:16px}.asp-task{padding:12px 10px;gap:10px}.asp-task-copy strong{font-size:13px}.asp-task-copy>span{font-size:11px}.asp-progress{padding:12px}.asp-progress-meta button{min-height:40px}.asp-checkout{flex-direction:column;align-items:stretch;gap:11px}.asp-checkout p{max-width:none}.asp-checkout button{width:100%}.asp-wrapup-body{padding:0 11px 13px}.asp-help{font-size:10px}}
 `;

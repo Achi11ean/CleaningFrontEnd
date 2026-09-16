@@ -17,7 +17,14 @@ function CleaningWoman() {
     <g className="ct-step ct-step-back"><path d="M70 131 64 161 49 189" stroke="#25495b" strokeWidth="13" strokeLinecap="round"/><path d="M48 188h-9q-8 9 2 10h18v-9" fill="#143544"/></g>
     <g className="ct-step"><path d="M82 131 86 162 93 191" stroke="#356375" strokeWidth="13" strokeLinecap="round"/><path d="M90 187v11h24q2-7-13-10" fill="#143544"/></g>
     <g className="ct-body"><path d="M61 36q-18-2-19 17t-16 23q30 7 32-30" fill="#523331"/><path d="M56 32q4-24 25-19 22 3 19 31l-11 15-33-11Z" fill="#523331"/>
-    <path d="M70 51v17h17V49" fill="#c98e70"/><ellipse cx="79" cy="37" rx="17" ry="21" fill="#e8b18e"/><path d="M59 31q17 3 22-13 3 15 17 17-1-27-21-23-18 2-18 19" fill="#523331"/><circle cx="88" cy="36" r="1.5" fill="#243c45"/><path d="m87 46 5-1" stroke="#9b534c" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M70 51v17h17V49" fill="#c98e70"/><ellipse cx="79" cy="37" rx="17" ry="21" fill="#e8b18e"/><path d="M59 31q17 3 22-13 3 15 17 17-1-27-21-23-18 2-18 19" fill="#523331"/>{/* Happy crescent eyes, rosy cheeks, and a big toothy smile. */}
+    <path d="M72 36q3-4 6 0M85 36q3-4 6 0" stroke="#49332f" strokeWidth="2" strokeLinecap="round"/>
+    <ellipse cx="71" cy="42" rx="3.8" ry="2.3" fill="#e78883" opacity="0.75"/>
+    <ellipse cx="91" cy="42" rx="3.5" ry="2.3" fill="#e78883" opacity="0.75"/>
+    <path d="M75 44Q82 47 90 43Q87 54 82 53Q77 52 75 44Z" fill="#a34f53"/>
+    <path d="M77 45Q82 47 88 44.5L86.5 47Q82 49 78 47Z" fill="#fffaf0"/>
+    <path d="M80 51Q83 48.5 86 50.5Q83 53 80 51Z" fill="#ed9195"/>
+
     <path d="M61 63q15-8 31 1l9 64q-23 11-47-1Z" fill="#198d91"/><path d="m67 64-4 19-8 44q23 10 43 0L86 82l-1-18" fill="#e1faf3"/><path d="M67 98h20v17H67z" fill="#a6ded2"/><path d="m90 69 15 27 15 2" stroke="#e8b18e" strokeWidth="10" strokeLinecap="round"/><path d="m61 72 19 25 29 10" stroke="#e8b18e" strokeWidth="10" strokeLinecap="round"/><path d="m61 69 9 12m22-11 5 10" stroke="#198d91" strokeWidth="14" strokeLinecap="round"/></g>
     <g className="ct-mop"><path d="m115 80 20 108" stroke="#567f8b" strokeWidth="5" strokeLinecap="round"/><path d="m114 78 3 14" stroke="#20a7a6" strokeWidth="7" strokeLinecap="round"/><path d="M120 186h29l7 11h-44Z" fill="#58bfb9"/><path d="m120 190-4 9m10-9-2 10m9-10v11m6-11 2 10m5-10 5 9" stroke="#b9ebe3" strokeWidth="3" strokeLinecap="round"/></g>
   </svg>;

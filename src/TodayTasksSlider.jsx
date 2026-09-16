@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuthorizedAxios } from "./useAuthorizedAxios";
+import CleaningTheme, { CleaningSparkle } from "./CleaningTheme";
 
 /* =========================================================
    Date helpers
@@ -47,38 +48,38 @@ const statusOf = (a) => {
 ========================================================= */
 const THEME = {
   overdue: {
-    note: "bg-rose-50 border-rose-200",
+    note: "bg-[#35273b] border-[#ed9bb343]",
     tape: "bg-rose-300/50",
-    accent: "text-rose-600",
-    check: "border-rose-300",
-    badge: "bg-rose-100 text-rose-700",
+    accent: "text-[#f2b8ca]",
+    check: "border-[#de96b1]",
+    badge: "bg-[#532c42] text-[#ffd3e2]",
     label: "Overdue",
     emoji: "⏰",
   },
   today: {
-    note: "bg-amber-50 border-amber-200",
+    note: "bg-[#292e32] border-[#e4c99540]",
     tape: "bg-amber-300/50",
-    accent: "text-amber-700",
-    check: "border-amber-400",
-    badge: "bg-amber-100 text-amber-800",
+    accent: "text-[#e7d29e]",
+    check: "border-[#ddca96]",
+    badge: "bg-[#443a2e] text-[#f3dfa9]",
     label: "Today",
     emoji: "☀️",
   },
   upcoming: {
-    note: "bg-sky-50 border-sky-200",
+    note: "bg-[#102c43] border-[#88d2ee40]",
     tape: "bg-sky-300/50",
-    accent: "text-sky-700",
-    check: "border-sky-300",
-    badge: "bg-sky-100 text-sky-700",
+    accent: "text-[#abe2f4]",
+    check: "border-[#8dd5eb]",
+    badge: "bg-[#1b4358] text-[#abe2f4]",
     label: "Upcoming",
     emoji: "🗓️",
   },
   done: {
-    note: "bg-emerald-50 border-emerald-200",
+    note: "bg-[#123830] border-[#8cdeb540]",
     tape: "bg-emerald-300/50",
-    accent: "text-emerald-600",
-    check: "bg-emerald-500 border-emerald-500 text-white",
-    badge: "bg-emerald-100 text-emerald-700",
+    accent: "text-[#a7e9ce]",
+    check: "bg-[#123830]0 border-[#8de2c3] text-white",
+    badge: "bg-[#204e40] text-[#b9f0d9]",
     label: "Done",
     emoji: "✅",
   },
@@ -93,6 +94,7 @@ export default function TodayTasksSlider() {
   const [editingTask, setEditingTask] = useState(null);
   const [savingTaskId, setSavingTaskId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   /* ================= LOAD ================= */
   const loadData = async () => {
@@ -100,7 +102,7 @@ export default function TodayTasksSlider() {
       const res = await authAxios.get("/tasks/my");
       setMyTasks(res.data || []);
     } catch (err) {
-      console.error("Failed loading today tasks", err);
+      setError("Unable to load your notes. Please reload to try again.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export default function TodayTasksSlider() {
     const buckets = { overdue: [], today: [], upcoming: [], done: [] };
 
     myTasks.forEach((a) => {
-      // keep original behaviour: only completed-today counts as "done" here
+      // Preserve the existing filter: completed tasks due today appear in Done.
       if (a.completed) {
         const due = toLocalDate(a.task?.due_date);
         if (due && due.getTime() === startOfToday().getTime()) {
@@ -159,7 +161,7 @@ export default function TodayTasksSlider() {
         )
       );
     } catch (err) {
-      console.error("Toggle failed", err);
+      setError(err.response?.data?.error || "Unable to update this task. Please try again.");
       // revert on failure
       setMyTasks((prev) =>
         prev.map((a) => (a.id === id ? { ...a, completed: !a.completed } : a))
@@ -180,7 +182,7 @@ export default function TodayTasksSlider() {
         )
       );
     } catch (err) {
-      console.error("Autosave failed", err);
+      setError(err.response?.data?.error || "Your edit could not be saved. Edit the field and leave it to retry.");
     } finally {
       setSavingTaskId(null);
     }
@@ -204,7 +206,7 @@ export default function TodayTasksSlider() {
     try {
       await authAxios.delete(`/tasks/${taskId}`);
     } catch (err) {
-      console.error("Delete failed", err);
+      setError(err.response?.data?.error || "Unable to delete this note.");
       setMyTasks(snapshot); // restore if it failed
     }
   };
@@ -227,33 +229,29 @@ export default function TodayTasksSlider() {
       );
       setEditingTask(null);
     } catch (err) {
-      console.error("Edit failed", err);
+      setError(err.response?.data?.error || "Unable to save your note.");
     }
   };
 
   /* ================= NOTE CARD ================= */
-  const NoteCard = ({ a, index }) => {
+  const renderNoteCard = ({ a, index }) => {
     const t = THEME[statusOf(a)];
     const done = a.completed;
-    const tilt = index % 2 === 0 ? "sm:-rotate-[1.2deg]" : "sm:rotate-[1.2deg]";
+    const tilt = "";
 
     return (
       <div
-        className={`tn-card group relative flex flex-col rounded-2xl border p-4 pt-5
+        key={a.id}
+        className={`tn-card tn-${statusOf(a)} group relative flex flex-col rounded-2xl border p-4 pt-5
           shadow-[0_6px_16px_-8px_rgba(0,0,0,0.25)] transition-all duration-300
-          hover:-translate-y-1 hover:rotate-0 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]
+          hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]
           ${t.note} ${tilt}`}
       >
-        {/* sticky-note tape */}
-        <span
-          className={`pointer-events-none absolute -top-2 left-1/2 h-4 w-16 -translate-x-1/2
-            -rotate-2 rounded-[2px] ${t.tape} backdrop-blur-sm`}
-        />
-
         {/* top row: check + actions */}
         <div className="mb-2 flex items-start justify-between">
           <button
             onClick={() => toggleAssignment(a.id)}
+            aria-pressed={Boolean(done)}
             aria-label={done ? "Mark as not done" : "Mark as done"}
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2
               transition-transform active:scale-90 ${t.check}`}
@@ -261,18 +259,18 @@ export default function TodayTasksSlider() {
             {done && <span className="tn-pop text-[13px] leading-none">✓</span>}
           </button>
 
-          <div className="flex gap-1 opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <div className="flex gap-1 opacity-100 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             <button
               onClick={() => setEditingTask(a.task)}
               aria-label="Edit task"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-white/70 hover:text-slate-700"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#9ebfd1] hover:bg-[#0f263b]/70 hover:text-[#c5dfea]"
             >
               ✏️
             </button>
             <button
               onClick={() => deleteTask(a.task.id)}
               aria-label="Delete task"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-white/70 hover:text-rose-600"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[#8dafc1] hover:bg-[#0f263b]/70 hover:text-[#f2b8ca]"
             >
               🗑
             </button>
@@ -283,18 +281,20 @@ export default function TodayTasksSlider() {
         <textarea
           rows={1}
           value={a.task?.title || ""}
+          aria-label="Task title"
           placeholder="Untitled note"
           onChange={(e) => patchLocalTask(a.id, { title: e.target.value })}
           onBlur={() => autoSaveTask(a.task.id, { title: a.task.title })}
           className={`w-full resize-none break-words bg-transparent text-[15px] font-semibold
-            leading-snug outline-none placeholder:text-slate-300
-            ${done ? "text-slate-400 line-through" : "text-slate-800"}`}
+            leading-snug outline-none placeholder:text-[#7497ad]
+            ${done ? "text-[#8dafc1] line-through" : "text-[#e0f0f7]"}`}
         />
 
         {/* description */}
         <textarea
           rows={2}
           value={a.task?.description || ""}
+          aria-label="Task description"
           placeholder="Add a note…"
           onChange={(e) =>
             patchLocalTask(a.id, { description: e.target.value })
@@ -303,8 +303,8 @@ export default function TodayTasksSlider() {
             autoSaveTask(a.task.id, { description: a.task.description })
           }
           className={`mt-1 w-full resize-none break-words bg-transparent text-[13px]
-            leading-relaxed outline-none placeholder:text-slate-300
-            ${done ? "text-slate-400" : "text-slate-600"}`}
+            leading-relaxed outline-none placeholder:text-[#7497ad]
+            ${done ? "text-[#8dafc1]" : "text-[#afcddd]"}`}
         />
 
         {/* footer: date + status badge */}
@@ -312,12 +312,12 @@ export default function TodayTasksSlider() {
           {a.task?.due_date ? (
             <span
               className={`inline-flex items-center gap-1 text-[11px] font-medium
-                ${done ? "text-slate-400 line-through" : t.accent}`}
+                ${done ? "text-[#8dafc1] line-through" : t.accent}`}
             >
               📅 {friendlyDate(a.task.due_date)}
             </span>
           ) : (
-            <span className="text-[11px] text-slate-300">No date</span>
+            <span className="text-[11px] text-[#7497ad]">No date</span>
           )}
 
           <span
@@ -328,7 +328,7 @@ export default function TodayTasksSlider() {
         </div>
 
         {savingTaskId === a.task?.id && (
-          <div className="mt-1 text-[10px] text-slate-400">Saving…</div>
+          <div className="mt-1 text-[10px] text-[#8dafc1]">Saving…</div>
         )}
       </div>
     );
@@ -336,7 +336,9 @@ export default function TodayTasksSlider() {
 
   /* ================= RENDER ================= */
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <CleaningTheme className="tn-theme"><div className="tn-board mx-auto w-full max-w-5xl">
+      <style>{CLEANING_STYLES}</style>
+      {error && <p className="tn-error" role="alert">{error}<button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button></p>}
       {/* local styles: gentle motion, reduced-motion safe */}
       <style>{`
         @keyframes tnFadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
@@ -350,13 +352,14 @@ export default function TodayTasksSlider() {
       `}</style>
 
       {/* ---------- Header ---------- */}
-      <div className="mb-5 rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur">
+      <div className="mb-5 rounded-2xl border border-[#7dd3fc33] bg-[#0f263b]/70 p-4 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-extrabold tracking-tight text-slate-800">
+            <p className="tn-kicker"><CleaningSparkle /> A little order, a fresh start</p>
+            <h2 className="text-xl font-extrabold tracking-tight text-[#e0f0f7]">
               My Notes
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#8dafc1]">
               {total === 0
                 ? "You're all caught up"
                 : `${doneCount} of ${total} done`}
@@ -373,7 +376,7 @@ export default function TodayTasksSlider() {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="3"
-                className="text-slate-100"
+                className="text-[#284b60]"
               />
               <circle
                 cx="18"
@@ -383,11 +386,11 @@ export default function TodayTasksSlider() {
                 stroke="currentColor"
                 strokeWidth="3"
                 strokeLinecap="round"
-                className="text-emerald-500 transition-all duration-500"
+                className="text-[#8de2c3] transition-all duration-500"
                 strokeDasharray={`${(progress / 100) * 97.4} 97.4`}
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-slate-600">
+            <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#afcddd]">
               {progress}%
             </span>
           </div>
@@ -400,7 +403,7 @@ export default function TodayTasksSlider() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="h-40 animate-pulse rounded-2xl border border-slate-100 bg-slate-100"
+              className="h-40 animate-pulse rounded-2xl border border-[#7dd3fc26] bg-[#193a50]"
             />
           ))}
         </div>
@@ -408,11 +411,11 @@ export default function TodayTasksSlider() {
 
       {/* ---------- Empty ---------- */}
       {!loading && total === 0 && (
-        <div className="rounded-3xl border border-dashed border-slate-200 bg-white/50 py-16 text-center">
+        <div className="rounded-3xl border border-dashed border-[#7dd3fc33] bg-[#0f263b]/50 py-16 text-center">
           <div className="text-4xl">🌿</div>
-          <p className="mt-2 font-semibold text-slate-600">Nothing on the board</p>
-          <p className="text-sm text-slate-400">
-            Enjoy the calm — new tasks will show up here.
+          <p className="mt-2 font-semibold text-[#afcddd]">Nothing on the board</p>
+          <p className="text-sm text-[#8dafc1]">
+            A clear board for a fresh start. New tasks will appear here.
           </p>
         </div>
       )}
@@ -427,7 +430,7 @@ export default function TodayTasksSlider() {
             <section key={key} className="mb-7">
               <div className="mb-3 flex items-center gap-2">
                 <span className="text-sm">{t.emoji}</span>
-                <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                <h3 className="text-sm font-bold uppercase tracking-wide text-[#9ebfd1]">
                   {t.label}
                 </h3>
                 <span
@@ -435,12 +438,12 @@ export default function TodayTasksSlider() {
                 >
                   {items.length}
                 </span>
-                <div className="ml-1 h-px flex-1 bg-slate-100" />
+                <div className="ml-1 h-px flex-1 bg-[#193a50]" />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((a, i) => (
-                  <NoteCard key={a.id} a={a} index={i} />
+                  renderNoteCard({ a, index: i })
                 ))}
               </div>
             </section>
@@ -454,25 +457,26 @@ export default function TodayTasksSlider() {
           onClick={() => setEditingTask(null)}
         >
           <div
-            className="w-full space-y-4 rounded-t-3xl bg-white p-6 shadow-2xl sm:w-[26rem] sm:rounded-3xl"
+            className="w-full space-y-4 rounded-t-3xl bg-[#0f263b] p-6 shadow-2xl sm:w-[26rem] sm:rounded-3xl"
+            role="dialog" aria-modal="true" aria-label="Edit note"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" />
-            <h3 className="text-lg font-bold text-slate-800">Edit note</h3>
+            <div className="mx-auto h-1.5 w-10 rounded-full bg-[#315165] sm:hidden" />
+            <h3 className="text-lg font-bold text-[#e0f0f7]">Edit note</h3>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400">Title</label>
+              <label className="text-xs font-medium text-[#8dafc1]">Title</label>
               <input
                 value={editingTask.title || ""}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, title: e.target.value })
                 }
-                className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-xl border border-[#7dd3fc33] p-3 text-sm outline-none focus:border-[#8cdece]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400">
+              <label className="text-xs font-medium text-[#8dafc1]">
                 Description
               </label>
               <textarea
@@ -484,12 +488,12 @@ export default function TodayTasksSlider() {
                     description: e.target.value,
                   })
                 }
-                className="w-full resize-none rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-slate-400"
+                className="w-full resize-none rounded-xl border border-[#7dd3fc33] p-3 text-sm outline-none focus:border-[#8cdece]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400">
+              <label className="text-xs font-medium text-[#8dafc1]">
                 Due date
               </label>
               <input
@@ -501,20 +505,20 @@ export default function TodayTasksSlider() {
                     due_date: e.target.value || null,
                   })
                 }
-                className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-xl border border-[#7dd3fc33] p-3 text-sm outline-none focus:border-[#8cdece]"
               />
             </div>
 
             <div className="flex justify-end gap-2 pt-1">
               <button
                 onClick={() => setEditingTask(null)}
-                className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-100"
+                className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#9ebfd1] hover:bg-[#193a50]"
               >
                 Cancel
               </button>
               <button
                 onClick={saveEdit}
-                className="rounded-xl bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-900 active:scale-95"
+                className="rounded-xl bg-[#2b796f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#318577] active:scale-95"
               >
                 Save
               </button>
@@ -522,6 +526,10 @@ export default function TodayTasksSlider() {
           </div>
         </div>
       )}
-    </div>
+    </div></CleaningTheme>
   );
 }
+const CLEANING_STYLES = `
+.cleaning-theme.tn-theme{min-height:0;background:radial-gradient(ellipse at top right,#225b7044,transparent 65%),#071321;border-radius:20px;color:#deeff8;overflow:visible}.cleaning-theme .tn-theme .ct-page-atmosphere{display:none}.tn-board{position:relative;padding:20px;min-width:0}.tn-kicker{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#92dacd;margin:0 0 8px!important}.tn-kicker svg{width:18px;height:18px}.tn-board h2{font-size:23px;letter-spacing:-.03em}.tn-card{min-width:0;border-radius:15px!important;padding:15px!important;box-shadow:0 8px 24px #0002!important;position:relative;overflow:hidden}.tn-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:#91d7eb}.tn-overdue:before{background:#efafc5}.tn-today:before{background:#e9d6a7}.tn-done:before{background:#99e8c5}.tn-board button{min-height:40px}.tn-card button[aria-pressed]{min-width:40px;color:#082f36}.tn-card textarea{padding:5px 2px;border-radius:6px;resize:vertical;min-height:39px}.tn-card textarea:focus-visible{outline:2px solid #8ce5ce;outline-offset:3px}.tn-card button:focus-visible,.tn-board button:focus-visible{outline:2px solid #9fefda;outline-offset:2px}.tn-card textarea[aria-label="Task description"]{min-height:68px}.tn-board [role=dialog]{background:radial-gradient(ellipse at top,#285b6055,transparent 70%),#0c2034;border:1px solid #8acbdc44;max-height:90dvh;overflow-y:auto;color:#dfedf6}.tn-board [role=dialog] input,.tn-board [role=dialog] textarea{background:#102c42;color:#def2fa;color-scheme:dark}.tn-error{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 13px;border:1px solid #ef9db744;background:#45273b;color:#ffd4e2;border-radius:11px;font-size:12px;line-height:1.7;margin:0 0 14px}.tn-error button{min-width:36px;font-size:20px}.tn-board [role=dialog] button{min-height:44px}
+@media(max-width:640px){.tn-board{padding:12px}.tn-board h2{font-size:20px}.tn-kicker{font-size:8px;letter-spacing:.04em}.tn-card{padding:13px!important}.tn-card textarea,.tn-board [role=dialog] input,.tn-board [role=dialog] textarea{font-size:16px!important}.tn-board [role=dialog]{padding:18px 14px}.tn-board section{margin-bottom:22px}}
+`;

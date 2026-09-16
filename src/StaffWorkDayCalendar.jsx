@@ -16,6 +16,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useStaff } from "./StaffContext";
 import StartShift from "./StartShift";
 import AssignClients from "./AssignClients";
+import ActiveShiftPanel from "./ActiveShiftPanel";
+import CleaningTheme from "./CleaningTheme";
 /* ------------------------------------------------------------------ */
 /*  Setup                                                              */
 /* ------------------------------------------------------------------ */
@@ -31,9 +33,9 @@ const localizer = dateFnsLocalizer({
 });
 
 const EVENT_COLORS = {
-  mine: "#10b981", // emerald – shifts assigned to me
-  other: "#3b82f6", // blue    – other cleaners' shifts (managers)
-  timeOff: "#ef4444", // red    – time off
+  mine: "#70dfbb", // emerald – shifts assigned to me
+  other: "#80ccf2", // blue    – other cleaners' shifts (managers)
+  timeOff: "#f3a0bb", // red    – time off
 };
 
 const WEEKDAYS = [
@@ -167,8 +169,10 @@ function expandSchedules(schedules, rangeStart, rangeEnd) {
     // Recurring
     let cursor = new Date(startDate);
 
-    if (s.day_of_week !== null) {
-      while (cursor.getDay() !== (s.day_of_week + 1) % 7) {
+    if (s.day_of_week != null) {
+      const weekday = Number(s.day_of_week);
+      if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) return;
+      while (cursor.getDay() !== (weekday + 1) % 7) {
         cursor = addDays(cursor, 1);
       }
     }
@@ -292,7 +296,7 @@ const ArrowIcon = (p) => (
 /* ------------------------------------------------------------------ */
 
 const btnGhost =
-  "inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 hover:ring-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400";
+  "inline-flex items-center gap-1.5 rounded-lg bg-[#0d2135] px-3 py-2 text-sm font-semibold text-[#bbd8e7] shadow-sm ring-1 ring-[#7dd3fc33] transition hover:bg-[#10273c] hover:ring-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400";
 
 function Legend({ items }) {
   return (
@@ -300,7 +304,7 @@ function Legend({ items }) {
       {items.map(([label, color]) => (
         <span
           key={label}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#99bacd]"
         >
           <span
             className="h-2.5 w-2.5 rounded-full"
@@ -316,10 +320,10 @@ function Legend({ items }) {
 function Field({ label, children }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-[#86abbe]">
         {label}
       </span>
-      <span className="text-sm text-slate-800">{children}</span>
+      <span className="text-sm text-[#d4eaf5]">{children}</span>
     </div>
   );
 }
@@ -332,23 +336,23 @@ function Modal({ onClose, accent, icon, title, children, footer }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="rbc-modal-pop max-h-[92vh] w-full max-w-lg overflow-hidden rounded-t-3xl bg-white shadow-2xl ring-1 ring-slate-900/5 sm:max-h-[88vh] sm:rounded-2xl"
+        className="rbc-modal-pop max-h-[92vh] w-full max-w-lg overflow-hidden rounded-t-3xl bg-[#0d2135] shadow-2xl ring-1 ring-slate-900/5 sm:max-h-[88vh] sm:rounded-2xl"
       >
-        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3 border-b border-[#7dd3fc26] px-5 py-4 sm:px-6">
           <span
             className="flex h-9 w-9 items-center justify-center rounded-xl"
             style={{ backgroundColor: `${accent}1a`, color: accent }}
           >
             {icon}
           </span>
-          <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+          <h3 className="text-lg font-bold text-[#e8f4fb]">{title}</h3>
         </div>
 
         <div className="max-h-[68vh] space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
           {children}
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6">
+        <div className="flex justify-end gap-3 border-t border-[#7dd3fc26] bg-[#10273c]/70 px-5 py-4 sm:px-6">
           {footer}
         </div>
       </div>
@@ -362,29 +366,29 @@ function Modal({ onClose, accent, icon, title, children, footer }) {
 
 const RBC_STYLES = `
 .rbc-modern .rbc-toolbar { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; justify-content:space-between; margin-bottom:1rem; }
-.rbc-modern .rbc-toolbar-label { font-weight:700; font-size:1.05rem; color:#0f172a; letter-spacing:-.01em; }
+.rbc-modern .rbc-toolbar-label { font-weight:700; font-size:1.05rem; color:#e4f1fa; letter-spacing:-.01em; }
 .rbc-modern .rbc-btn-group { display:inline-flex; gap:.35rem; }
-.rbc-modern .rbc-toolbar button { color:#475569; border:1px solid #e2e8f0; background:#fff; border-radius:.6rem; padding:.4rem .85rem; font-weight:600; font-size:.78rem; transition:all .15s ease; box-shadow:0 1px 2px rgba(15,23,42,.04); }
-.rbc-modern .rbc-toolbar button:hover { background:#f8fafc; border-color:#cbd5e1; color:#0f172a; }
+.rbc-modern .rbc-toolbar button { color:#aacbdc; border:1px solid #305066; background:#10253a; border-radius:.6rem; padding:.4rem .85rem; font-weight:600; font-size:.78rem; transition:all .15s ease; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+.rbc-modern .rbc-toolbar button:hover { background:#193b51; border-color:#496a80; color:#e4f1fa; }
 .rbc-modern .rbc-toolbar button:focus-visible { outline:2px solid #a5b4fc; outline-offset:1px; }
 .rbc-modern .rbc-toolbar button.rbc-active,
-.rbc-modern .rbc-toolbar button.rbc-active:hover { background:#4f46e5 !important; border-color:#4f46e5 !important; color:#fff !important; box-shadow:0 2px 6px rgba(79,70,229,.35); }
+.rbc-modern .rbc-toolbar button.rbc-active:hover { background:#248079 !important; border-color:#248079 !important; color:#10253a !important; box-shadow:0 2px 6px rgba(79,70,229,.35); }
 
-.rbc-modern .rbc-month-view, .rbc-modern .rbc-time-view { border:1px solid #eef2f6; border-radius:1rem; overflow:hidden; background:#fff; }
-.rbc-modern .rbc-header { padding:.65rem 0; font-weight:700; font-size:.68rem; letter-spacing:.06em; color:#64748b; text-transform:uppercase; border-bottom:1px solid #f1f5f9; }
-.rbc-modern .rbc-header + .rbc-header { border-left:1px solid #f1f5f9; }
-.rbc-modern .rbc-month-row + .rbc-month-row { border-top:1px solid #f1f5f9; }
-.rbc-modern .rbc-day-bg + .rbc-day-bg { border-left:1px solid #f1f5f9; }
-.rbc-modern .rbc-off-range-bg { background:#fafbfc; }
-.rbc-modern .rbc-off-range { color:#cbd5e1; }
-.rbc-modern .rbc-date-cell { padding:.35rem .5rem; font-size:.78rem; font-weight:600; color:#475569; }
-.rbc-modern .rbc-today { background:#eef2ff; }
-.rbc-modern .rbc-now .rbc-button-link { color:#4f46e5; font-weight:800; }
+.rbc-modern .rbc-month-view, .rbc-modern .rbc-time-view { border:1px solid #27455b; border-radius:1rem; overflow:hidden; background:#10253a; }
+.rbc-modern .rbc-header { padding:.65rem 0; font-weight:700; font-size:.68rem; letter-spacing:.06em; color:#9fc4d6; text-transform:uppercase; border-bottom:1px solid #233e53; }
+.rbc-modern .rbc-header + .rbc-header { border-left:1px solid #233e53; }
+.rbc-modern .rbc-month-row + .rbc-month-row { border-top:1px solid #233e53; }
+.rbc-modern .rbc-day-bg + .rbc-day-bg { border-left:1px solid #233e53; }
+.rbc-modern .rbc-off-range-bg { background:#09182a; }
+.rbc-modern .rbc-off-range { color:#496a80; }
+.rbc-modern .rbc-date-cell { padding:.35rem .5rem; font-size:.78rem; font-weight:600; color:#aacbdc; }
+.rbc-modern .rbc-today { background:#173d47; }
+.rbc-modern .rbc-now .rbc-button-link { color:#248079; font-weight:800; }
 .rbc-modern .rbc-event { border:1px solid transparent; border-radius:.5rem; padding:2px 6px; font-size:.72rem; font-weight:600; box-shadow:0 1px 2px rgba(15,23,42,.12); }
 .rbc-modern .rbc-event:focus, .rbc-modern .rbc-event:focus-visible { outline:none; }
-.rbc-modern .rbc-event.rbc-selected { box-shadow:0 0 0 2px #fff, 0 3px 8px rgba(15,23,42,.25); }
-.rbc-modern .rbc-show-more { color:#4f46e5; font-weight:700; font-size:.7rem; background:transparent; }
-.rbc-modern .rbc-time-content, .rbc-modern .rbc-time-header-content, .rbc-modern .rbc-timeslot-group { border-color:#f1f5f9; }
+.rbc-modern .rbc-event.rbc-selected { box-shadow:0 0 0 2px #10253a, 0 3px 8px rgba(15,23,42,.25); }
+.rbc-modern .rbc-show-more { color:#248079; font-weight:700; font-size:.7rem; background:transparent; }
+.rbc-modern .rbc-time-content, .rbc-modern .rbc-time-header-content, .rbc-modern .rbc-timeslot-group { border-color:#233e53; }
 .rbc-modern .rbc-current-time-indicator { background:#ef4444; height:2px; }
 
 @keyframes rbcFadeIn { from { opacity:0 } to { opacity:1 } }
@@ -412,6 +416,9 @@ export default function StaffWorkDayCalendar() {
 
   /* ---- data ---- */
   const [schedules, setSchedules] = useState([]);
+  const [shiftRefreshKey, setShiftRefreshKey] = useState(0);
+  const [loadError, setLoadError] = useState("");
+  const [shiftError, setShiftError] = useState("");
   const [activeShift, setActiveShift] = useState(null);
   const [timeOffRows, setTimeOffRows] = useState([]);
 
@@ -435,13 +442,13 @@ export default function StaffWorkDayCalendar() {
     const load = async () => {
       if (!staff?.id) return;
       try {
-        setLoading(true);
+        setLoading(true); setLoadError("");
         const res = await authAxios.get(scheduleEndpoint);
         setSchedules(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to load schedules", err);
         setSchedules([]);
-        alert(err.response?.data?.error || "Unable to load your work schedule.");
+        setLoadError(err.response?.data?.error || "Unable to load your work schedule.");
       } finally {
         setLoading(false);
       }
@@ -460,13 +467,15 @@ export default function StaffWorkDayCalendar() {
   };
 
   const refreshActiveShift = async () => {
+    setShiftRefreshKey(key => key + 1);
+    setShiftError("");
     try {
       setCheckingActiveShift(true);
       const res = await authAxios.get("/staff/shifts/active");
-      setActiveShift(res.data?.active ? res.data.shift : null);
+      setActiveShift(res.data?.active ? {...res.data.shift, client:res.data.client ?? res.data.shift?.client} : null);
     } catch (err) {
       console.error("Failed to load active shift", err);
-      setActiveShift(null);
+      setShiftError("Unable to refresh shift status. Please try again.");
     } finally {
       setCheckingActiveShift(false);
     }
@@ -482,6 +491,7 @@ export default function StaffWorkDayCalendar() {
   /* ---------------------------------------------------------------- */
 
   const toggleTimeOff = async () => {
+    if (!isManager) return;
     const next = !showTimeOff;
     setShowTimeOff(next);
     if (next && timeOffRows.length === 0) {
@@ -502,7 +512,7 @@ export default function StaffWorkDayCalendar() {
   const isAssignedToMe = (schedule) => {
     if (!schedule?.client?.cleaners || !myStaffId) return false;
     return schedule.client.cleaners.some(
-      (c) => c.type === "staff" && c.id === myStaffId,
+      (c) => c.type === "staff" && String(c.id) === String(myStaffId),
     );
   };
 
@@ -513,8 +523,8 @@ export default function StaffWorkDayCalendar() {
   }, [schedules]);
 
   const timeOffEvents = useMemo(
-    () => (showTimeOff ? expandTimeOffRequests(timeOffRows) : []),
-    [showTimeOff, timeOffRows],
+    () => (isManager && showTimeOff ? expandTimeOffRequests(timeOffRows) : []),
+    [isManager, showTimeOff, timeOffRows],
   );
 
   const events = useMemo(
@@ -579,7 +589,7 @@ export default function StaffWorkDayCalendar() {
     const backgroundColor = eventColor(event);
     const style = {
       backgroundColor,
-      color: "#fff",
+      color: "#092435",
       borderRadius: "0.5rem",
       fontWeight: 600,
       border: "1px solid transparent",
@@ -597,39 +607,29 @@ export default function StaffWorkDayCalendar() {
         ["Other shifts", EVENT_COLORS.other],
         ["Time off", EVENT_COLORS.timeOff],
       ]
-    : [
-        ["Your shifts", EVENT_COLORS.mine],
-        ["Time off", EVENT_COLORS.timeOff],
-      ];
+    : [["Your shifts", EVENT_COLORS.mine]];
 
   /* ---------------------------------------------------------------- */
   /*  Render                                                          */
   /* ---------------------------------------------------------------- */
 
-  if (loading) {
-    return (
-      <div className="flex items-center gap-3 p-6 text-slate-500">
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-500" />
-        Loading work calendar…
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-5">
-      <style>{RBC_STYLES}</style>
+    <CleaningTheme className="swc-theme"><div className="swc-layout space-y-4">
+      <style>{RBC_STYLES}{THEME_STYLES}</style>
+      {loading && <p className="swc-notice" role="status">Loading work calendar…</p>}
+      {loadError && <p className="swc-notice" role="alert">{loadError}</p>}
 
       {/* ---------------------------- Header ---------------------------- */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-500/30">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#123149]0 via-cyan-500 to-blue-600 text-white shadow-lg shadow-blue-500/30">
             <CalendarIcon className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Work Schedule
+            <h2 className="text-2xl font-bold tracking-tight text-[#e8f4fb]">
+              Your cleaning calendar
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#99bacd]">
               {isManager
                 ? "Team shifts, client details, and time off — all in one place."
                 : "Your upcoming shifts and schedule at a glance."}
@@ -642,10 +642,10 @@ export default function StaffWorkDayCalendar() {
       {/* ------------------------- Status banner ------------------------ */}
       {checkingActiveShift ? null : activeShift ? (
         /* 🔵 Active shift */
-        <div className="relative overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-[#7dd3fc33] bg-gradient-to-br from-[#123149] to-[#0c1c30] p-5 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="relative mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+              <span className="relative mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-[#82d6f5]">
                 <ClockIcon />
                 <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
@@ -653,18 +653,18 @@ export default function StaffWorkDayCalendar() {
                 </span>
               </span>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#82d6f5]">
                   You're currently clocked in
                 </p>
-                <p className="text-base font-bold text-blue-900">
+                <p className="text-base font-bold text-[#d5efff]">
                   {formatDateTime(new Date(activeShift.check_in_at))}
                 </p>
-                <p className="text-sm text-blue-800">
+                <p className="text-sm text-[#b9e2f6]">
                   {activeShift.client?.first_name} {activeShift.client?.last_name}
                 </p>
               </div>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-100 px-3 py-1.5 text-sm font-semibold text-blue-800">
+            <span className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#173e56] px-3 py-1.5 text-sm font-semibold text-[#b9e2f6]">
               <span className="h-2 w-2 animate-pulse rounded-full bg-blue-600" />
               Shift in progress
             </span>
@@ -672,25 +672,25 @@ export default function StaffWorkDayCalendar() {
         </div>
       ) : nextShift ? (
         /* 🟢 Next shift */
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm transition hover:shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-[#6ee7b733] bg-gradient-to-br from-[#10372f] to-[#0c1c30] p-5 shadow-sm transition hover:shadow-md">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10392f]0/10 text-[#81dfbd]">
                 <ClockIcon />
               </span>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#81dfbd]">
                   Your next scheduled shift
                 </p>
-                <p className="text-base font-bold text-emerald-900">
+                <p className="text-base font-bold text-[#d0f6e5]">
                   {formatDateTime(nextShift.start)}
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold text-slate-800">
+                  <span className="text-sm font-semibold text-[#d4eaf5]">
                     {nextShift.resource.client.first_name}{" "}
                     {nextShift.resource.client.last_name}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/70 px-2.5 py-1 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#0d2135]/70 px-2.5 py-1 text-sm font-semibold text-[#9aebcb] ring-1 ring-emerald-100">
                     {formatTo12Hour(nextShift.resource.start_time)} →{" "}
                     {formatTo12Hour(nextShift.resource.end_time)}
                   </span>
@@ -707,30 +707,30 @@ export default function StaffWorkDayCalendar() {
         </div>
       ) : (
         /* ⚪ No shifts */
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm italic text-slate-500">
+        <div className="rounded-2xl border border-dashed border-[#7dd3fc33] bg-[#10273c]/60 px-4 py-6 text-center text-sm italic text-[#99bacd]">
           You have no upcoming assigned work shifts.
         </div>
       )}
 
       {/* ---------------------- Weekly schedule ------------------------ */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-[#7dd3fc33] bg-[#0d2135] shadow-sm">
         <button
           onClick={() => setShowWeekly((v) => !v)}
-          className="flex w-full items-center justify-between px-4 py-3.5 text-left font-semibold text-slate-800 transition hover:bg-slate-50"
+          className="flex w-full items-center justify-between px-4 py-3.5 text-left font-semibold text-[#d4eaf5] transition hover:bg-[#10273c]"
         >
           <span className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-blue-500" />
             My weekly schedule
           </span>
           <ChevronIcon
-            className={`h-4 w-4 text-slate-400 transition-transform ${
+            className={`h-4 w-4 text-[#86abbe] transition-transform ${
               showWeekly ? "rotate-180" : ""
             }`}
           />
         </button>
 
         {showWeekly && (
-          <div className="space-y-3 border-t border-slate-100 p-4">
+          <div className="space-y-3 border-t border-[#7dd3fc26] p-4">
             {/* Week nav */}
             <div className="flex items-center justify-between gap-2">
               <button
@@ -739,7 +739,7 @@ export default function StaffWorkDayCalendar() {
               >
                 ◀ Prev
               </button>
-              <div className="text-center text-sm font-semibold text-slate-700">
+              <div className="text-center text-sm font-semibold text-[#bbd8e7]">
                 {format(weekStart, "MMM d")} –{" "}
                 {format(addDays(weekStart, 6), "MMM d, yyyy")}
               </div>
@@ -753,7 +753,7 @@ export default function StaffWorkDayCalendar() {
 
             {/* Week list */}
             {myWeeklyEvents.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-[#7dd3fc33] bg-[#10273c]/60 px-4 py-8 text-center text-sm text-[#99bacd]">
                 You have no assigned shifts this week.
               </div>
             ) : (
@@ -761,16 +761,16 @@ export default function StaffWorkDayCalendar() {
                 {myWeeklyEvents.map((e) => (
                   <div
                     key={e.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-[#6ee7b733] bg-[#10392f]/70 p-3"
                   >
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-800">
+                      <div className="font-semibold text-[#d4eaf5]">
                         {format(e.start, "EEEE, MMM d")}
                       </div>
-                      <div className="text-sm font-medium text-emerald-700">
+                      <div className="text-sm font-medium text-[#9aebcb]">
                         {format(e.start, "h:mm a")} → {format(e.end, "h:mm a")}
                       </div>
-                      <div className="truncate text-sm text-slate-500">
+                      <div className="truncate text-sm text-[#99bacd]">
                         {e.resource.client.first_name}{" "}
                         {e.resource.client.last_name}
                       </div>
@@ -790,8 +790,8 @@ export default function StaffWorkDayCalendar() {
       </div>
 
       {/* ---------------------- Time-off toggle ------------------------ */}
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm">
-        <div className="flex items-center gap-2 font-semibold text-slate-800">
+      {isManager && <div className="flex items-center justify-between rounded-2xl border border-[#7dd3fc33] bg-[#0d2135] p-3.5 shadow-sm">
+        <div className="flex items-center gap-2 font-semibold text-[#d4eaf5]">
           <BanIcon className="h-4 w-4 text-red-500" />
           Time off overlay
         </div>
@@ -800,20 +800,20 @@ export default function StaffWorkDayCalendar() {
           className={`rounded-lg px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 ${
             showTimeOff
               ? "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-300"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:ring-slate-300"
+              : "bg-[#17374d] text-[#bbd8e7] hover:bg-slate-200 focus-visible:ring-slate-300"
           }`}
         >
           {showTimeOff ? "Hide time off" : "Show time off"}
         </button>
-      </div>
+      </div>}
 
-      {timeOffLoading && (
-        <p className="px-2 text-sm italic text-slate-500">Loading time off…</p>
+      {isManager && timeOffLoading && (
+        <p className="px-2 text-sm italic text-[#99bacd]">Loading time off…</p>
       )}
 
       {/* ------------------- Calendar (or mobile agenda) --------------- */}
       {isMobile ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="swc-agenda rounded-2xl border border-[#7dd3fc33] bg-[#0d2135] p-4 shadow-sm">
           <MobileAgenda
             events={events}
             onSelectEvent={handleSelectEvent}
@@ -822,8 +822,8 @@ export default function StaffWorkDayCalendar() {
         </div>
       ) : (
         <div
-          className="rbc-modern rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-          style={{ height: 720 }}
+          className="rbc-modern rounded-2xl border border-[#7dd3fc33] bg-[#0d2135] p-4 shadow-sm"
+          style={{ height: 640 }}
         >
           <Calendar
             localizer={localizer}
@@ -846,6 +846,14 @@ export default function StaffWorkDayCalendar() {
           />
         </div>
       )}
+
+      <section className="swc-workspace" aria-labelledby="swc-workspace-heading">
+        <div className="swc-workspace-header"><div><p className="swc-kicker">Your current cleaning</p><h2 id="swc-workspace-heading">Active shift workspace</h2><p>Check in above, then manage shared tasks and wrap up your shift here.</p></div>
+          <button type="button" className="swc-refresh" disabled={checkingActiveShift} onClick={refreshActiveShift}>{checkingActiveShift ? "Refreshing…" : "↻ Refresh active shift"}</button>
+        </div>
+        {shiftError && <p className="swc-notice" role="alert">{shiftError}</p>}
+        <ActiveShiftPanel refreshKey={shiftRefreshKey} onShiftUpdated={refreshActiveShift} />
+      </section>
 
       {/* ============================ MODALS =========================== */}
 
@@ -873,10 +881,10 @@ export default function StaffWorkDayCalendar() {
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
                     selectedEvent.status === "active"
-                      ? "bg-emerald-100 text-emerald-700"
+                      ? "bg-[#174739] text-[#9aebcb]"
                       : selectedEvent.status === "paused"
                         ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
+                        : "bg-red-100 text-[#fac0d3]"
                   }`}
                 >
                   {(selectedEvent.status || "—").toUpperCase()}
@@ -917,7 +925,7 @@ export default function StaffWorkDayCalendar() {
                     href={getGoogleMapsLink(selectedEvent.client.address)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1.5 font-semibold text-[#82d6f5] hover:underline"
                   >
                     <MapPinIcon className="h-3.5 w-3.5" />
                     {selectedEvent.client.address}
@@ -932,7 +940,7 @@ export default function StaffWorkDayCalendar() {
               <Field label="Phone">
                 <a
                   href={getTelLink(selectedEvent.client.phone)}
-                  className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 hover:underline"
+                  className="inline-flex items-center gap-1.5 font-semibold text-[#9aebcb] hover:underline"
                 >
                   <PhoneIcon className="h-3.5 w-3.5" />
                   {selectedEvent.client.phone}
@@ -944,7 +952,7 @@ export default function StaffWorkDayCalendar() {
               <Field label="Email">
                 <a
                   href={getMailLink(selectedEvent.client.email)}
-                  className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:underline"
+                  className="inline-flex items-center gap-1.5 font-semibold text-[#9fdcec] hover:underline"
                 >
                   <MailIcon className="h-3.5 w-3.5" />
                   {selectedEvent.client.email}
@@ -955,11 +963,11 @@ export default function StaffWorkDayCalendar() {
 
           {/* Cleaning notes */}
           {selectedEvent.description && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
-              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-700">
+            <div className="rounded-2xl border border-[#e5c28c44] bg-[#372c23] p-4 sm:p-5">
+              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#efd4a2]">
                 <NoteIcon className="h-4 w-4" /> Cleaning notes
               </div>
-              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+              <p className="whitespace-pre-wrap text-sm leading-7 text-[#bbd8e7]">
                 {selectedEvent.description}
               </p>
             </div>
@@ -967,8 +975,8 @@ export default function StaffWorkDayCalendar() {
 
           {/* Assigned cleaners */}
          {/* Assigned cleaners */}
-<div className="border-t border-slate-100 pt-4">
-  <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+<div className="border-t border-[#7dd3fc26] pt-4">
+  <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-[#86abbe]">
     Assigned cleaners
   </div>
 
@@ -989,8 +997,8 @@ export default function StaffWorkDayCalendar() {
             key={c.assignment_id}
             className={`flex items-center gap-3 rounded-xl border p-2.5 ${
               isMe
-                ? "border-emerald-200 bg-emerald-50/60"
-                : "border-slate-100 bg-white"
+                ? "border-[#6ee7b744] bg-[#10392f]/60"
+                : "border-[#7dd3fc26] bg-[#0d2135]"
             }`}
           >
             {c.profile?.photo_url ? (
@@ -1000,23 +1008,23 @@ export default function StaffWorkDayCalendar() {
                 className="h-10 w-10 rounded-full object-cover shadow-sm ring-2 ring-white"
               />
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-sm font-bold text-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-sm font-bold text-[#a2c8d8]">
                 {displayName.charAt(0).toUpperCase()}
               </div>
             )}
 
             <div className="min-w-0">
-              <div className="flex items-center gap-2 font-semibold text-slate-800">
+              <div className="flex items-center gap-2 font-semibold text-[#d4eaf5]">
                 <span className="truncate">{displayName}</span>
 
                 {isMe && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                  <span className="rounded-full bg-[#174739] px-2 py-0.5 text-[10px] font-bold text-[#9aebcb]">
                     YOU
                   </span>
                 )}
               </div>
 
-              <div className="text-xs capitalize text-slate-500">
+              <div className="text-xs capitalize text-[#99bacd]">
                 {c.type}
                 {c.role ? ` • ${c.role}` : ""}
               </div>
@@ -1026,13 +1034,13 @@ export default function StaffWorkDayCalendar() {
       })}
     </div>
   ) : (
-    <p className="text-sm italic text-slate-400">
+    <p className="text-sm italic text-[#86abbe]">
       No cleaners assigned
     </p>
   )}
 
   {isManager && (
-    <div className="mt-4 border-t border-slate-100 pt-4">
+    <div className="mt-4 border-t border-[#7dd3fc26] pt-4">
       <AssignClients
         clientId={selectedEvent.client.id}
         onChanged={async () => {
@@ -1044,7 +1052,7 @@ export default function StaffWorkDayCalendar() {
 </div>
           {/* Start shift (anyone assigned, including managers) */}
           {isAssignedToMe(selectedEvent) && (
-            <div className="border-t border-slate-100 pt-4">
+            <div className="border-t border-[#7dd3fc26] pt-4">
               <StartShift
                 schedule={selectedEvent}
                 onStarted={() => {
@@ -1058,7 +1066,7 @@ export default function StaffWorkDayCalendar() {
       )}
 
       {/* Time off */}
-      {selectedTimeOff && (
+      {isManager && selectedTimeOff && (
         <Modal
           onClose={() => setSelectedTimeOff(null)}
           accent={EVENT_COLORS.timeOff}
@@ -1085,7 +1093,7 @@ export default function StaffWorkDayCalendar() {
               </Field>
             )}
             <Field label="Status">
-              <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold capitalize text-red-700 ring-1 ring-red-100">
+              <span className="inline-flex items-center rounded-full bg-[#49273c] px-2.5 py-0.5 text-xs font-semibold capitalize text-[#fac0d3] ring-1 ring-red-100">
                 {selectedTimeOff.request.status}
               </span>
             </Field>
@@ -1110,7 +1118,7 @@ export default function StaffWorkDayCalendar() {
           </div>
         </Modal>
       )}
-    </div>
+    </div></CleaningTheme>
   );
 }
 
@@ -1138,7 +1146,7 @@ function MobileAgenda({ events, onSelectEvent, getColor }) {
 
   if (days.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-10 text-center text-sm text-slate-500">
+      <div className="rounded-xl border border-dashed border-[#7dd3fc33] bg-[#10273c]/60 px-4 py-10 text-center text-sm text-[#99bacd]">
         No upcoming events.
       </div>
     );
@@ -1148,7 +1156,7 @@ function MobileAgenda({ events, onSelectEvent, getColor }) {
     <div className="space-y-5">
       {days.map((day) => (
         <div key={day}>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-[#99bacd]">
             {format(new Date(`${day}T00:00:00`), "EEEE, MMM d")}
           </h3>
 
@@ -1159,17 +1167,17 @@ function MobileAgenda({ events, onSelectEvent, getColor }) {
                 <button
                   key={e.id}
                   onClick={() => onSelectEvent?.(e)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-slate-100 bg-white p-3 text-left shadow-sm transition hover:border-slate-200 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+                  className="flex w-full items-center gap-3 rounded-xl border border-[#7dd3fc26] bg-[#0d2135] p-3 text-left shadow-sm transition hover:border-[#7dd3fc33] hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
                 >
                   <span
                     className="h-10 w-1.5 shrink-0 rounded-full"
                     style={{ backgroundColor: color }}
                   />
                   <div className="min-w-0">
-                    <div className="truncate font-semibold text-slate-900">
+                    <div className="truncate font-semibold text-[#e8f4fb]">
                       {e.title}
                     </div>
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-[#99bacd]">
                       {e.allDay
                         ? "All day"
                         : `${format(e.start, "h:mm a")} – ${format(e.end, "h:mm a")}`}
@@ -1184,3 +1192,7 @@ function MobileAgenda({ events, onSelectEvent, getColor }) {
     </div>
   );
 }
+const THEME_STYLES = `
+.cleaning-theme.swc-theme{min-height:0;background:radial-gradient(ellipse at top right,#1a52694d,transparent 50%),#061221;border-radius:20px;color:#dceffa;overflow:visible}.cleaning-theme .swc-theme .ct-page-atmosphere,.swc-theme .asp-theme .ct-page-atmosphere,.swc-theme .ass-theme .ct-page-atmosphere{display:none}.swc-layout{position:relative;padding:22px;max-width:1400px;margin:auto;min-width:0}.swc-layout button{min-height:42px}.swc-layout button:focus-visible{outline:3px solid #8decd8;outline-offset:3px}.swc-layout .rbc-event:focus-visible{outline:3px solid #d3ffee;outline-offset:1px}.swc-layout .rbc-button-link{min-height:24px}.swc-layout .rbc-toolbar button.rbc-active{color:#e0fff6!important}.swc-layout .rbc-time-slot,.swc-layout .rbc-day-slot .rbc-time-slot{border-color:#244256}.swc-layout .rbc-overlay{background:#10283e;border:1px solid #538499;color:#def3fc;border-radius:12px;padding:12px}.swc-layout .rbc-overlay-header{border-color:#395a70}.swc-layout .rbc-agenda-view table.rbc-agenda-table{border-color:#37576e}.swc-workspace{padding-top:22px;margin-top:24px!important;border-top:1px solid #7dd3fc33}.swc-workspace-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}.swc-kicker{font-size:9px!important;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#87dccf!important;margin:0 0 5px!important}.swc-workspace-header h2{font-size:20px;font-weight:700;letter-spacing:-.02em;margin:0 0 5px;color:#e2f3fc}.swc-workspace-header p{font-size:11px;line-height:1.7;color:#9ebfd1;margin:0}.swc-refresh{min-height:44px;border:1px solid #87e8da55;border-radius:11px;padding:10px 14px;background:linear-gradient(110deg,#9cdef5,#8ee5cd);color:#0b3040;font-size:12px;font-weight:700;white-space:nowrap}.swc-refresh:disabled{opacity:.55;cursor:wait}.swc-notice{padding:12px 14px;border:1px solid #8bd9e444;border-radius:11px;background:#163144;color:#d6eff6;font-size:12px;line-height:1.7}.swc-agenda{max-height:540px;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-color:#3e7a8c #0b2135}.swc-theme .rbc-modal-pop{background:#0c2034;border:1px solid #6caec24d}.swc-theme .rbc-modal-pop>div{border-color:#7dd3fc29}.swc-theme .rbc-toolbar{gap:10px}.swc-theme .rbc-toolbar-label{font-size:18px}
+@media(max-width:640px){.swc-layout{padding:12px}.swc-workspace-header{align-items:stretch}.swc-workspace-header h2{font-size:18px}.swc-refresh{width:100%}.swc-workspace{padding-top:17px}.swc-layout h2.text-2xl{font-size:21px}.swc-layout .rbc-modal-pop{max-height:92dvh}.swc-agenda{max-height:500px}.swc-layout .rbc-modal-pop>div{padding-left:14px;padding-right:14px}}
+`;
