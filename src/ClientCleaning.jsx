@@ -25,34 +25,42 @@ export default function ClientCleaning() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
-const [showConsults, setShowConsults] = useState(false);
-const [showReviewModal, setShowReviewModal] = useState(false);
-const [assignments, setAssignments] = useState([]);
 
+  const [showConsults, setShowConsults] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [assignments, setAssignments] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    setResult(null); setAssignments([]); setShowConsults(false); setShowReviewModal(false);
+    setResult(null);
+    setAssignments([]);
+    setShowConsults(false);
+    setShowReviewModal(false);
 
     try {
-      const res = await axios.post("https://cleaningback.onrender.com/cleaning", {
-  last_name: lastName,
-  last4: last4,
-});
-setResult(res.data);
+      const res = await axios.post(
+        "https://cleaningback.onrender.com/cleaning",
+        {
+          last_name: lastName,
+          last4: last4,
+        },
+      );
+      setResult(res.data);
 
-// Assignments are optional; a failure must not hide the client portal.
-try {
-  const assignmentRes = await axios.get(`https://cleaningback.onrender.com/public/clients/${res.data.client.id}/assignments`);
-  setAssignments(assignmentRes.data.assignments || []);
-} catch { setAssignments([]); }
-
+      // Assignments are optional; a failure must not hide the client portal.
+      try {
+        const assignmentRes = await axios.get(
+          `https://cleaningback.onrender.com/public/clients/${res.data.client.id}/assignments`,
+        );
+        setAssignments(assignmentRes.data.assignments || []);
+      } catch {
+        setAssignments([]);
+      }
     } catch (err) {
       setError(
-        err.response?.data?.error || "Something went wrong. Please try again."
+        err.response?.data?.error || "Something went wrong. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -64,94 +72,100 @@ try {
     return format(new Date(iso), "MMM d, yyyy • h:mm a");
   };
 
- if (showIntro) return <CleaningPortalIntro onSkip={() => setShowIntro(false)} />;
+  if (showIntro)
+    return <CleaningPortalIntro onSkip={() => setShowIntro(false)} />;
 
- return (
-<CleaningTheme className="cp-theme"><style>{PORTAL_STYLES}</style><div className="cp-page">
-  <div className="w-full max-w-5xl space-y-6">
-    {/* HEADER */}
-    <div className="cp-hero">
-      <h1 ref={portalHeading} tabIndex={-1} className="cp-title">
-        <CleaningSparkle /> Your cleaning portal
-      </h1>
+  return (
+    <CleaningTheme className="cp-theme">
+      <style>{PORTAL_STYLES}</style>
+      <div className="cp-page">
+        <div className="w-full max-w-5xl space-y-6">
+          {/* HEADER */}
+          <div className="cp-hero">
+            <h1 ref={portalHeading} tabIndex={-1} className="cp-title">
+              <CleaningSparkle /> Your cleaning portal
+            </h1>
 
-      <p className="mt-1 text-sm text-[#93b6c9] italic">
-        Designed for transparency, care, and your peace of mind.
-      </p>
-    </div>
-
-
-      {/* FORM */}
-      <form
-        onSubmit={handleSubmit}
-        className="cp-lookup bg-[#10283d] border border-[#7dd3fc33] rounded-2xl shadow-md p-6 space-y-6"
-      >
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-[#bedae7] mb-1">
-              Last Name
-            </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full border border-[#7dd3fc44] rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:outline-none"
-              required
-            />
+            <p className="mt-1 text-sm text-[#93b6c9] italic">
+              Designed for transparency, care, and your peace of mind.
+            </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#bedae7] mb-1">
-              Last 4 Digits of Phone
-            </label>
-            <input
-              type="text"
-              value={last4}
-              onChange={(e) =>
-                setLast4(e.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-              className="w-full border border-[#7dd3fc44] rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:outline-none"
-              required
-              pattern="[0-9]{4}"
-              inputMode="numeric"
-              maxLength={4}
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-br from-[#287e80] to-[#236c58] text-white py-3 rounded-xl font-bold text-lg hover:brightness-110 transition"
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "View Cleaning Info"}
-        </button>
-
-        {error && (
-          <p className="text-[#fac2d5] font-semibold text-center">{error}</p>
-        )}
-      </form>
-
-      {/* RESULTS */}
-      {result && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-[#b9efd7]">
-            Hello, {result.client.first_name}! 👋
-          </h2>
-{assignments.length > 0 && (
- <section>
-  <h3 className="text-xl font-semibold mb-4">🧹 Assigned Cleaners</h3>
-
-  {assignments.filter((a) => a.type === "staff").length > 0 ? (
-    <ul className="space-y-4">
-      {assignments
-        .filter((a) => a.type === "staff")
-        .map((a) => (
-          <li
-            key={a.assignment_id}
-            className="bg-[#10283d] border border-[#7dd3fc33] rounded-xl shadow p-4 text-sm flex items-center gap-4"
+          {/* FORM */}
+          <form
+            onSubmit={handleSubmit}
+            className="cp-lookup bg-[#10283d] border border-[#7dd3fc33] rounded-2xl shadow-md p-6 space-y-6"
           >
-            {/* {a.profile?.photo_url && (
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-[#bedae7] mb-1">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full border border-[#7dd3fc44] rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#bedae7] mb-1">
+                  Last 4 Digits of Phone
+                </label>
+                <input
+                  type="text"
+                  value={last4}
+                  onChange={(e) =>
+                    setLast4(e.target.value.replace(/\D/g, "").slice(0, 4))
+                  }
+                  className="w-full border border-[#7dd3fc44] rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                  required
+                  pattern="[0-9]{4}"
+                  inputMode="numeric"
+                  maxLength={4}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-br from-[#287e80] to-[#236c58] text-white py-3 rounded-xl font-bold text-lg hover:brightness-110 transition"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "View Cleaning Info"}
+            </button>
+
+            {error && (
+              <p className="text-[#fac2d5] font-semibold text-center">
+                {error}
+              </p>
+            )}
+          </form>
+
+          {/* RESULTS */}
+          {result && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-[#b9efd7]">
+                Hello, {result.client.first_name}! 👋
+              </h2>
+              {assignments.length > 0 && (
+                <section>
+                  <h3 className="text-xl font-semibold mb-4">
+                    🧹 Assigned Cleaners
+                  </h3>
+
+                  {assignments.filter((a) => a.type === "staff").length > 0 ? (
+                    <ul className="space-y-4">
+                      {assignments
+                        .filter((a) => a.type === "staff")
+                        .map((a) => (
+                          <li
+                            key={a.assignment_id}
+                            className="bg-[#10283d] border border-[#7dd3fc33] rounded-xl shadow p-4 text-sm flex items-center gap-4"
+                          >
+                            {/* {a.profile?.photo_url && (
               <img
                 src={a.profile.photo_url}
                 alt={`${a.username}'s profile`}
@@ -159,219 +173,314 @@ try {
               />
             )} */}
 
-            <div className="space-y-1">
-             <div>
-  <strong>Name:</strong>{" "}
-  <span className="font-medium">
-    {a.profile?.first_name && a.profile?.last_name
-      ? `${a.profile.first_name} ${a.profile.last_name.charAt(0)}.`
-      : a.username}
-  </span>
-</div>
+                            <div className="space-y-1">
+                              <div>
+                                <strong>Name:</strong>{" "}
+                                <span className="font-medium">
+                                  {a.profile?.first_name && a.profile?.last_name
+                                    ? `${a.profile.first_name} ${a.profile.last_name.charAt(0)}.`
+                                    : a.username}
+                                </span>
+                              </div>
 
-              <div>
-                <strong>Role:</strong> {a.role}
-              </div>
-           
-            </div>
-          </li>
-        ))}
-    </ul>
-  ) : (
-    <p className="text-[#a7c6d7] italic">No cleaners have been assigned yet.</p>
-  )}
-</section>
+                              <div>
+                                <strong>Role:</strong> {a.role}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[#a7c6d7] italic">
+                      No cleaners have been assigned yet.
+                    </p>
+                  )}
+                </section>
+              )}
 
-)}
+              <ClientTaskHistory
+                key={result.client.id}
+                clientId={result.client.id}
+              />
 
-          <ClientTaskHistory key={result.client.id} clientId={result.client.id} />
+              {/* Consultation */}
+              <section>
+                <h3 className="text-xl font-semibold mb-4">
+                  🧠 Consultation History
+                </h3>
+                <button
+                  onClick={() => setShowConsults((prev) => !prev)}
+                  className="mb-4 px-4 py-2 rounded-xl font-semibold border bg-[#10283d] text-[#b1e8d2] hover:bg-emerald-50 transition"
+                >
+                  {showConsults
+                    ? "Hide Consultation Reports"
+                    : "View Consultation Reports"}
+                </button>
+                {showConsults && (
+                  <ClientViewConsults consultations={result.consultations} />
+                )}
+              </section>
 
-          {/* Consultation */}
-          <section>
-            <h3 className="text-xl font-semibold mb-4">🧠 Consultation History</h3>
-            <button
-              onClick={() => setShowConsults((prev) => !prev)}
-              className="mb-4 px-4 py-2 rounded-xl font-semibold border bg-[#10283d] text-[#b1e8d2] hover:bg-emerald-50 transition"
-            >
-              {showConsults
-                ? "Hide Consultation Reports"
-                : "View Consultation Reports"}
-            </button>
-            {showConsults && (
-              <ClientViewConsults consultations={result.consultations} />
-            )}
-          </section>
-
-          {/* Schedule */}
-          {(result.client.schedules || []).length > 0 && (
-            <section>
-              <h3 className="text-xl font-semibold mb-2">📅 Cleaning Schedule</h3>
-              <div className="space-y-4">
-                {(result.client.schedules || []).map((sched) => (
-                  <div
-                    key={sched.id}
-                    className="bg-[#10283d] border border-[#7dd3fc33] rounded-xl shadow-sm p-4 text-sm"
-                  >
-                    <div>
-                      <strong>Type:</strong>{" "}
-                      {(sched.schedule_type || "").replace(/_/g, " ")}
-                    </div>
-                    <div>
-                      <strong>Status:</strong>{" "}
-                      <span
-                        className={`font-semibold ${
-                          sched.status === "active"
-                            ? "text-[#a5e5c4]"
-                            : sched.status === "paused"
-                            ? "text-[#eddaa9]"
-                            : "text-[#93b6c9]"
-                        }`}
+              {/* Schedule */}
+              {(result.client.schedules || []).length > 0 && (
+                <section>
+                  <h3 className="text-xl font-semibold mb-2">
+                    📅 Cleaning Schedule
+                  </h3>
+                  <div className="space-y-4">
+                    {(result.client.schedules || []).map((sched) => (
+                      <div
+                        key={sched.id}
+                        className="bg-[#10283d] border border-[#7dd3fc33] rounded-xl shadow-sm p-4 text-sm"
                       >
-                        {sched.status}
-                      </span>
-                    </div>
-                    <div>
-                      <strong>Start Date:</strong>{" "}
-                      {new Date(`${sched.start_date}T00:00:00`).toLocaleDateString()}
-                    </div>
-                    {sched.day_of_week != null && (
-                      <div>
-                        <strong>Day of Week:</strong>{" "}
-                        {
-                          [
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday",
-                          ][sched.day_of_week]
-                        }
+                        <div>
+                          <strong>Type:</strong>{" "}
+                          {(sched.schedule_type || "").replace(/_/g, " ")}
+                        </div>
+                        <div>
+                          <strong>Status:</strong>{" "}
+                          <span
+                            className={`font-semibold ${
+                              sched.status === "active"
+                                ? "text-[#a5e5c4]"
+                                : sched.status === "paused"
+                                  ? "text-[#eddaa9]"
+                                  : "text-[#93b6c9]"
+                            }`}
+                          >
+                            {sched.status}
+                          </span>
+                        </div>
+                        <div>
+                          <strong>Start Date:</strong>{" "}
+                          {new Date(
+                            `${sched.start_date}T00:00:00`,
+                          ).toLocaleDateString()}
+                        </div>
+                        {sched.day_of_week != null && (
+                          <div>
+                            <strong>Day of Week:</strong>{" "}
+                            {
+                              [
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                                "Sunday",
+                              ][sched.day_of_week]
+                            }
+                          </div>
+                        )}
+                        <div>
+                          <strong>Time:</strong>{" "}
+                          {format(
+                            new Date(`1970-01-01T${sched.start_time}`),
+                            "h:mm a",
+                          )}{" "}
+                          –{" "}
+                          {format(
+                            new Date(`1970-01-01T${sched.end_time}`),
+                            "h:mm a",
+                          )}
+                        </div>
+                        {sched.description && (
+                          <div className="mt-1 italic text-[#a7c6d7]">
+                            {sched.description}
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div>
-                      <strong>Time:</strong>{" "}
-                      {format(
-                        new Date(`1970-01-01T${sched.start_time}`),
-                        "h:mm a"
-                      )}{" "}
-                      –{" "}
-                      {format(
-                        new Date(`1970-01-01T${sched.end_time}`),
-                        "h:mm a"
-                      )}
-                    </div>
-                    {sched.description && (
-                      <div className="mt-1 italic text-[#a7c6d7]">
-                        {sched.description}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
+                </section>
+              )}
+
+              {/* Shifts */}
+              {/* Shifts */}
+              <section>
+                <h3 className="text-xl font-semibold mb-4">🧾 Recent Shifts</h3>
+                <ClientShifts shifts={result.shifts} />
+              </section>
+
+              {/* Completed Checklists */}
+              <section>
+                <h3 className="text-xl font-semibold mt-6 mb-4">
+                  ✅ Completed Checklists
+                </h3>
+                <ClientCompletedChecklists
+                  checklists={result.completed_checklists}
+                />
+              </section>
+
+              {/* Requests */}
+              <ClientRequestForm clientId={result.client.id} />
+
+              {/* Review Box */}
+              <div className="text-center bg-[#10283d] border border-[#7dd3fc33] rounded-2xl shadow-md p-6 space-y-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#dfedf7]">
+                  💬 Want to share your experience?
+                </h3>
+                <p className="text-[#a7c6d7] text-sm sm:text-base">
+                  We’d love to hear from you! Leave us a review and help others
+                  feel confident choosing our cleaning services. Your feedback
+                  might even be featured on our site! 🌟
+                </p>
+
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  className="mt-2 inline-block w-full sm:w-auto px-6 py-3 font-semibold rounded-full bg-gradient-to-br from-[#2b788f] to-[#296e66] text-white shadow-md hover:brightness-110 transition-all"
+                >
+                  ⭐ Leave a Review
+                </button>
               </div>
-            </section>
+            </div>
           )}
 
-          {/* Shifts */}
-        {/* Shifts */}
-<section>
-  <h3 className="text-xl font-semibold mb-4">🧾 Recent Shifts</h3>
-  <ClientShifts shifts={result.shifts} />
-</section>
-
-{/* Completed Checklists */}
-<section>
-  <h3 className="text-xl font-semibold mt-6 mb-4">✅ Completed Checklists</h3>
-  <ClientCompletedChecklists checklists={result.completed_checklists} />
-</section>
-
-
-          {/* Requests */}
-          <ClientRequestForm clientId={result.client.id} />
-
-          {/* Review Box */}
-          <div className="text-center bg-[#10283d] border border-[#7dd3fc33] rounded-2xl shadow-md p-6 space-y-4">
-            <h3 className="text-xl sm:text-2xl font-bold text-[#dfedf7]">
-              💬 Want to share your experience?
-            </h3>
-            <p className="text-[#a7c6d7] text-sm sm:text-base">
-              We’d love to hear from you! Leave us a review and help others feel
-              confident choosing our cleaning services. Your feedback might even
-              be featured on our site! 🌟
-            </p>
-
-            <button
-              onClick={() => setShowReviewModal(true)}
-              className="mt-2 inline-block w-full sm:w-auto px-6 py-3 font-semibold rounded-full bg-gradient-to-br from-[#2b788f] to-[#296e66] text-white shadow-md hover:brightness-110 transition-all"
-            >
-              ⭐ Leave a Review
-            </button>
-          </div>
+          {/* Modal */}
+          {showReviewModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Leave a review"
+                className="cp-review relative bg-[#10283d] rounded-2xl shadow-2xl max-w-xl w-full"
+              >
+                <button
+                  aria-label="Close review"
+                  onClick={() => setShowReviewModal(false)}
+                  className="absolute top-2 right-2 text-[#93b6c9] hover:text-[#dfedf7] text-xl font-bold"
+                >
+                  ×
+                </button>
+                <CreateReview />
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Modal */}
-      {showReviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
-          <div role="dialog" aria-modal="true" aria-label="Leave a review" className="cp-review relative bg-[#10283d] rounded-2xl shadow-2xl max-w-xl w-full">
-            <button
-              aria-label="Close review" onClick={() => setShowReviewModal(false)}
-              className="absolute top-2 right-2 text-[#93b6c9] hover:text-[#dfedf7] text-xl font-bold"
-            >
-              ×
-            </button>
-            <CreateReview />
-          </div>
-        </div>
-      )}
-    </div>
-  </div></CleaningTheme>
-);
-
+      </div>
+    </CleaningTheme>
+  );
 }
-
 
 // Render outside CleaningTheme so transforms and clipping cannot hide the intro.
 function CleaningPortalIntro({ onSkip }) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, []);
   if (typeof document === "undefined") return null;
   return createPortal(
-    <div className="cp-intro" onKeyDown={event => { if (event.key === "Escape") onSkip(); }}>
+    <div
+      className="cp-intro"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onSkip();
+      }}
+    >
       <style>{INTRO_STYLES}</style>
       <div className="cp-intro-inner">
         <p className="cp-intro-eyebrow">A little care. A little sparkle.</p>
         <div className="cp-intro-scene" aria-hidden="true">
           <div className="cp-neon-sign">
             <span className="cp-sign-small">WELCOME TO</span>
-            <span className="cp-sign-name">A Breath of<br />Fresh Air</span>
+            <span className="cp-sign-name">
+              A Breath of
+              <br />
+              Fresh Air
+            </span>
             <span className="cp-sign-portal">Cleaning Portal</span>
             <span className="cp-sign-star cp-star-one">✧</span>
             <span className="cp-sign-star cp-star-two">✦</span>
           </div>
           <svg className="cp-cleaner" viewBox="0 0 260 350" fill="none">
-            <ellipse cx="126" cy="326" rx="81" ry="10" fill="#000" opacity=".18" />
+            <ellipse
+              cx="126"
+              cy="326"
+              rx="81"
+              ry="10"
+              fill="#000"
+              opacity=".18"
+            />
             {/* Legs, shoes, uniform and apron */}
-            <path d="M102 240L96 310M146 240L155 310" stroke="#d99c7c" strokeWidth="21" strokeLinecap="round" />
-            <path d="M98 308L80 317M155 308L170 317" stroke="#d8f4ed" strokeWidth="20" strokeLinecap="round" />
-            <path d="M102 128Q126 117 149 133L166 255Q127 271 85 252Z" fill="#4ca8a6" />
-            <path d="M112 132L104 166L97 242Q125 254 155 242L146 166L137 132" fill="#e6f8ee" />
+            <path
+              d="M102 240L96 310M146 240L155 310"
+              stroke="#d99c7c"
+              strokeWidth="21"
+              strokeLinecap="round"
+            />
+            <path
+              d="M98 308L80 317M155 308L170 317"
+              stroke="#d8f4ed"
+              strokeWidth="20"
+              strokeLinecap="round"
+            />
+            <path
+              d="M102 128Q126 117 149 133L166 255Q127 271 85 252Z"
+              fill="#4ca8a6"
+            />
+            <path
+              d="M112 132L104 166L97 242Q125 254 155 242L146 166L137 132"
+              fill="#e6f8ee"
+            />
             <path d="M111 194H142V216Q126 229 111 216Z" fill="#acdbce" />
-            <path d="M101 146Q68 173 80 202L103 188" stroke="#e7ac8b" strokeWidth="17" strokeLinecap="round" />
-            <path d="M100 136L85 162" stroke="#4ca8a6" strokeWidth="24" strokeLinecap="round" />
+            <path
+              d="M101 146Q68 173 80 202L103 188"
+              stroke="#e7ac8b"
+              strokeWidth="17"
+              strokeLinecap="round"
+            />
+            <path
+              d="M100 136L85 162"
+              stroke="#4ca8a6"
+              strokeWidth="24"
+              strokeLinecap="round"
+            />
             {/* A shoulder-pivot sweep moves the feather duster over the sign. */}
             <g className="cp-dusting-arm">
-              <path d="M148 144L180 116L187 78" stroke="#e7ac8b" strokeWidth="17" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M147 141L161 130" stroke="#4ca8a6" strokeWidth="24" strokeLinecap="round" />
-              <path d="M187 82L203 36" stroke="#e7c995" strokeWidth="7" strokeLinecap="round" />
+              <path
+                d="M148 144L180 116L187 78"
+                stroke="#e7ac8b"
+                strokeWidth="17"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M147 141L161 130"
+                stroke="#4ca8a6"
+                strokeWidth="24"
+                strokeLinecap="round"
+              />
+              <path
+                d="M187 82L203 36"
+                stroke="#e7c995"
+                strokeWidth="7"
+                strokeLinecap="round"
+              />
               <g fill="#c4b5ed" stroke="#ebe3ff" strokeWidth="2">
-                <ellipse cx="211" cy="24" rx="14" ry="25" transform="rotate(24 211 24)" />
-                <ellipse cx="199" cy="21" rx="9" ry="22" transform="rotate(-8 199 21)" />
-                <ellipse cx="222" cy="30" rx="9" ry="22" transform="rotate(45 222 30)" />
+                <ellipse
+                  cx="211"
+                  cy="24"
+                  rx="14"
+                  ry="25"
+                  transform="rotate(24 211 24)"
+                />
+                <ellipse
+                  cx="199"
+                  cy="21"
+                  rx="9"
+                  ry="22"
+                  transform="rotate(-8 199 21)"
+                />
+                <ellipse
+                  cx="222"
+                  cy="30"
+                  rx="9"
+                  ry="22"
+                  transform="rotate(45 222 30)"
+                />
               </g>
             </g>
             {/* The head turns from profile to a smiling face. */}
@@ -380,29 +489,66 @@ function CleaningPortalIntro({ onSkip }) {
               <path d="M125 103V129" stroke="#e7ac8b" strokeWidth="20" />
               <ellipse cx="124" cy="79" rx="35" ry="41" fill="#50362f" />
               <ellipse cx="128" cy="87" rx="28" ry="33" fill="#efb997" />
-              <path d="M97 83Q92 35 132 43Q156 42 160 72Q139 73 127 56Q114 80 97 83" fill="#50362f" />
-              <path d="M100 53Q125 36 149 51" stroke="#a5dfcf" strokeWidth="7" strokeLinecap="round" />
+              <path
+                d="M97 83Q92 35 132 43Q156 42 160 72Q139 73 127 56Q114 80 97 83"
+                fill="#50362f"
+              />
+              <path
+                d="M100 53Q125 36 149 51"
+                stroke="#a5dfcf"
+                strokeWidth="7"
+                strokeLinecap="round"
+              />
               <g className="cp-face-profile">
                 <circle cx="143" cy="85" r="3" fill="#49332d" />
                 <path d="M153 90L161 96L151 98" fill="#efb997" />
-                <path d="M140 104Q147 108 151 102" stroke="#9d4d4a" strokeWidth="2.5" strokeLinecap="round" />
+                <path
+                  d="M140 104Q147 108 151 102"
+                  stroke="#9d4d4a"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
               </g>
               <g className="cp-face-smile">
-                <path d="M112 85Q116 81 120 85M136 85Q140 81 144 85" stroke="#49332d" strokeWidth="3" strokeLinecap="round" />
+                <path
+                  d="M112 85Q116 81 120 85M136 85Q140 81 144 85"
+                  stroke="#49332d"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
                 <ellipse cx="111" cy="96" rx="6" ry="3" fill="#e68e87" />
                 <ellipse cx="146" cy="96" rx="6" ry="3" fill="#e68e87" />
                 <path d="M118 101Q129 119 140 101Z" fill="#a65254" />
-                <path d="M121 103H137" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                <path
+                  d="M121 103H137"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
               </g>
             </g>
           </svg>
-          <span className="cp-dust cp-dust-one">✧</span><span className="cp-dust cp-dust-two">✦</span><span className="cp-dust cp-dust-three">✧</span>
+          <span className="cp-dust cp-dust-one">✧</span>
+          <span className="cp-dust cp-dust-two">✦</span>
+          <span className="cp-dust cp-dust-three">✧</span>
         </div>
-        <p className="cp-intro-caption" role="status">Freshening up your cleaning portal…</p>
-        <div className="cp-intro-progress" aria-hidden="true"><span /></div>
-        <button autoFocus type="button" className="cp-intro-skip" onClick={onSkip}>Skip intro <span aria-hidden="true">→</span></button>
+        <p className="cp-intro-caption" role="status">
+          Freshening up your cleaning portal…
+        </p>
+        <div className="cp-intro-progress" aria-hidden="true">
+          <span />
+        </div>
+        <button
+          autoFocus
+          type="button"
+          className="cp-intro-skip"
+          onClick={onSkip}
+        >
+          Skip intro <span aria-hidden="true">→</span>
+        </button>
       </div>
-    </div>, document.body
+    </div>,
+    document.body,
   );
 }
 
@@ -438,17 +584,64 @@ const API = "https://cleaningback.onrender.com";
 function displayDate(value) {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString([], {month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+  return Number.isNaN(date.getTime())
+    ? "—"
+    : date.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
 }
 function TaskRows({ items, history = false }) {
   const groups = new Map();
-  [...items].sort((a,b) => (a.display_order || 0) - (b.display_order || 0)).forEach(item => {
-    const room = item.room?.trim() || "General";
-    if (!groups.has(room)) groups.set(room, []);
-    groups.get(room).push(item);
-  });
+  [...items]
+    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+    .forEach((item) => {
+      const room = item.room?.trim() || "General";
+      if (!groups.has(room)) groups.set(room, []);
+      groups.get(room).push(item);
+    });
   if (!items.length) return <p className="cp-muted">No tasks recorded.</p>;
-  return <div className="cp-rooms">{[...groups].map(([room, tasks]) => <section key={room}><h5>{room}</h5>{tasks.map(task => <div className="cp-task-row" key={task.id}><span className={history && task.is_completed ? "cp-done" : "cp-dot"} aria-hidden="true">{history ? task.is_completed ? "✓" : "○" : "✦"}</span><div><strong>{task.title}</strong>{task.description && <p>{task.description}</p>}<small>{history ? task.is_completed ? "Completed" : "Not completed" : task.is_required ? "Required" : "Optional"}{history && task.completed_at ? ` · ${displayDate(task.completed_at)}` : ""}</small>{history && task.completion_notes && <p className="cp-task-note">{task.completion_notes}</p>}</div></div>)}</section>)}</div>;
+  return (
+    <div className="cp-rooms">
+      {[...groups].map(([room, tasks]) => (
+        <section key={room}>
+          <h5>{room}</h5>
+          {tasks.map((task) => (
+            <div className="cp-task-row" key={task.id}>
+              <span
+                className={history && task.is_completed ? "cp-done" : "cp-dot"}
+                aria-hidden="true"
+              >
+                {history ? (task.is_completed ? "✓" : "○") : "✦"}
+              </span>
+              <div>
+                <strong>{task.title}</strong>
+                {task.description && <p>{task.description}</p>}
+                <small>
+                  {history
+                    ? task.is_completed
+                      ? "Completed"
+                      : "Not completed"
+                    : task.is_required
+                      ? "Required"
+                      : "Optional"}
+                  {history && task.completed_at
+                    ? ` · ${displayDate(task.completed_at)}`
+                    : ""}
+                </small>
+                {history && task.completion_notes && (
+                  <p className="cp-task-note">{task.completion_notes}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
 }
 function ClientTaskHistory({ clientId }) {
   const [tab, setTab] = useState("history");
@@ -461,46 +654,182 @@ function ClientTaskHistory({ clientId }) {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      setLoading(true); setErrors({});
+      setLoading(true);
+      setErrors({});
       const responses = await Promise.allSettled([
         axios.get(`${API}/cleaning/clients/${clientId}/task-lists`),
         axios.get(`${API}/cleaning/clients/${clientId}/history`),
       ]);
       if (cancelled) return;
       const nextErrors = {};
-      responses.forEach((response,index) => {
+      responses.forEach((response, index) => {
         const key = index === 0 ? "templates" : "history";
-        const rows = response.status === "fulfilled" ? response.value.data?.[index === 0 ? "task_lists" : "cleaning_sessions"] : null;
+        const rows =
+          response.status === "fulfilled"
+            ? response.value.data?.[
+                index === 0 ? "task_lists" : "cleaning_sessions"
+              ]
+            : null;
         if (!Array.isArray(rows)) {
-          nextErrors[key] = `Unable to load ${key === "templates" ? "task templates" : "cleaning history"}. Tap Refresh to try again.`;
-          if (index === 0) setTemplates([]); else setSessions([]);
+          nextErrors[key] =
+            `Unable to load ${key === "templates" ? "task templates" : "cleaning history"}. Tap Refresh to try again.`;
+          if (index === 0) setTemplates([]);
+          else setSessions([]);
         } else if (index === 0) setTemplates(rows);
         else setSessions(rows);
       });
-      setErrors(nextErrors); setLoading(false);
+      setErrors(nextErrors);
+      setLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [clientId, refreshKey]);
-  const visible = sessions.filter(session => filter === "all" || session.status === filter);
-  return <section className="cp-task-library" aria-label="Your cleaning task lists">
-    <header className="cp-library-header"><div><p className="cp-eyebrow">The details that make a difference</p><h3>Your cleaning checklists</h3><p>See what’s planned and what was completed at each visit.</p></div><button type="button" onClick={() => setRefreshKey(key => key + 1)} disabled={loading}>{loading ? "Refreshing…" : "↻ Refresh"}</button></header>
-    <div className="cp-tabs"><button type="button" aria-pressed={tab === "history"} onClick={() => setTab("history")}>Cleaning history</button><button type="button" aria-pressed={tab === "templates"} onClick={() => setTab("templates")}>Task templates</button></div>
-    {loading ? <p className="cp-muted" role="status">Loading your checklists…</p> : errors[tab] ? <p className="cp-error" role="alert">{errors[tab]}</p> : tab === "templates" ? <>
-      <p className="cp-muted">Your current active cleaning plans. Past visits retain the tasks recorded at the time.</p>
-      {!templates.length && <p className="cp-empty">No active task templates yet.</p>}
-      {templates.map(list => <details className="cp-checklist" key={list.id}><summary><span>{list.name || `Task list #${list.id}`}</span><small>{(list.items || []).filter(item => item.is_active !== false).length} tasks</small></summary><div className="cp-checklist-body">{list.description && <p className="cp-muted">{list.description}</p>}<TaskRows items={(list.items || []).filter(item => item.is_active !== false)} /></div></details>)}
-    </> : <>
-      <label className="cp-filter">Show visits<select value={filter} onChange={event => setFilter(event.target.value)}><option value="all">All visits</option><option value="completed">Completed</option><option value="in_progress">In progress</option><option value="cancelled">Cancelled</option></select></label>
-      {!visible.length && <p className="cp-empty">{sessions.length ? "No visits match this filter." : "Your cleaning task history will appear here after a checklist is started."}</p>}
-      {visible.map(session => {
-        const tasks = session.tasks || [];
-        const complete = tasks.filter(task => task.is_completed).length;
-        const list = templates.find(template => String(template.id) === String(session.task_list_id));
-        return <details className="cp-checklist" key={session.id}><summary><span>{displayDate(session.started_at)}<small>{list?.name || `Checklist #${session.task_list_id}`} · Visit #{session.id}</small></span><span className={`cp-state cp-state-${session.status}`}>{(session.status || "Unknown").replace(/_/g," ")}</span></summary><div className="cp-checklist-body"><p className="cp-progress">{complete} of {tasks.length} tasks completed</p><progress max={Math.max(1,tasks.length)} value={complete} aria-label="Tasks completed" />{session.finalized_at && <p className="cp-muted">Completed {displayDate(session.finalized_at)}</p>}{session.notes && <p className="cp-muted">{session.notes}</p>}<TaskRows items={tasks} history /></div></details>;
-      })}
-    </>}
-  </section>;
+  const visible = sessions.filter(
+    (session) => filter === "all" || session.status === filter,
+  );
+  return (
+    <section className="cp-task-library" aria-label="Your cleaning task lists">
+      <header className="cp-library-header">
+        <div>
+          <p className="cp-eyebrow">The details that make a difference</p>
+          <h3>Your cleaning checklists</h3>
+          <p>See what’s planned and what was completed at each visit.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRefreshKey((key) => key + 1)}
+          disabled={loading}
+        >
+          {loading ? "Refreshing…" : "↻ Refresh"}
+        </button>
+      </header>
+      <div className="cp-tabs">
+        <button
+          type="button"
+          aria-pressed={tab === "history"}
+          onClick={() => setTab("history")}
+        >
+          Cleaning history
+        </button>
+        <button
+          type="button"
+          aria-pressed={tab === "templates"}
+          onClick={() => setTab("templates")}
+        >
+          Task templates
+        </button>
+      </div>
+      {loading ? (
+        <p className="cp-muted" role="status">
+          Loading your checklists…
+        </p>
+      ) : errors[tab] ? (
+        <p className="cp-error" role="alert">
+          {errors[tab]}
+        </p>
+      ) : tab === "templates" ? (
+        <>
+          <p className="cp-muted">
+            Your current active cleaning plans. Past visits retain the tasks
+            recorded at the time.
+          </p>
+          {!templates.length && (
+            <p className="cp-empty">No active task templates yet.</p>
+          )}
+          {templates.map((list) => (
+            <details className="cp-checklist" key={list.id}>
+              <summary>
+                <span>{list.name || `Task list #${list.id}`}</span>
+                <small>
+                  {
+                    (list.items || []).filter(
+                      (item) => item.is_active !== false,
+                    ).length
+                  }{" "}
+                  tasks
+                </small>
+              </summary>
+              <div className="cp-checklist-body">
+                {list.description && (
+                  <p className="cp-muted">{list.description}</p>
+                )}
+                <TaskRows
+                  items={(list.items || []).filter(
+                    (item) => item.is_active !== false,
+                  )}
+                />
+              </div>
+            </details>
+          ))}
+        </>
+      ) : (
+        <>
+          <label className="cp-filter">
+            Show visits
+            <select
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+            >
+              <option value="all">All visits</option>
+              <option value="completed">Completed</option>
+              <option value="in_progress">In progress</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+          {!visible.length && (
+            <p className="cp-empty">
+              {sessions.length
+                ? "No visits match this filter."
+                : "Your cleaning task history will appear here after a checklist is started."}
+            </p>
+          )}
+          {visible.map((session) => {
+            const tasks = session.tasks || [];
+            const complete = tasks.filter((task) => task.is_completed).length;
+            const list = templates.find(
+              (template) =>
+                String(template.id) === String(session.task_list_id),
+            );
+            return (
+              <details className="cp-checklist" key={session.id}>
+                <summary>
+                  <span>
+                    {displayDate(session.started_at)}
+                    <small>
+                      {list?.name || `Checklist #${session.task_list_id}`} ·
+                      Visit #{session.id}
+                    </small>
+                  </span>
+                  <span className={`cp-state cp-state-${session.status}`}>
+                    {(session.status || "Unknown").replace(/_/g, " ")}
+                  </span>
+                </summary>
+                <div className="cp-checklist-body">
+                  <p className="cp-progress">
+                    {complete} of {tasks.length} tasks completed
+                  </p>
+                  <progress
+                    max={Math.max(1, tasks.length)}
+                    value={complete}
+                    aria-label="Tasks completed"
+                  />
+                  {session.finalized_at && (
+                    <p className="cp-muted">
+                      Completed {displayDate(session.finalized_at)}
+                    </p>
+                  )}
+                  {/* {session.notes && <p className="cp-muted">{session.notes}</p>} */}
+                  <TaskRows items={tasks} history />
+                </div>
+              </details>
+            );
+          })}
+        </>
+      )}
+    </section>
+  );
 }
 
 const PORTAL_STYLES = `
