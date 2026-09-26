@@ -16,6 +16,7 @@ import ClientInquiry from "./ClientInquiry";
 import ClientCleaning from "./ClientCleaning";
 import ForgotPassword from "./ForgotPassword";
 import Footer from "./Footer";
+import Apply from "./Apply";
 import ResetPassword from "./ResetPassword";
 const App = () => (
   
@@ -23,6 +24,7 @@ const App = () => (
     <Navbar />
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/apply" element={<Apply />} />
       <Route path="/packages" element={<Packages />} />
       <Route path="/contact" element={<ClientInquiry />} />
       <Route path="/gallery" element={<Gallery isAdmin={true} />} /> 

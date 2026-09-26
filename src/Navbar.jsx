@@ -18,6 +18,7 @@ const PUBLIC_LINKS = [
   { label: "Gallery", to: "/gallery" },
   { label: "Reviews", to: "/reviews" },
   { label: "Contact", to: "/contact" },
+  { label: "Apply", to: "/apply" },
 ];
 
 const FACEBOOK_URL =

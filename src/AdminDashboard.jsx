@@ -14,6 +14,7 @@ import ManageServices from "./ManageServices";
 import ManageReviews from "./ManageReviews";
 import AdminNextShiftBanner from "./AdminNextShiftBanner";
 import CreateTimeOffRequest from "./CreateTimeOffRequest";
+import Applications from "./Applications";
 import TodayTasksSlider from "./TodayTasksSlider";
 import ViewMyTimeOffRequests from "./ViewMyTimeOffRequests";
 import BossTimeOff from "./BossTimeOff";
@@ -278,6 +279,7 @@ export default function AdminDashboard() {
     { key: "clients", label: "Clients", icon: "clients", description: "Client care, intake & scheduling", badge: newClientCount + newRequestCount },
     { key: "consultations", label: "Consults", icon: "consult", description: "Consultations, estimates & setup" },
     { key: "employees", label: "Team", icon: "clock", description: "Hours, time off, shifts & supplies", badge: pendingTimeOffCount },
+    { key: "applications", label: "Applications", icon: "consult", description: "View, edit & manage job applicants" },
     { key: "services", label: "Services", icon: "sparkle", description: "Your services & photo gallery" },
     { key: "reviews", label: "Reviews", icon: "review", description: "Customer feedback & pending reviews", badge: pendingReviewCount },
     { key: "tasks", label: "Tasks", icon: "task", description: "Keep every detail of your operation organized" },
@@ -558,6 +560,9 @@ export default function AdminDashboard() {
               {tasksSubTab === "manage" && <ManageTasks />}
             </div>
           )}
+
+          {/* ===================== APPLICATIONS ===================== */}
+          {activeTab === "applications" && <Applications />}
 
           {/* ===================== EMPLOYEES ===================== */}
           {activeTab === "employees" && (

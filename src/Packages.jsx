@@ -1,36 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
+import CleaningTheme, { CleaningSparkle } from "./CleaningTheme";
 const API_BASE = "https://cleaningback.onrender.com";
-
-/* ------------------------------------------------------------------ */
-/*  A Breath of Fresh Air — Packages (redesigned to match)             */
-/*  Same tokens as HomePage / ServiceArea / ClientInquiry / Navbar:    */
-/*  slate-blue night, sky→cyan→emerald accents, serif display with     */
-/*  italic gradient, eyebrows, hairline rules, glass, quiet bubbles.   */
-/* ------------------------------------------------------------------ */
-
-/* Deterministic ambient bubbles */
-const BUBBLES = Array.from({ length: 11 }, (_, i) => ({
-  left: `${(((i * 137.508) % 100) * 0.95 + 2).toFixed(2)}%`,
-  size: 6 + ((i * 47) % 20),
-  duration: 18 + ((i * 61) % 16),
-  delay: -((i * 37) % 28),
-  drift: (i % 2 === 0 ? 1 : -1) * (10 + ((i * 31) % 26)),
-  opacity: 0.1 + ((i * 13) % 16) / 100,
-}));
-
+// Shared CleaningTheme styling; no full-page intro loader.
 const Packages = () => {
   const [packages, setPackages] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [shown, setShown] = useState(false);
-
   const handleViewPackage = (pkg) => setSelectedPackage(pkg);
   const closeModal = () => setSelectedPackage(null);
-
   /* ---------------------------- Data ---------------------------- */
   useEffect(() => {
     const loadServices = async () => {
@@ -43,23 +24,19 @@ const Packages = () => {
         setLoading(false);
       }
     };
-
     loadServices();
   }, []);
-
   /* -------------------------- Behaviour ------------------------- */
   useEffect(() => {
     const t = setTimeout(() => setShown(true), 60);
     return () => clearTimeout(t);
   }, []);
-
   // Escape closes the modal
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setSelectedPackage(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
   // Lock body scroll behind the modal
   useEffect(() => {
     document.body.style.overflow = selectedPackage ? "hidden" : "";
@@ -67,37 +44,24 @@ const Packages = () => {
       document.body.style.overflow = "";
     };
   }, [selectedPackage]);
-
   const reveal = (delay = 0) => ({
     className: `transition-all duration-1000 ease-out ${
       shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
     }`,
     style: { transitionDelay: `${delay}ms` },
   });
-
   /* ---------------------------- Render -------------------------- */
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-gray-100 antialiased selection:bg-cyan-400/30">
+    <CleaningTheme className="packages-page-theme" showLoader={false}>
+    <div className="pk-page relative min-h-screen antialiased selection:bg-cyan-400/30">
       <style>{`
-        .pk-bubble {
-          position: absolute;
-          bottom: -40px;
-          border-radius: 9999px;
-          background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.85), rgba(125,211,252,0.25) 42%, rgba(56,189,248,0.06) 75%);
-          box-shadow: inset 0 0 6px rgba(186,230,253,0.35), 0 0 10px rgba(56,189,248,0.12);
-          opacity: 0;
-          animation-name: pk-rise;
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
-          will-change: transform, opacity;
-        }
-        @keyframes pk-rise {
-          0%   { transform: translate(0,0) scale(0.9); opacity: 0; }
-          8%   { opacity: var(--maxo, 0.2); }
-          50%  { transform: translate(var(--drift, 16px), -55vh) scale(1); }
-          92%  { opacity: var(--maxo, 0.2); }
-          100% { transform: translate(calc(var(--drift, 16px) * -0.6), -110vh) scale(1.05); opacity: 0; }
-        }
+        .packages-page-theme .pk-page { position:relative; min-width:0; }
+        .packages-page-theme .pk-muted { color:var(--ct-muted, #a9c0d3); }
+        .packages-page-theme .pk-service-card { padding:0; border-color:var(--ct-line, #7dd3fc26); }
+        .packages-page-theme .pk-section-label { color:var(--ct-teal, #8edcea); }
+        .packages-page-theme .pk-intro-badge { display:inline-flex; align-items:center; gap:9px; }
+        .packages-page-theme .pk-intro-badge svg { width:14px; height:14px; }
+        .packages-page-theme .pk-cta { min-height:44px; text-align:center; justify-content:center; }
         .pk-shine { position: relative; overflow: hidden; }
         .pk-shine::after {
           content: "";
@@ -128,55 +92,28 @@ const Packages = () => {
         @keyframes pk-pulse { 0%,100% { opacity: 0.5 } 50% { opacity: 0.85 } }
         .pk-skeleton { animation: pk-pulse 2s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
-          .pk-bubble, .pk-skeleton { animation: none !important; }
-          .pk-bubble { opacity: 0 !important; }
+          .pk-skeleton { animation: none !important; }
           .pk-modal, .pk-scrim { animation: none !important; }
         }
       `}</style>
-
-      {/* --------------------------- Atmosphere --------------------------- */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-slate-950 via-blue-950 to-slate-950" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.15),transparent_55%)]" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.09),transparent_55%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        {BUBBLES.map((b, i) => (
-          <span
-            key={i}
-            className="pk-bubble"
-            style={{
-              left: b.left,
-              width: b.size,
-              height: b.size,
-              animationDuration: `${b.duration}s`,
-              animationDelay: `${b.delay}s`,
-              "--drift": `${b.drift}px`,
-              "--maxo": b.opacity,
-            }}
-          />
-        ))}
-      </div>
-
       {/* ------------------------------ Hero ------------------------------ */}
       <header className="relative px-6 pb-14 pt-32 md:pb-16 md:pt-40">
         <div {...reveal()} className="mx-auto max-w-3xl text-center">
-          <p className="mb-6 inline-flex items-center gap-3 rounded-full border border-sky-400/25 bg-white/[0.04] px-5 py-2 text-[11px] uppercase tracking-[0.35em] text-sky-300 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.9)]" />
+          <p className="ct-eyebrow pk-intro-badge mb-6 rounded-full border border-sky-400/25 bg-white/[0.04] px-5 py-2 backdrop-blur-md">
+            <CleaningSparkle />
             What we offer
           </p>
-
           <h1 className="font-serif text-4xl leading-[1.1] text-white sm:text-5xl md:text-6xl">
             Cleaning, shaped{" "}
             <span className="bg-gradient-to-r from-sky-300 via-cyan-300 to-emerald-300 bg-clip-text italic text-transparent">
               around your home
             </span>
           </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-slate-300 md:text-lg">
+          <p className="pk-muted mx-auto mt-6 max-w-xl text-base leading-relaxed md:text-lg">
             Every package below is a starting point, not a box to fit into. Tell us
             what your space needs and we'll adjust from there.
           </p>
         </div>
-
         {/* The one promise worth its own line */}
         <div
           {...reveal(150)}
@@ -190,16 +127,14 @@ const Packages = () => {
           </p>
         </div>
       </header>
-
       {/* ---------------------------- Packages ---------------------------- */}
       <main className="relative mx-auto max-w-6xl px-6 pb-28">
         <div {...reveal(220)} className="mb-10 flex items-center gap-5">
-          <h2 className="whitespace-nowrap text-[11px] uppercase tracking-[0.35em] text-sky-300">
+          <h2 className="ct-eyebrow pk-section-label whitespace-nowrap">
             Our packages
           </h2>
           <span className="h-px w-full bg-gradient-to-r from-sky-500/40 to-transparent" />
         </div>
-
         {/* Loading — quiet skeletons in the shape of the real cards */}
         {loading && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -220,7 +155,6 @@ const Packages = () => {
             ))}
           </div>
         )}
-
         {/* Error */}
         {!loading && error && (
           <div className="flex flex-col items-start gap-4 rounded-3xl border border-rose-400/25 bg-rose-400/[0.07] p-8 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
@@ -228,14 +162,9 @@ const Packages = () => {
               <span className="mt-0.5 text-rose-300">!</span>
               <p className="text-sm leading-relaxed text-rose-200">{error}</p>
             </div>
-            <Link to="/contact">
-              <button className="whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-6 py-3 text-xs uppercase tracking-[0.2em] text-sky-100 transition-all duration-300 hover:border-sky-300/40 hover:bg-sky-400/10">
-                Ask us directly
-              </button>
-            </Link>
+            <Link to="/contact" className="ct-btn pk-cta">Ask us directly</Link>
           </div>
         )}
-
         {/* Empty */}
         {!loading && !error && packages.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-12 text-center backdrop-blur-xl">
@@ -246,14 +175,9 @@ const Packages = () => {
               We're putting the finishing touches on our service list. In the
               meantime, tell us what you need and we'll quote it directly.
             </p>
-            <Link to="/contact">
-              <button className="pk-shine mt-7 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-8 py-3.5 text-sm font-semibold tracking-wide text-slate-950 shadow-lg shadow-sky-500/25 transition-transform duration-300 hover:-translate-y-0.5">
-                Request a quote
-              </button>
-            </Link>
+            <Link to="/contact" className="ct-btn pk-cta mt-7">Request a quote</Link>
           </div>
         )}
-
         {/* Grid */}
         {!loading && !error && packages.length > 0 && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -262,7 +186,7 @@ const Packages = () => {
                 key={pkg.id}
                 onClick={() => handleViewPackage(pkg)}
                 style={{ transitionDelay: `${Math.min(i, 6) * 80}ms` }}
-                className={`pk-shine group flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] text-left backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-sky-300/30 hover:bg-white/[0.06] hover:shadow-xl hover:shadow-sky-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+                className={`ct-card pk-service-card pk-shine group flex flex-col overflow-hidden rounded-3xl border text-left backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-sky-300/30 hover:bg-white/[0.06] hover:shadow-xl hover:shadow-sky-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
                   shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 }`}
               >
@@ -284,17 +208,14 @@ const Packages = () => {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/10 to-transparent" />
                 </div>
-
                 {/* Body */}
                 <div className="flex flex-1 flex-col p-7">
                   <h3 className="font-serif text-2xl leading-snug text-white transition-colors duration-300 group-hover:text-cyan-300">
                     {pkg.title}
                   </h3>
-
-                  <p className="pk-clamp mt-3 flex-1 whitespace-pre-line text-sm leading-relaxed text-slate-400">
+                  <p className="pk-clamp pk-muted mt-3 flex-1 whitespace-pre-line text-sm leading-relaxed">
                     {pkg.description}
                   </p>
-
                   <span className="mt-6 inline-flex items-center gap-2 border-t border-white/[0.08] pt-5 text-[11px] uppercase tracking-[0.2em] text-sky-300">
                     View details
                     <span className="transition-transform duration-300 group-hover:translate-x-1">
@@ -306,7 +227,6 @@ const Packages = () => {
             ))}
           </div>
         )}
-
         {/* Closing note */}
         {!loading && !error && packages.length > 0 && (
           <p className="mt-14 text-center text-sm italic text-slate-500">
@@ -321,7 +241,6 @@ const Packages = () => {
           </p>
         )}
       </main>
-
       {/* ----------------------------- Modal ------------------------------ */}
       {selectedPackage && (
         <div
@@ -337,13 +256,13 @@ const Packages = () => {
           >
             {/* Close */}
             <button
+              type="button"
               onClick={closeModal}
               aria-label="Close"
               className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-slate-950/70 text-lg text-white backdrop-blur-md transition-all duration-300 hover:border-cyan-300/40 hover:bg-cyan-400/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
             >
               ×
             </button>
-
             {/* Image */}
             {selectedPackage.image_url && (
               <div className="relative h-64 w-full overflow-hidden md:h-72">
@@ -355,39 +274,30 @@ const Packages = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
               </div>
             )}
-
             {/* Content */}
             <div className={`px-7 pb-9 md:px-12 ${selectedPackage.image_url ? "-mt-12 pt-0" : "pt-14"}`}>
               <p className="relative mb-4 text-[11px] uppercase tracking-[0.35em] text-sky-300">
                 Package
               </p>
-
               <h2 className="relative font-serif text-3xl leading-tight text-white md:text-4xl">
                 {selectedPackage.title}
               </h2>
-
               <div className="my-7 h-px w-full bg-gradient-to-r from-sky-500/40 to-transparent" />
-
               <p className="whitespace-pre-line text-[15px] leading-relaxed text-slate-300">
                 {selectedPackage.description}
               </p>
-
               <div className="mt-10 flex flex-col items-center gap-4 border-t border-white/10 pt-8 sm:flex-row sm:justify-between">
                 <p className="text-center text-xs text-slate-500 sm:text-left">
                   Every plan is adjustable to your space.
                 </p>
-                <Link to="/contact" className="w-full sm:w-auto">
-                  <button className="pk-shine w-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-9 py-4 text-sm font-semibold tracking-wide text-slate-950 shadow-lg shadow-sky-500/25 transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-cyan-400/40 sm:w-auto">
-                    Book this package
-                  </button>
-                </Link>
+                <Link to="/contact" className="ct-btn pk-cta w-full sm:w-auto">Book this package</Link>
               </div>
             </div>
           </div>
         </div>
       )}
     </div>
+    </CleaningTheme>
   );
 };
-
 export default Packages;
