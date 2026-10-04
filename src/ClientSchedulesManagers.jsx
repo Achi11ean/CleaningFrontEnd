@@ -441,6 +441,7 @@ export default function ClientSchedulesManagers() {
 
         <SchedulesMiniCalendar
           schedules={filteredSchedules}
+          onCreated={loadSchedules}
           onEdit={(ctx) => {
             // 🚫 One-time schedules cannot use exceptions
             if (ctx.schedule.schedule_type === "one_time") {
